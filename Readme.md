@@ -18,7 +18,14 @@ Almost same as VSCode.
 
 * Support javascript & typescript and jsx/tsx.
 * Install typings automatically.
-* Commands to work with tsserver.
+* Commands to work with tsserver, including:
+  * `tsserver.reloadProjects`
+  * `tsserver.openTsServerLog`
+  * `tsserver.goToProjectConfig`
+  * `tsserver.restart`
+  * `tsserver.format`
+  * `tsserver.organizeImports`
+  * `tsserver.watchBuild`
 * Code completion support.
 * Go to definition.
 * Code validation.
