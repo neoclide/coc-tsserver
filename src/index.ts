@@ -1,9 +1,8 @@
-import { services, commands, languages, ExtensionContext, workspace, TextDocumentWillSaveEvent, ServiceStat } from 'coc.nvim'
-import TsserverService from './server'
-import { languageIds } from './server/utils/languageModeIds'
-import { OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
+import { commands, ExtensionContext, languages, services, ServiceStat, TextDocumentWillSaveEvent, workspace } from 'coc.nvim'
 import { TextEdit } from 'vscode-languageserver-types'
-import { Command } from './server/commands'
+import TsserverService from './server'
+import { Command, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
+import { languageIds } from './server/utils/languageModeIds'
 
 export async function activate(context: ExtensionContext): Promise<void> {
   let { subscriptions } = context
