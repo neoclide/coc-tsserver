@@ -13,6 +13,9 @@
     "prepare": "yarn clean && yarn build"
   },
   "contributes": {
+    "activationEvents": [
+      "*"
+    ],
     "commands": [
       {
         "title": "Reload current project",

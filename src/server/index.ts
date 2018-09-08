@@ -35,6 +35,8 @@ export default class TsserverService implements IServiceProvider {
     this.selector = this.descriptions.reduce((arr, c) => {
       return arr.concat(c.modeIds)
     }, [])
+    this.clientHost = new TypeScriptServiceClientHost(this.descriptions)
+    this.disposables.push(this.clientHost)
   }
 
   public get config(): WorkspaceConfiguration {
@@ -42,8 +44,6 @@ export default class TsserverService implements IServiceProvider {
   }
 
   public start(): Promise<void> {
-    this.clientHost = new TypeScriptServiceClientHost(this.descriptions)
-    this.disposables.push(this.clientHost)
     Object.defineProperty(this, 'state', {
       get: () => {
         return this.clientHost.serviceClient.state
