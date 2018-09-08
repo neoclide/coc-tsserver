@@ -12,10 +12,21 @@
     "build": "tsc -p tsconfig.json",
     "prepare": "yarn clean && yarn build"
   },
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:jsx-tags",
+    "onCommand:typescript.reloadProjects",
+    "onCommand:javascript.reloadProjects",
+    "onCommand:javascript.goToProjectConfig",
+    "onCommand:typescript.goToProjectConfig",
+    "onCommand:typescript.openTsServerLog",
+    "onCommand:tsserver.watchBuild",
+    "onLanguage:jsonc"
+  ],
   "contributes": {
-    "activationEvents": [
-      "*"
-    ],
     "commands": [
       {
         "title": "Reload current project",
@@ -31,21 +42,6 @@
         "title": "Open project config file.",
         "category": "TSServer",
         "command": "tsserver.goToProjectConfig"
-      },
-      {
-        "title": "Restart tsserver.",
-        "category": "TSServer",
-        "command": "tsserver.restart"
-      },
-      {
-        "title": "Format current buffer.",
-        "category": "TSServer",
-        "command": "tsserver.format"
-      },
-      {
-        "title": "Orgnize imports of current buffer.",
-        "category": "TSServer",
-        "command": "tsserver.organizeImports"
       },
       {
         "title": "Run `tsc --watch` for current project in terminal buffer.",
