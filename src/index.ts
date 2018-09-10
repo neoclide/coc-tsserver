@@ -1,8 +1,6 @@
-import { commands, ExtensionContext, languages, services, ServiceStat, TextDocumentWillSaveEvent, workspace } from 'coc.nvim'
-import { TextEdit } from 'vscode-languageserver-types'
+import { commands, ExtensionContext, services, workspace } from 'coc.nvim'
 import TsserverService from './server'
 import { Command, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
-import { languageIds } from './server/utils/languageModeIds'
 
 export async function activate(context: ExtensionContext): Promise<void> {
   let { subscriptions } = context
@@ -13,21 +11,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
   subscriptions.push(
     (services as any).regist(service)
   )
-
-  function onWillSave(event: TextDocumentWillSaveEvent): void {
-    if (service.state != ServiceStat.Running) return
-    let config = service.config
-    let formatOnSave = config.get<boolean>('formatOnSave')
-    if (!formatOnSave) return
-    let { languageId } = event.document
-    if (languageIds.indexOf(languageId) == -1) return
-    let willSaveWaitUntil = async (): Promise<TextEdit[]> => {
-      let options = await workspace.getFormatOptions(event.document.uri)
-      let textEdits = await languages.provideDocumentFormattingEdits(event.document, options)
-      return textEdits
-    }
-    event.waitUntil(willSaveWaitUntil())
-  }
 
   function registCommand(cmd: Command): void {
     let { id, execute } = cmd
@@ -47,8 +30,4 @@ export async function activate(context: ExtensionContext): Promise<void> {
       })
     }
   }))
-
-  subscriptions.push(
-    workspace.onWillSaveUntil(onWillSave, null, 'tsserver')
-  )
 }
