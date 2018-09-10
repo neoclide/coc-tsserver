@@ -1,6 +1,6 @@
 {
   "name": "coc-tsserver",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "tsserver extension for coc",
   "main": "lib/index.js",
   "publisher": "chemzqm",
