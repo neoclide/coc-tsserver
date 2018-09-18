@@ -15,7 +15,10 @@
   "activationEvents": [
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
+    "onLanguage:javascript.jsx",
     "onLanguage:typescript",
+    "onLanguage:typescript.tsx",
+    "onLanguage:typescript.jsx",
     "onLanguage:typescriptreact",
     "onLanguage:jsx-tags",
     "onCommand:typescript.reloadProjects",
