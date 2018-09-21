@@ -26,8 +26,7 @@
     "onCommand:javascript.goToProjectConfig",
     "onCommand:typescript.goToProjectConfig",
     "onCommand:typescript.openTsServerLog",
-    "onCommand:tsserver.watchBuild",
-    "onLanguage:jsonc"
+    "onCommand:tsserver.watchBuild"
   ],
   "contributes": {
     "commands": [

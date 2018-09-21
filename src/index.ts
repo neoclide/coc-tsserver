@@ -12,6 +12,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
     (services as any).regist(service)
   )
 
+  if (!service.clientHost) {
+    await service.start()
+  }
+
   function registCommand(cmd: Command): void {
     let { id, execute } = cmd
     subscriptions.push(commands.registerCommand(id as string, execute, cmd))
