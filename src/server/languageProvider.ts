@@ -205,7 +205,7 @@ export default class LanguageProvider {
       languages.registerDocumentRangeFormatProvider(languageIds, formatProvider)
     )
     this.disposables.push(
-      languages.registerOnTypeFormattingEditProvider(languageIds, formatProvider, [';', '}', '\n'])
+      languages.registerOnTypeFormattingEditProvider(languageIds, formatProvider, [';', '}', '\n', '\033'])
     )
 
     // this.disposables.push(
