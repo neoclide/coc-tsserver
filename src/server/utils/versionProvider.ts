@@ -121,17 +121,15 @@ export class TypeScriptVersionProvider {
   }
 
   public get bundledVersion(): TypeScriptVersion | null {
-    let file = path.join(workspace.pluginRoot, 'node_modules/typescript/lib/tsserver.js')
-    if (!fs.existsSync(file)) return null
-    try {
-      const bundledVersion = new TypeScriptVersion(
-        path.dirname(file),
-        ''
-      )
-      return bundledVersion
-    } catch (e) {
-      // noop
+    const file = require.resolve('typescript')
+    if (!file || !fs.existsSync(file)) {
+      workspace.showMessage('Bundled typescript module not found', 'error')
+      return null
     }
-    return null
+    const bundledVersion = new TypeScriptVersion(
+      path.dirname(file),
+      ''
+    )
+    return bundledVersion
   }
 }
