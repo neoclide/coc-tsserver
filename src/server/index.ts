@@ -42,17 +42,18 @@ export default class TsserverService implements IServiceProvider {
   }
 
   public start(): Promise<void> {
+    this.state = ServiceStat.Starting
     this.clientHost = new TypeScriptServiceClientHost(this.descriptions)
     this.disposables.push(this.clientHost)
-    Object.defineProperty(this, 'state', {
-      get: () => {
-        return this.clientHost.serviceClient.state
-      }
-    })
     let client = this.clientHost.serviceClient
     return new Promise(resolve => {
       let started = false
       client.onTsServerStarted(() => {
+        Object.defineProperty(this, 'state', {
+          get: () => {
+            return this.clientHost.serviceClient.state
+          }
+        })
         this._onDidServiceReady.fire(void 0)
         this.ensureConfiguration() // tslint:disable-line
         if (!started) {
