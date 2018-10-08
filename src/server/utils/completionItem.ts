@@ -145,5 +145,5 @@ function convertKind(kind: string): CompletionItemKind {
     case PConst.Kind.directory:
       return CompletionItemKind.Folder
   }
-  return CompletionItemKind.Property
+  return CompletionItemKind.Variable
 }
