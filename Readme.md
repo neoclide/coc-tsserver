@@ -44,6 +44,9 @@ Almost same as VSCode.
 * Rename imports on file rename.
 * Search for workspace symbols.
 
+Tsserver module is resolved from local workspace, if not found, bundled tsserver
+module would be used.
+
 ## Configuration options
 
 * `tsserver.enable` set to `false` to disable tsserver language server.

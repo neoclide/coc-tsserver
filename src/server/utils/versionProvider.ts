@@ -92,13 +92,6 @@ export class TypeScriptVersionProvider {
     // tsdk from configuration
     let { globalTsdk } = this.configuration
     if (globalTsdk) return new TypeScriptVersion(globalTsdk)
-    // resolve global module
-    let modulePath = await workspace.resolveModule('typescript', 'tsserver')
-    if (modulePath) {
-      let p = path.join(modulePath, 'lib')
-      return new TypeScriptVersion(p)
-    }
-    // use bundled
     return this.bundledVersion
   }
 
