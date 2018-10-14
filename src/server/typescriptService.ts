@@ -9,6 +9,20 @@ import API from './utils/api'
 import { TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
 
+export class CancelledResponse {
+  public readonly type: 'cancelled' = 'cancelled'
+
+  constructor(
+    public readonly reason: string
+  ) { }
+}
+
+export class NoContentResponse {
+  public readonly type: 'noContent' = 'noContent'
+}
+
+export type ServerResponse<T extends Proto.Response> = T | CancelledResponse | NoContentResponse
+
 export interface TypeScriptServerPlugin {
   readonly path: string
   readonly name: string

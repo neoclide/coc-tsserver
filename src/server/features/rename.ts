@@ -2,14 +2,42 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Position, TextDocument, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import { RenameProvider } from 'coc.nvim/lib/provider'
+import path from 'path'
+import { CancellationToken, Position, Range, TextDocument, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
-import { ITypeScriptServiceClient } from '../typescriptService'
+import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
+import API from '../utils/api'
 import * as typeConverters from '../utils/typeConverters'
+import Uri from 'vscode-uri'
 
 export default class TypeScriptRenameProvider implements RenameProvider {
   public constructor(private readonly client: ITypeScriptServiceClient) { }
+
+  public async prepareRename(
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken
+  ): Promise<Range | null> {
+    const response = await this.execRename(document, position, token)
+    if (!response || response.type !== 'response' || !response.body) {
+      return null
+    }
+
+    const renameInfo = response.body.info
+    if (!renameInfo.canRename) {
+      return Promise.reject(new Error('Invalid location for rename.'))
+    }
+
+    if (this.client.apiVersion.gte(API.v310)) {
+      const triggerSpan = (renameInfo as any).triggerSpan
+      if (triggerSpan) {
+        const range = typeConverters.Range.fromTextSpan(triggerSpan)
+        return range
+      }
+    }
+    return null
+  }
 
   public async provideRenameEdits(
     document: TextDocument,
@@ -17,10 +45,36 @@ export default class TypeScriptRenameProvider implements RenameProvider {
     newName: string,
     token: CancellationToken
   ): Promise<WorkspaceEdit | null> {
-    const file = this.client.toPath(document.uri)
-    if (!file) {
+    const response = await this.execRename(document, position, token)
+    if (!response || response.type !== 'response' || !response.body) {
       return null
     }
+
+    const renameInfo = response.body.info
+    if (!renameInfo.canRename) {
+      return Promise.reject(new Error('Invalid location for rename.'))
+    }
+
+    if (this.client.apiVersion.gte(API.v310)) {
+      if ((renameInfo as any).fileToRename) {
+        const edits = await this.renameFile((renameInfo as any).fileToRename, newName, token)
+        if (edits) {
+          return edits
+        } else {
+          return Promise.reject(new Error('An error occurred while renaming file'))
+        }
+      }
+    }
+    return this.toWorkspaceEdit(response.body.locs, newName)
+  }
+
+  public async execRename(
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken
+  ): Promise<ServerResponse<Proto.RenameResponse> | undefined> {
+    const file = this.client.toPath(document.uri)
+    if (!file) return undefined
 
     const args: Proto.RenameRequestArgs = {
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),
@@ -28,24 +82,7 @@ export default class TypeScriptRenameProvider implements RenameProvider {
       findInComments: false
     }
 
-    try {
-      const response = await this.client.execute('rename', args, token)
-      if (!response.body) {
-        return null
-      }
-
-      const renameInfo = response.body.info
-      if (!renameInfo.canRename) {
-        return Promise.reject<WorkspaceEdit>(
-          renameInfo.localizedErrorMessage
-        )
-      }
-
-      return this.toWorkspaceEdit(response.body.locs, newName)
-    } catch {
-      // noop
-    }
-    return null
+    return this.client.execute('rename', args, token)
   }
 
   private toWorkspaceEdit(
@@ -67,4 +104,43 @@ export default class TypeScriptRenameProvider implements RenameProvider {
     }
     return { changes }
   }
+
+  private async renameFile(
+    fileToRename: string,
+    newName: string,
+    token: CancellationToken,
+  ): Promise<WorkspaceEdit | undefined> {
+    // Make sure we preserve file exension if none provided
+    if (!path.extname(newName)) {
+      newName += path.extname(fileToRename)
+    }
+
+    const dirname = path.dirname(fileToRename)
+    const newFilePath = path.join(dirname, newName)
+
+    const args: Proto.GetEditsForFileRenameRequestArgs & { file: string } = {
+      file: fileToRename,
+      oldFilePath: fileToRename,
+      newFilePath
+    }
+    const response = await this.client.execute('getEditsForFileRename', args, token)
+    if (response.type !== 'response' || !response.body) {
+      return undefined
+    }
+
+    const edits = typeConverters.WorkspaceEdit.fromFileCodeEdits(this.client, response.body)
+
+    edits.documentChanges = edits.documentChanges || []
+    edits.documentChanges.push({
+      kind: 'rename',
+      oldUri: Uri.file(fileToRename).toString(),
+      newUri: Uri.file(newFilePath).toString(),
+      options: {
+        overwrite: false,
+        ignoreIfExists: true
+      }
+    })
+    return edits
+  }
+
 }
