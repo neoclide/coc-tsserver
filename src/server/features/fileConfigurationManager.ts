@@ -30,11 +30,13 @@ interface FileConfiguration {
   preferences: Proto.UserPreferences
 }
 
-export interface CompletionOptions {
+export interface SuggestOptions {
+  readonly enabled: boolean
+  readonly names: boolean
+  readonly paths: boolean
   readonly commaAfterImport: boolean
-  readonly useCodeSnippetsOnMethodSuggest: boolean
-  readonly nameSuggestions: boolean
-  readonly autoImportSuggestions: boolean
+  readonly completeFunctionCalls: boolean
+  readonly autoImports: boolean
 }
 
 export default class FileConfigurationManager {
@@ -120,14 +122,16 @@ export default class FileConfigurationManager {
     }
   }
 
-  public getCompleteOptions(languageId: string): CompletionOptions {
+  public getCompleteOptions(languageId: string): SuggestOptions {
     const lang = this.isTypeScriptDocument(languageId) ? 'typescript' : 'javascript'
-    const config = workspace.getConfiguration(`${lang}.preferences.completion`)
+    const config = workspace.getConfiguration(`${lang}.suggest`)
     return {
-      useCodeSnippetsOnMethodSuggest: config.get<boolean>('useCodeSnippetsOnMethodSuggest', true),
+      enabled: config.get<boolean>('enabled', true),
+      names: config.get<boolean>('names', true),
+      paths: config.get<boolean>('paths', true),
       commaAfterImport: config.get<boolean>('commaAfterImport', true),
-      nameSuggestions: config.get<boolean>('nameSuggestions', true),
-      autoImportSuggestions: config.get<boolean>('autoImportSuggestions', true)
+      completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
+      autoImports: config.get<boolean>('autoImports', true)
     }
   }
 
@@ -135,23 +139,20 @@ export default class FileConfigurationManager {
     if (!this.client.apiVersion.gte(API.v290)) {
       return {}
     }
-    const config = workspace.getConfiguration(`${language}.preferences`)
+    const config = workspace.getConfiguration(`${language}`)
     return {
+      disableSuggestions: !config.get<boolean>('suggest.enabled', true),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
-      disableSuggestions: !config.get<boolean>('suggestionActions.enabled', true),
-      quotePreference: getQuoteType(config),
-      includeCompletionsForModuleExports: config.get<boolean>('completion.moduleExports', true),
-      includeCompletionsWithInsertText: true,
-      allowTextChangesInNewFiles: false,
+      quotePreference: config.get<'single' | 'double'>('preferences.quoteStyle', 'single'),
+      allowTextChangesInNewFiles: true,
     }
   }
 }
 
 type ModuleImportType = 'relative' | 'non-relative' | 'auto'
-type QuoteType = 'single' | 'double'
 
 function getImportModuleSpecifier(config): ModuleImportType {
-  let val = config.get('importModuleSpecifier')
+  let val = config.get('preferences.importModuleSpecifier')
   switch (val) {
     case 'relative':
       return 'relative'
@@ -159,17 +160,5 @@ function getImportModuleSpecifier(config): ModuleImportType {
       return 'non-relative'
     default:
       return 'auto'
-  }
-}
-
-function getQuoteType(config): QuoteType {
-  let val = config.get('quoteStyle')
-  switch (val) {
-    case 'single':
-      return 'single'
-    case 'double':
-      return 'double'
-    default:
-      return 'single'
   }
 }

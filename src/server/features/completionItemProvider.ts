@@ -14,7 +14,7 @@ import { convertCompletionEntry, resolveItem } from '../utils/completionItem'
 import * as Previewer from '../utils/previewer'
 import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
-import FileConfigurationManager, { CompletionOptions } from './fileConfigurationManager'
+import FileConfigurationManager, { SuggestOptions } from './fileConfigurationManager'
 
 // command center
 export interface CommandItem {
@@ -50,7 +50,7 @@ class ApplyCompletionCodeActionCommand implements CommandItem {
 export default class TypeScriptCompletionItemProvider implements CompletionItemProvider {
 
   public static readonly triggerCharacters = ['.', '@', '<']
-  private completeOption: CompletionOptions
+  private completeOption: SuggestOptions
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
@@ -104,9 +104,9 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     const args: Proto.CompletionsRequestArgs = {
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),
-      includeExternalModuleExports: completeOption.autoImportSuggestions,
+      includeExternalModuleExports: completeOption.autoImports,
       includeInsertTextCompletions: true,
-      triggerCharacter: triggerCharacter && triggerCharacter === '.' ? triggerCharacter : undefined
+      triggerCharacter: this.getTsTriggerCharacter(context)
     }
 
     let msg: Proto.CompletionEntry[] | undefined
@@ -122,26 +122,30 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     const completionItems: CompletionItem[] = []
     for (const element of msg) {
-      let { kind } = element
-      if (kind === PConst.Kind.warning
-        || kind === PConst.Kind.script) {
-        if (!completeOption.nameSuggestions || triggerCharacter == '.') {
-          continue
-        }
-      }
-      if (!completeOption.autoImportSuggestions && element.hasAction) {
+      if (!shouldExcludeCompletionEntry(element, completeOption)) {
         continue
       }
       const item = convertCompletionEntry(
         element,
         uri,
         position,
-        completeOption.useCodeSnippetsOnMethodSuggest,
+        completeOption.completeFunctionCalls,
       )
       completionItems.push(item)
     }
 
     return completionItems
+  }
+
+  private getTsTriggerCharacter(context: CompletionContext): Proto.CompletionsTriggerCharacter | undefined {
+    // Workaround for https://github.com/Microsoft/TypeScript/issues/27321
+    if (context.triggerCharacter === '@'
+      && this.client.apiVersion.gte(API.v310) && this.client.apiVersion.lt(API.v320)
+    ) {
+      return undefined
+    }
+
+    return context.triggerCharacter as Proto.CompletionsTriggerCharacter
   }
 
   /**
@@ -347,6 +351,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         if (!nameIsFollowedByOptionalIndicator) {
           if (hasAddedParameters) snippet += ', '
           hasAddedParameters = true
+          // tslint:disable-next-line:no-invalid-template-strings
           snippet += '${' + holderIndex + ':' + part.text + '}'
           holderIndex = holderIndex + 1
         }
@@ -365,6 +370,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       }
     }
     if (hasOptionalParameters) {
+      // tslint:disable-next-line:no-invalid-template-strings
       snippet += '${' + holderIndex + '}'
     }
     snippet += ')'
@@ -372,4 +378,16 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     textEdit.newText = snippet
     item.textEdit = textEdit
   }
+}
+
+function shouldExcludeCompletionEntry(
+  element: Proto.CompletionEntry,
+  completionConfiguration: SuggestOptions
+): boolean {
+  return (
+    (!completionConfiguration.names && element.kind === PConst.Kind.warning)
+    || (!completionConfiguration.paths &&
+      (element.kind === PConst.Kind.directory || element.kind === PConst.Kind.script || element.kind === PConst.Kind.externalModuleName))
+    || (!completionConfiguration.autoImports && element.hasAction)
+  )
 }

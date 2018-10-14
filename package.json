@@ -1,11 +1,11 @@
 {
   "name": "coc-tsserver",
-  "version": "1.0.11",
+  "version": "1.1.0",
   "description": "tsserver extension for coc",
   "main": "lib/index.js",
   "publisher": "chemzqm",
   "engines": {
-    "coc": "^0.0.15"
+    "coc": "^0.0.24"
   },
   "scripts": {
     "clean": "rimraf lib",
@@ -167,31 +167,6 @@
           "default": true,
           "description": "Enable codeLens for references"
         },
-        "typescript.preferences.completion.useCodeSnippetsOnMethodSuggest": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable snippet for method suggestion"
-        },
-        "typescript.preferences.completion.nameSuggestions": {
-          "type": "boolean",
-          "default": true,
-          "description": "Complete for warning type of tsserver"
-        },
-        "typescript.preferences.completion.autoImportSuggestions": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable auto import suggestions for completion"
-        },
-        "typescript.preferences.completion.commaAfterImport": {
-          "type": "boolean",
-          "default": true,
-          "description": "Add comma after import"
-        },
-        "typescript.preferences.completion.moduleExports": {
-          "type": "boolean",
-          "default": true,
-          "description": "Include completion for module.exports"
-        },
         "typescript.preferences.importModuleSpecifier": {
           "type": "string",
           "default": "non-relative",
@@ -211,6 +186,30 @@
             "single",
             "double"
           ]
+        },
+        "typescript.suggest.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "typescript.suggest.paths": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable suggest paths in import statement and require calls"
+        },
+        "typescript.suggest.commaAfterImport": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add comma after import statement."
+        },
+        "typescript.suggest.autoImports": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable auto import suggests."
+        },
+        "typescript.suggest.completeFunctionCalls": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable snippet for method suggestion"
         },
         "typescript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
@@ -276,27 +275,6 @@
           "type": "boolean",
           "default": true
         },
-        "javascript.preferences.completion.useCodeSnippetsOnMethodSuggest": {
-          "type": "boolean",
-          "default": true
-        },
-        "javascript.preferences.completion.nameSuggestions": {
-          "type": "boolean",
-          "default": true
-        },
-        "javascript.preferences.completion.autoImportSuggestions": {
-          "type": "boolean",
-          "default": true
-        },
-        "javascript.preferences.completion.commaAfterImport": {
-          "type": "boolean",
-          "default": true
-        },
-        "javascript.preferences.completion.moduleExports": {
-          "type": "boolean",
-          "default": true,
-          "description": "Include completion for module.exports"
-        },
         "javascript.preferences.importModuleSpecifier": {
           "type": "string",
           "default": "non-relative",
@@ -316,6 +294,34 @@
             "single",
             "double"
           ]
+        },
+        "javascript.suggest.names": {
+          "type": "boolean",
+          "default": true
+        },
+        "javascript.suggest.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "javascript.suggest.paths": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable suggest paths in import statement and require calls"
+        },
+        "javascript.suggest.commaAfterImport": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add comma after import statement."
+        },
+        "javascript.suggest.autoImports": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable auto import suggests."
+        },
+        "javascript.suggest.completeFunctionCalls": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable snippet for method suggestion"
         },
         "javascript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
