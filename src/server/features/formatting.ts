@@ -2,12 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, FormattingOptions, Position, Range, TextDocument, TextEdit } from 'vscode-languageserver-protocol'
 import { commands, workspace } from 'coc.nvim'
 import { DocumentFormattingEditProvider, DocumentRangeFormattingEditProvider } from 'coc.nvim/lib/provider'
+import { CancellationToken, FormattingOptions, Position, Range, TextDocument, TextEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { languageIds } from '../utils/languageModeIds'
+import { removeSemicolon } from '../utils/semicolon'
 import * as typeConverters from '../utils/typeConverters'
 import FileConfigurationManager from './fileConfigurationManager'
 
@@ -52,7 +53,11 @@ export default class TypeScriptFormattingProvider
     try {
       const response = await this.client.execute('format', args, token)
       if (response.body) {
-        return response.body.map(typeConverters.TextEdit.fromCodeEdit)
+        let edits = response.body.map(typeConverters.TextEdit.fromCodeEdit)
+        if (this.formattingOptionsManager.removeSemicolons(document.languageId)) {
+          return removeSemicolon(document, edits)
+        }
+        return edits
       }
     } catch {
       // noop

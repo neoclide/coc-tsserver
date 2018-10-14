@@ -135,6 +135,12 @@ export default class FileConfigurationManager {
     }
   }
 
+  public removeSemicolons(languageId: string): boolean {
+    const lang = this.isTypeScriptDocument(languageId) ? 'typescript' : 'javascript'
+    const config = workspace.getConfiguration(`${lang}.preferences`)
+    return config.get<boolean>('noSemicolons', false)
+  }
+
   public getPreferences(language: string): Proto.UserPreferences {
     if (!this.client.apiVersion.gte(API.v290)) {
       return {}

@@ -122,7 +122,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     const completionItems: CompletionItem[] = []
     for (const element of msg) {
-      if (!shouldExcludeCompletionEntry(element, completeOption)) {
+      if (shouldExcludeCompletionEntry(element, completeOption)) {
         continue
       }
       const item = convertCompletionEntry(
