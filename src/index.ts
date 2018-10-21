@@ -4,7 +4,7 @@ import { Command, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToP
 
 export async function activate(context: ExtensionContext): Promise<void> {
   let { subscriptions } = context
-  const config = workspace.getConfiguration().get('tsserver', {}) as any
+  const config = workspace.getConfiguration().get<any>('tsserver', {})
   if (!config.enable) return
   const service = new TsserverService()
 
@@ -27,6 +27,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   registCommand(commands.register({
     id: 'tsserver.restart',
     execute: (): void => {
+      // tslint:disable-next-line:no-floating-promises
       service.stop().then(() => {
         setTimeout(() => {
           service.restart()
