@@ -175,18 +175,6 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.versionProvider = new TypeScriptVersionProvider(this._configuration)
     this._apiVersion = API.defaultVersion
     this.tracer = new Tracer(this.logger)
-    const onInstalled = name => {
-      if (name == 'typescript') {
-        this.restartTsServer().catch(e => {
-          this.logger.error(e.stack)
-        })
-        workspace.terminal.removeListener('installed', onInstalled)
-      }
-    }
-    workspace.terminal.on('installed', onInstalled)
-    this.disposables.push(Disposable.create(() => {
-      workspace.terminal.removeListener('installed', onInstalled)
-    }))
   }
 
   private _onDiagnosticsReceived = new Emitter<TsDiagnostics>()
@@ -322,8 +310,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       currentVersion = await this.versionProvider.getDefaultVersion()
     }
     if (!currentVersion || !currentVersion.isValid) {
-      workspace.showMessage('Can not find tsserver, try installing...', 'error')
-      await workspace.terminal.installModule('typescript', 'tsserver')
+      workspace.showMessage(`Can not find tsserver, run ':CocInstall coc-tsserver' to fix it!`, 'error')
       return
     }
     workspace.showMessage(`Using tsserver from: ${currentVersion.path}`) // tslint:disable-line
