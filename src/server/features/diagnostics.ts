@@ -110,6 +110,13 @@ export class DiagnosticsManager {
     this.scheduleDiagnosticsUpdate(uri)
   }
 
+  public configFileDiagnosticsReceived(
+    uri: string,
+    diagnostics: Diagnostic[]
+  ): void {
+    this._currentDiagnostics.set(uri, diagnostics)
+  }
+
   public delete(uri: string): void {
     this._currentDiagnostics.delete(uri)
   }

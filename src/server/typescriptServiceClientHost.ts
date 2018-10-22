@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { DiagnosticKind, disposeAll, workspace } from 'coc.nvim'
-import { Diagnostic, DiagnosticSeverity, Disposable } from 'vscode-languageserver-protocol'
+import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position } from 'vscode-languageserver-protocol'
 import Uri from 'vscode-uri'
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
@@ -63,8 +63,17 @@ export default class TypeScriptServiceClientHost implements Disposable {
       let { body } = diag
       if (body) {
         let { configFile, diagnostics } = body
-        if (diagnostics.length) {
-          workspace.showMessage(`Invalid config file: ${configFile}`, 'error')
+        let uri = Uri.file(configFile)
+        let language = this.findLanguage(uri)
+        if (!language) return
+        if (diagnostics.length == 0) {
+          language.configFileDiagnosticsReceived(uri, [])
+        } else {
+          let range = Range.create(Position.create(0, 0), Position.create(0, 1))
+          let { text, code, category } = diagnostics[0]
+          let severity = category == 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
+          let diagnostic = Diagnostic.create(range, text, severity, code)
+          language.configFileDiagnosticsReceived(uri, [diagnostic])
         }
       }
     }, null, this.disposables)

@@ -280,8 +280,11 @@ export default class LanguageProvider {
   }
 
   public handles(resource: Uri): boolean {
+    let { modeIds, configFile } = this.description
+    if (resource.toString().endsWith(configFile)) {
+      return true
+    }
     let doc = workspace.getDocument(resource.toString())
-    let { modeIds } = this.description
     if (doc && modeIds.indexOf(doc.filetype) !== -1) {
       return true
     }
@@ -345,5 +348,9 @@ export default class LanguageProvider {
       file.toString(),
       diagnostics
     )
+  }
+
+  public configFileDiagnosticsReceived(uri: Uri, diagnostics: Diagnostic[]): void {
+    this.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), diagnostics)
   }
 }
