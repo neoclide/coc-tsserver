@@ -34,7 +34,6 @@ export interface SuggestOptions {
   readonly enabled: boolean
   readonly names: boolean
   readonly paths: boolean
-  readonly commaAfterImport: boolean
   readonly completeFunctionCalls: boolean
   readonly autoImports: boolean
 }
@@ -129,7 +128,6 @@ export default class FileConfigurationManager {
       enabled: config.get<boolean>('enabled', true),
       names: config.get<boolean>('names', true),
       paths: config.get<boolean>('paths', true),
-      commaAfterImport: config.get<boolean>('commaAfterImport', true),
       completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
       autoImports: config.get<boolean>('autoImports', true)
     }

@@ -16,7 +16,7 @@ class OrganizeImportsCommand implements Command {
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
-    private commaAfterImport: boolean,
+    private noSemicolons: boolean,
     private modeIds: string[]
   ) {
     workspace.onWillSaveUntil(this.onWillSaveUntil, this, 'tsserver-organizeImports')
@@ -55,7 +55,7 @@ class OrganizeImportsCommand implements Command {
       this.client,
       response.body
     )
-    if (!this.commaAfterImport) {
+    if (this.noSemicolons) {
       let { changes } = edit
       if (changes) {
         for (let c of Object.keys(changes)) {
@@ -87,8 +87,8 @@ export default class OrganizeImports {
   ) {
     let description = standardLanguageDescriptions.find(o => o.id == languageId)
     let modeIds = description ? description.modeIds : []
-    let option = fileConfigurationManager.getCompleteOptions(languageId)
-    let cmd = new OrganizeImportsCommand(client, option.commaAfterImport, modeIds)
+    let noSemicolons = fileConfigurationManager.removeSemicolons(languageId)
+    let cmd = new OrganizeImportsCommand(client, noSemicolons, modeIds)
     commandManager.register(cmd)
     this.disposables.push(Disposable.create(() => {
       commandManager.unregister(cmd.id)

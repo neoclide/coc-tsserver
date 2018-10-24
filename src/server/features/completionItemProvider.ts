@@ -51,6 +51,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
   public static readonly triggerCharacters = ['.', '@', '<']
   private completeOption: SuggestOptions
+  private noSemicolons = false
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
@@ -61,10 +62,14 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     this.setCompleteOption(languageId)
     commands.register(new ApplyCompletionCodeActionCommand(this.client))
+    workspace.onDidChangeConfiguration(_e => {
+      this.setCompleteOption(languageId)
+    })
   }
 
   private setCompleteOption(languageId: string): void {
     this.completeOption = this.fileConfigurationManager.getCompleteOptions(languageId)
+    this.noSemicolons = this.fileConfigurationManager.removeSemicolons(languageId)
   }
 
   /**
@@ -218,7 +223,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     if (!detail.codeActions || !detail.codeActions.length) {
       return {}
     }
-    let { commaAfterImport } = this.completeOption
     // Try to extract out the additionalTextEdits for the current file.
     // Also check if we still have to apply other workspace edits
     const additionalTextEdits: TextEdit[] = []
@@ -257,10 +261,10 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         ]
       }
     }
-    if (additionalTextEdits.length && !commaAfterImport) {
+    if (additionalTextEdits.length && this.noSemicolons) {
       // remove comma
       additionalTextEdits.forEach(o => {
-        o.newText = o.newText.replace(/;/, '')
+        o.newText = o.newText.replace(/;/g, '')
       })
     }
     return {
