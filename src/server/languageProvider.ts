@@ -18,7 +18,6 @@ import Folding from './features/folding'
 import FormattingProvider from './features/formatting'
 import HoverProvider from './features/hover'
 import ImplementationsCodeLensProvider from './features/implementationsCodeLens'
-import OrganizeImportsProvider from './features/organizeImports'
 // import TagCompletionProvider from './features/tagCompletion'
 import QuickfixProvider from './features/quickfix'
 import RefactorProvider from './features/refactor'
@@ -213,10 +212,6 @@ export default class LanguageProvider {
     // )
 
     if (this.client.apiVersion.gte(API.v280)) {
-      this.disposables.push(
-        new OrganizeImportsProvider(client, commands, this.fileConfigurationManager, this.description.id)
-      )
-
       this.disposables.push(
         languages.registerFoldingRangeProvider(languageIds, new Folding(this.client))
       )
