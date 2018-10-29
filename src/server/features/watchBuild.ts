@@ -1,15 +1,21 @@
-import { DiagnosticCollection, disposeAll, Document, languages, workspace } from 'coc.nvim'
+import { disposeAll, Document, QuickfixItem, workspace } from 'coc.nvim'
 import { Command, CommandManager } from 'coc.nvim/lib/commands'
-import { resolveRoot } from '../utils/fs'
 import fs from 'fs'
 import path from 'path'
-import { Diagnostic, DiagnosticSeverity, Disposable, Range } from 'vscode-languageserver-protocol'
+import { Disposable, Location, Range } from 'vscode-languageserver-protocol'
 import Uri from 'vscode-uri'
+import { resolveRoot } from '../utils/fs'
 
 const TSC = './node_modules/.bin/tsc'
 const countRegex = /Found\s(\d+)\serror/
 const startRegex = /File\s+change\s+detected/
 const errorRegex = /^(.+):(\d+):(\d+)\s-\s(\w+)\s+[A-Za-z]+(\d+):\s+(.*)$/
+
+interface ErrorItem {
+  location: Location
+  text: string
+  type: string
+}
 
 enum TscStatus {
   INIT,
@@ -20,11 +26,6 @@ enum TscStatus {
 
 class WatchCommand implements Command {
   public readonly id: string = 'tsserver.watchBuild'
-
-  constructor(
-    private collection: DiagnosticCollection
-  ) {
-  }
 
   private setStatus(state: TscStatus): void {
     let s = 'init'
@@ -39,7 +40,9 @@ class WatchCommand implements Command {
         s = 'error'
         break
     }
-    workspace.nvim.setVar('tsc_status', s, true)
+    let { nvim } = workspace
+    nvim.setVar('tsc_status', s, true)
+    nvim.command('redraws')
   }
 
   public async execute(): Promise<void> {
@@ -73,54 +76,47 @@ class WatchCommand implements Command {
   }
 
   public async onTerminalCreated(doc: Document): Promise<void> {
-    let entries: Map<string, Diagnostic[]> = new Map()
+    let items: ErrorItem[] = []
     let cwd = await doc.getcwd()
     if (!cwd) return
-    let uris = new Set()
     this.setStatus(TscStatus.RUNNING)
-    let parseLine = (line: string): void => {
+    let parseLine = async (line: string): Promise<void> => {
       if (startRegex.test(line)) {
         this.setStatus(TscStatus.COMPILING)
-        entries = new Map()
       } else if (errorRegex.test(line)) {
         let ms = line.match(errorRegex)
-        let severity = /error/.test(ms[4]) ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
         let lnum = Number(ms[2]) - 1
         let character = Number(ms[3]) - 1
         let range = Range.create(lnum, character, lnum, character)
         let uri = Uri.file(path.join(cwd, ms[1])).toString()
-        let diagnostics = entries.get(uri) || []
-        diagnostics.push(Diagnostic.create(range, ms[6], severity, ms[5], 'tsc'))
-        entries.set(uri, diagnostics)
+        let location = Location.create(uri, range)
+        let item: ErrorItem = {
+          location,
+          text: `[tsc ${ms[5]}] ${ms[6]}`,
+          type: /error/.test(ms[4]) ? 'E' : 'W'
+        }
+        items.push(item)
       } else if (countRegex.test(line)) {
         let ms = line.match(countRegex)
-        if (ms[1] == '0') {
-          entries = new Map()
+        if (ms[1] == '0' || items.length == 0) {
           this.setStatus(TscStatus.RUNNING)
-          this.collection.clear()
-          uris = new Set()
           return
         }
         this.setStatus(TscStatus.ERROR)
-        for (let [key, value] of entries.entries()) {
-          this.collection.set(key, value)
+        let qfItems: QuickfixItem[] = []
+        for (let item of items) {
+          let o = await workspace.getQuickfixItem(item.location, item.text, item.type)
+          qfItems.push(o)
         }
-        for (let uri of uris) {
-          if (!entries.has(uri)) {
-            this.collection.set(uri, [])
-          }
-        }
-        uris = new Set(entries.keys())
+        items = []
+        let { nvim } = workspace
+        await nvim.call('setqflist', [[], ' ', { title: 'Results of tsc', items: qfItems }])
+        await nvim.command('doautocmd User CocQuickfixChange')
       }
     }
     for (let line of doc.content.split('\n')) {
       parseLine(line)
     }
-    doc.onDocumentDetach(() => {
-      entries = new Map()
-      this.setStatus(TscStatus.INIT)
-      this.collection.clear()
-    })
     doc.onDocumentChange(e => {
       let { contentChanges } = e
       for (let change of contentChanges) {
@@ -138,8 +134,7 @@ export default class WatchProject implements Disposable {
   public constructor(
     commandManager: CommandManager
   ) {
-    let collection = languages.createDiagnosticCollection('tsc')
-    let cmd = new WatchCommand(collection)
+    let cmd = new WatchCommand()
     commandManager.register(cmd)
     this.disposables.push(Disposable.create(() => {
       commandManager.unregister(cmd.id)
@@ -158,6 +153,13 @@ export default class WatchProject implements Disposable {
         cmd.onTerminalCreated(workspace.getDocument(uri)).catch(_e => {
           // noop
         })
+      }
+    }, this, this.disposables)
+    workspace.onDidCloseTextDocument(doc => {
+      let { uri } = doc
+      if (this.isTscBuffer(uri)) {
+        workspace.nvim.setVar('tsc_status', 'init', true)
+        workspace.nvim.command('redraws')
       }
     }, this, this.disposables)
   }

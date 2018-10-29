@@ -87,10 +87,10 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@chemzqm/neovim@4.3.24":
-  version "4.3.24"
-  resolved "https://registry.yarnpkg.com/@chemzqm/neovim/-/neovim-4.3.24.tgz#2c571b3dae6fcdfb81a648d9048db914a9d28f4b"
-  integrity sha512-10DesU4DjTZ/cwoBA8QyJfrn/6smyup5446xwLJBETTampM2JMtOvSKIubSjUbR9xiLyUbpV58COb9uv7PAtZQ==
+"@chemzqm/neovim@4.3.25":
+  version "4.3.25"
+  resolved "https://registry.yarnpkg.com/@chemzqm/neovim/-/neovim-4.3.25.tgz#0f9ba82cda143ea0c3af3900a1d400545db46365"
+  integrity sha512-ijR3pukX5SEU7pWlWYvHdA8aEke/HHHUlwfe5whNST9tIeVqCBxFU1Irl7kNHuSfKQNEjbWsh56rIyf5EeDzlg==
   dependencies:
     babel-eslint "^8.2.6"
     msgpack-lite "^0.1.26"
@@ -114,10 +114,10 @@
   resolved "https://registry.yarnpkg.com/@types/fast-diff/-/fast-diff-1.1.0.tgz#68c7f476025740b0b6756e51e38b1188dd528b0e"
   integrity sha512-doBwHnPAGdE54EiIFc0/v1qHlRVtNTaxgCZOS9SdSGPq91vx3kUKi5fmz/yivW/RAXEOUJYVXtVFQ6IPpqKRWg==
 
-"@types/node@^10.12.0":
-  version "10.12.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.0.tgz#ea6dcbddbc5b584c83f06c60e82736d8fbb0c235"
-  integrity sha512-3TUHC3jsBAB7qVRGxT6lWyYo2v96BMmD2PTcl47H25Lu7UXtFH/2qqmKiVrnel6Ne//0TFYf6uvNX+HW2FRkLQ==
+"@types/node@^10.12.1":
+  version "10.12.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.1.tgz#da61b64a2930a80fa708e57c45cd5441eb379d5b"
+  integrity sha512-i1sl+WCX2OCHeUi9oi7PiCNUtYFrpWhpcx878vpeq/tlZTKzcFdHePlyFHVbWqeuKN0SRPl/9ZFDSTsfv9h7VQ==
 
 ansi-regex@^2.0.0:
   version "2.1.1"
@@ -219,12 +219,12 @@ circular-json@^0.5.5:
   resolved "https://registry.yarnpkg.com/circular-json/-/circular-json-0.5.7.tgz#b8be478d72ea58c7eeda26bf1cf1fba43d188842"
   integrity sha512-/pXoV1JA847qRKPrHbBK6YIBGFF8GOP4wzSgUOA7q0ew0vAv0iJswP+2/nZQ9uzA3Azi7eTrg9L2yzXc/7ZMIA==
 
-coc.nvim@^0.0.28:
-  version "0.0.28"
-  resolved "https://registry.yarnpkg.com/coc.nvim/-/coc.nvim-0.0.28.tgz#5078d1269d8ab79ece6d7bb8aa4df041b71c1ba9"
-  integrity sha512-OmJEuiJL/Otpp8h6t/Ck5SxXL5LMIlDDZpLlqe2HC3QyK0e65BgJEBo0mwtoeTGPD5WGusn99yhQT0Fjv3bk5w==
+coc.nvim@0.0.29:
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/coc.nvim/-/coc.nvim-0.0.29.tgz#cb19f1885cceb4c238183f0f912266a66fa4c155"
+  integrity sha512-Chbqwrs2Geq+Q+PSswAv/BYxX+8/2BidZlgciKXVazCPToiHI0kVSQwEPpcbxLiCVCCwHLQ0LXBfy1rk+QCGZQ==
   dependencies:
-    "@chemzqm/neovim" "4.3.24"
+    "@chemzqm/neovim" "4.3.25"
     debounce "^1.2.0"
     fast-diff "^1.2.0"
     fb-watchman "^2.0.0"
@@ -238,7 +238,7 @@ coc.nvim@^0.0.28:
     mkdirp "^0.5.1"
     node-json-db "^0.9.1"
     node-serial "^0.1.1"
-    pify "^4.0.0"
+    pify "^4.0.1"
     semver "^5.6.0"
     tslib "^1.9.3"
     uuid "^3.3.2"
@@ -605,10 +605,10 @@ path-parse@^1.0.5:
   resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.6.tgz#d62dbb5679405d72c4737ec58600e9ddcf06d24c"
   integrity sha512-GSmOT2EbHrINBf9SR7CDELwlJ8AENk3Qn7OikK4nFYAu3Ote2+JYNVvkpAEQm3/TLNEJFD/xZJjzyxg3KBWOzw==
 
-pify@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/pify/-/pify-4.0.0.tgz#db04c982b632fd0df9090d14aaf1c8413cadb695"
-  integrity sha512-zrSP/KDf9DH3K3VePONoCstgPiYJy9z0SCatZuTpOc7YdnWIqwkWdXOuwlr4uDc7em8QZRsFWsT/685x5InjYg==
+pify@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/pify/-/pify-4.0.1.tgz#4b2cd25c50d598735c50292224fd8c6df41e3231"
+  integrity sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==
 
 process-nextick-args@~2.0.0:
   version "2.0.0"
