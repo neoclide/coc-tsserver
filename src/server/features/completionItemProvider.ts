@@ -114,15 +114,20 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       triggerCharacter: this.getTsTriggerCharacter(context)
     }
 
-    let msg: Proto.CompletionEntry[] | undefined
-    try {
+    let msg: ReadonlyArray<Proto.CompletionEntry> | undefined
+
+    let isNewIdentifierLocation = true
+    if (this.client.apiVersion.gte(API.v300)) {
+      const response = await this.client.execute('completionInfo', args, token)
+      if (response.type !== 'response' || !response.body) {
+        return null
+      }
+      isNewIdentifierLocation = response.body.isNewIdentifierLocation
+      msg = response.body.entries
+    } else {
       const response = await this.client.execute('completions', args, token)
       msg = response.body
-      if (!msg) {
-        return []
-      }
-    } catch {
-      return []
+      if (!msg) return []
     }
 
     const completionItems: CompletionItem[] = []
@@ -135,6 +140,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         uri,
         position,
         completeOption.completeFunctionCalls,
+        isNewIdentifierLocation
       )
       completionItems.push(item)
     }

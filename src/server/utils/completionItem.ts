@@ -7,6 +7,12 @@ import { Document, workspace } from 'coc.nvim'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 
+interface CommitCharactersSettings {
+  readonly isNewIdentifierLocation: boolean
+  readonly isInValidCommitCharacterContext: boolean
+  readonly useCodeSnippetsOnMethodSuggest: boolean
+}
+
 export function resolveItem(
   item: CompletionItem,
   document: Document,
@@ -56,7 +62,8 @@ export function convertCompletionEntry(
   tsEntry: Proto.CompletionEntry,
   uri: string,
   position: Position,
-  useCodeSnippetsOnMethodSuggest: boolean
+  useCodeSnippetsOnMethodSuggest: boolean,
+  isNewIdentifierLocation: boolean
 ): CompletionItem {
   let label = tsEntry.name
   let sortText = tsEntry.sortText
@@ -80,14 +87,18 @@ export function convertCompletionEntry(
 
   let textEdit: TextEdit = null
   let insertText = tsEntry.insertText
+  let document = workspace.getDocument(uri)
   if (insertText) {
-    let document = workspace.getDocument(uri)
     textEdit = {
       range: document.getWordRangeAtPosition(position),
       newText: insertText
     }
     insertText = null
   }
+  let preText = document.getline(position.line).slice(0, position.character)
+  const isInValidCommitCharacterContext = preText.match(/(^|[a-z_$\(\)\[\]\{\}]|[^.]\.)\s*$/ig) !== null
+
+  let commitCharacters = getCommitCharacters(tsEntry, { isNewIdentifierLocation, isInValidCommitCharacterContext, useCodeSnippetsOnMethodSuggest })
   let optional = tsEntry.kindModifiers && tsEntry.kindModifiers.match(/\boptional\b/)
   return {
     label,
@@ -96,6 +107,7 @@ export function convertCompletionEntry(
     textEdit,
     insertTextFormat,
     sortText,
+    commitCharacters,
     data: {
       uri,
       optional,
@@ -146,4 +158,39 @@ function convertKind(kind: string): CompletionItemKind {
       return CompletionItemKind.Folder
   }
   return CompletionItemKind.Variable
+}
+
+function getCommitCharacters(tsEntry: Proto.CompletionEntry, settings: CommitCharactersSettings): string[] | undefined {
+  if (settings.isNewIdentifierLocation || !settings.isInValidCommitCharacterContext) {
+    return undefined
+  }
+  const commitCharacters: string[] = []
+  switch (tsEntry.kind) {
+    case PConst.Kind.memberGetAccessor:
+    case PConst.Kind.memberSetAccessor:
+    case PConst.Kind.constructSignature:
+    case PConst.Kind.callSignature:
+    case PConst.Kind.indexSignature:
+    case PConst.Kind.enum:
+    case PConst.Kind.interface:
+      commitCharacters.push('.', ';')
+      break
+    case PConst.Kind.module:
+    case PConst.Kind.alias:
+    case PConst.Kind.const:
+    case PConst.Kind.let:
+    case PConst.Kind.variable:
+    case PConst.Kind.localVariable:
+    case PConst.Kind.memberVariable:
+    case PConst.Kind.class:
+    case PConst.Kind.function:
+    case PConst.Kind.memberFunction:
+    case PConst.Kind.keyword:
+      commitCharacters.push('.', ',', ';')
+      if (settings.useCodeSnippetsOnMethodSuggest) {
+        commitCharacters.push('(')
+      }
+      break
+  }
+  return commitCharacters.length === 0 ? undefined : commitCharacters
 }
