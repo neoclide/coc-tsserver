@@ -20,6 +20,7 @@ import { fork, getTempFile, IForkOptions, makeRandomHexString } from './utils/pr
 import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
 import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionProvider'
+import VersionStatus from './utils/versionStatus'
 import { ICallback, Reader } from './utils/wireProtocol'
 
 interface CallbackItem {
@@ -152,6 +153,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private cancellationPipeName: string | null = null
   private requestQueue: RequestQueue
   private callbacks: CallbackMap
+  private versionStatus: VersionStatus
   private readonly _onTsServerStarted = new Emitter<API>()
   private readonly _onProjectLanguageServiceStateChanged = new Emitter<Proto.ProjectLanguageServiceStateEventBody>()
   private readonly _onDidBeginInstallTypings = new Emitter<Proto.BeginInstallTypesEventBody>()
@@ -175,6 +177,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.versionProvider = new TypeScriptVersionProvider(this._configuration)
     this._apiVersion = API.defaultVersion
     this.tracer = new Tracer(this.logger)
+    this.versionStatus = new VersionStatus(this.normalizePath.bind(this))
   }
 
   private _onDiagnosticsReceived = new Emitter<TsDiagnostics>()
@@ -315,6 +318,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
     workspace.showMessage(`Using tsserver from: ${currentVersion.path}`) // tslint:disable-line
     this._apiVersion = currentVersion.version
+    this.versionStatus.onDidChangeTypeScriptVersion(currentVersion)
     this.requestQueue = new RequestQueue()
     this.callbacks = new CallbackMap()
     this.lastError = null

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Disposable } from 'vscode-languageserver-protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
-import { workspace } from 'coc.nvim'
+import { workspace, StatusBarItem } from 'coc.nvim'
 
 const typingsInstallTimeout = 30 * 1000
 
@@ -64,8 +64,10 @@ export class AtaProgressReporter {
   private _promises = new Map<number, Function>()
   private _disposable: Disposable
   private _invalid = false
+  private statusItem: StatusBarItem
 
   constructor(client: ITypeScriptServiceClient) {
+    this.statusItem = workspace.createStatusBarItem(10, { progress: true })
     const disposables: Disposable[] = []
     disposables.push(client.onDidBeginInstallTypings(e => this._onBegin(e.eventId)))
     disposables.push(client.onDidEndInstallTypings(e => this._onEndOrTimeout(e.eventId)))
@@ -95,10 +97,12 @@ export class AtaProgressReporter {
         resolve()
       })
     })
-    workspace.showMessage('Fetching data for better TypeScript IntelliSense')
+    this.statusItem.text = 'Fetching data for better TypeScript IntelliSense'
+    this.statusItem.show()
   }
 
   private _onEndOrTimeout(eventId: number): void {
+    this.statusItem.hide()
     const resolve = this._promises.get(eventId)
     if (resolve) {
       this._promises.delete(eventId)
@@ -107,6 +111,7 @@ export class AtaProgressReporter {
   }
 
   private onTypesInstallerInitializationFailed() { // tslint:disable-line
+    this.statusItem.hide()
     if (!this._invalid) {
       workspace.showMessage('Could not install typings files for JavaScript language features. Please ensure that NPM is installed', 'error')
     }
