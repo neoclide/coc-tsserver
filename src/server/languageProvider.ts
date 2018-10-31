@@ -73,6 +73,7 @@ export default class LanguageProvider {
       this.fileConfigurationManager.ensureConfigurationForDocument(doc.textDocument) // tslint:disable-line
     }, this, this.disposables)
 
+    this.configurationChanged()
     workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
 
     let initialized = false
