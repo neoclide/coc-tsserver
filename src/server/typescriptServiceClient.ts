@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import cp from 'child_process'
+import findUp from 'find-up'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -379,8 +380,8 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
               }
             )
             resolve(handle)
-            this._onTsServerStarted.fire(currentVersion.version)
             this.serviceStarted(resendModels)
+            this._onTsServerStarted.fire(currentVersion.version)
           }
         )
       } catch (e) {
@@ -809,6 +810,13 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
 
     return args
+  }
+
+  public getWorkspaceRootForResource(uri: string): string {
+    let u = Uri.parse(uri)
+    if (u.scheme != 'file') return workspace.root
+    let res = findUp.sync(['package.json', '.vim', '.git', '.hg'], { cwd: path.dirname(u.fsPath) })
+    return res ? path.dirname(res) : null
   }
 }
 
