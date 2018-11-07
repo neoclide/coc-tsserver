@@ -2,12 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { commands, workspace } from 'coc.nvim'
+import { workspace } from 'coc.nvim'
 import { DocumentFormattingEditProvider, DocumentRangeFormattingEditProvider } from 'coc.nvim/lib/provider'
 import { CancellationToken, FormattingOptions, Position, Range, TextDocument, TextEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
-import { languageIds } from '../utils/languageModeIds'
 import { removeSemicolon } from '../utils/semicolon'
 import * as typeConverters from '../utils/typeConverters'
 import FileConfigurationManager from './fileConfigurationManager'
@@ -20,23 +19,6 @@ export default class TypeScriptFormattingProvider
     private readonly client: ITypeScriptServiceClient,
     private readonly formattingOptionsManager: FileConfigurationManager
   ) {
-    commands.register({
-      id: 'tsserver.format',
-      execute: async (): Promise<void> => {
-        let document = await workspace.document
-        if (!document) return
-        if (languageIds.indexOf(document.filetype) == -1) {
-          return
-        }
-        let options = await workspace.getFormatOptions()
-        let edit = await this.provideDocumentFormattingEdits(
-          document.textDocument,
-          options
-        )
-        if (!edit) return
-        await document.applyEdits(workspace.nvim, edit)
-      }
-    })
   }
 
   private async doFormat(

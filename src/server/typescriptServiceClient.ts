@@ -18,6 +18,7 @@ import API from './utils/api'
 import { TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
 import { fork, getTempFile, IForkOptions, makeRandomHexString } from './utils/process'
+import { languageIds } from './utils/languageModeIds'
 import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
 import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionProvider'
@@ -422,7 +423,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   private serviceStarted(resendModels: boolean): void {
     let document = workspace.getDocument(workspace.bufnr)
-    if (document) {
+    if (document && languageIds.indexOf(document.filetype) !== -1) {
       this.fileConfigurationManager.ensureConfigurationForDocument(document.textDocument) // tslint:disable-line
     } else {
       const configureOptions: Proto.ConfigureRequestArguments = {

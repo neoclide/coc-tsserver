@@ -46,6 +46,11 @@
         "command": "tsserver.goToProjectConfig"
       },
       {
+        "title": "Restart tsserver",
+        "category": "TSServer",
+        "command": "tsserver.restart"
+      },
+      {
         "title": "Run `tsc --watch` for current project in terminal buffer.",
         "category": "TSServer",
         "command": "tsserver.watchBuild"
