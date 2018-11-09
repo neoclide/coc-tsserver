@@ -118,12 +118,19 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     let isNewIdentifierLocation = true
     if (this.client.apiVersion.gte(API.v300)) {
-      const response = await this.client.execute('completionInfo', args, token)
-      if (response.type !== 'response' || !response.body) {
-        return null
+      try {
+        const response = await this.client.execute('completionInfo', args, token)
+        if (response.type !== 'response' || !response.body) {
+          return null
+        }
+        isNewIdentifierLocation = response.body.isNewIdentifierLocation
+        msg = response.body.entries
+      } catch (e) {
+        if (e.message == 'No content available.') {
+          return null
+        }
+        throw e
       }
-      isNewIdentifierLocation = response.body.isNewIdentifierLocation
-      msg = response.body.entries
     } else {
       const response = await this.client.execute('completions', args, token)
       msg = response.body
