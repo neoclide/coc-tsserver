@@ -9,6 +9,7 @@ export const typescripttsx = 'typescript.tsx'
 export const typescriptjsx = 'typescript.jsx'
 export const javascript = 'javascript'
 export const javascriptreact = 'javascriptreact'
+export const javascriptjsx = 'javascript.jsx'
 export const jsxTags = 'jsx-tags'
 
-export const languageIds = [typescript, typescriptreact, javascript, javascriptreact, typescripttsx, jsxTags]
+export const languageIds = [typescript, typescriptreact, javascript, javascriptreact, javascriptjsx, typescripttsx, jsxTags]
