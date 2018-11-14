@@ -2,9 +2,6 @@
 	"Constructor": {
 		"prefix": "ctor",
 		"body": [
-			"/**",
-			" *",
-			" */",
 			"constructor() {",
 			"\tsuper();",
 			"\t$0",
@@ -26,9 +23,6 @@
 	"Public Method Definition": {
 		"prefix": "public method",
 		"body": [
-			"/**",
-			" * ${1:name}",
-			" */",
 			"public ${1:name}() {",
 			"\t$0",
 			"}"
