@@ -177,7 +177,8 @@ export default class LanguageProvider {
     this.disposables.push(
       languages.registerSignatureHelpProvider(
         languageIds,
-        new SignatureHelpProvider(client))
+        new SignatureHelpProvider(client),
+        ['(', ',', '<', ')'])
     )
 
     this.disposables.push(
