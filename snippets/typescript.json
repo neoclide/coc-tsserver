@@ -48,11 +48,9 @@
 	"Property getter": {
 		"prefix": "get",
 		"body": [
-			"",
 			"public get ${1:value}() : ${2:string} {",
 			"\t${3:return $0}",
-			"}",
-			""
+			"}"
 		],
 		"description": "Property getter"
 	},
