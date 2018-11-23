@@ -1,12 +1,17 @@
 {
   "name": "coc-tsserver",
   "version": "1.1.13",
-  "description": "tsserver extension for coc",
+  "description": "tsserver extension for coc.nvim",
   "main": "lib/index.js",
   "publisher": "chemzqm",
   "engines": {
     "coc": "^0.0.24"
   },
+  "keywords": [
+    "coc.nvim",
+    "tsserver",
+    "typescript"
+  ],
   "scripts": {
     "clean": "rimraf lib",
     "build": "tsc -p tsconfig.json",
