@@ -223,7 +223,10 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     if (command) item.command = command
     item.additionalTextEdits = additionalTextEdits
     if (detail && item.insertTextFormat == InsertTextFormat.Snippet) {
-      this.createSnippetOfFunctionCall(item, detail)
+      const shouldCompleteFunction = await this.isValidFunctionCompletionContext(filepath, position, token)
+      if (shouldCompleteFunction) {
+        this.createSnippetOfFunctionCall(item, detail)
+      }
     }
 
     return item
@@ -394,6 +397,35 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     snippet += '$0'
     textEdit.newText = snippet
     item.textEdit = textEdit
+  }
+
+  private async isValidFunctionCompletionContext(
+    filepath: string,
+    position: Position,
+    token: CancellationToken
+  ): Promise<boolean> {
+    // Workaround for https://github.com/Microsoft/TypeScript/issues/12677
+    // Don't complete function calls inside of destructive assigments or imports
+    try {
+      const args: Proto.FileLocationRequestArgs = typeConverters.Position.toFileLocationRequestArgs(filepath, position)
+      const response = await this.client.execute('quickinfo', args, token)
+      if (response.type !== 'response') {
+        return true
+      }
+
+      const { body } = response
+      switch (body && body.kind) {
+        case 'var':
+        case 'let':
+        case 'const':
+        case 'alias':
+          return false
+        default:
+          return true
+      }
+    } catch (e) {
+      return true
+    }
   }
 }
 
