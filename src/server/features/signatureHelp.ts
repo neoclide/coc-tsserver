@@ -56,18 +56,22 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
   }
 
   private convertSignature(item: Proto.SignatureHelpItem): SignatureInformation {
+    let parameters = item.parameters.map(p => {
+      return {
+        label: Previewer.plain(p.displayParts),
+        documentation: Previewer.markdownDocumentation(p.documentation, [])
+      }
+    })
+    let label = Previewer.plain(item.prefixDisplayParts)
+    label += parameters.map(parameter => parameter.label).join(Previewer.plain(item.separatorDisplayParts))
+    label += Previewer.plain(item.suffixDisplayParts)
     return {
-      label: Previewer.plain(item.prefixDisplayParts).replace(/\($/, ''),
+      label,
       documentation: Previewer.markdownDocumentation(
         item.documentation,
         item.tags.filter(x => x.name !== 'param')
       ),
-      parameters: item.parameters.map(p => {
-        return {
-          label: Previewer.plain(p.displayParts),
-          documentation: Previewer.markdownDocumentation(p.documentation, [])
-        }
-      })
+      parameters
     }
   }
 }

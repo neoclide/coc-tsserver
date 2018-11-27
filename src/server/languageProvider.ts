@@ -233,13 +233,15 @@ export default class LanguageProvider {
       this.disposables.push(
         languages.registerCodeActionProvider(
           languageIds,
-          new RefactorProvider(client, this.fileConfigurationManager)))
+          new RefactorProvider(client, this.fileConfigurationManager),
+          'tsserver'))
     }
 
     this.disposables.push(
       languages.registerCodeActionProvider(
         languageIds,
-        new QuickfixProvider(client, this.diagnosticsManager, this.bufferSyncSupport)))
+        new QuickfixProvider(client, this.diagnosticsManager, this.bufferSyncSupport),
+        'tsserver'))
     let cachedResponse = new CachedNavTreeResponse()
     if (this.client.apiVersion.gte(API.v206)
       && conf.get<boolean>('referencesCodeLens.enable')) {

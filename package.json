@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "publisher": "chemzqm",
   "engines": {
-    "coc": "^0.0.24"
+    "coc": "^0.0.35"
   },
   "keywords": [
     "coc.nvim",
