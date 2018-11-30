@@ -53,7 +53,7 @@ export default class TypeScriptReferencesCodeLensProvider extends TypeScriptBase
       })
       .catch(() => {
         codeLens.command = {
-          title: 'Could not determine references',
+          title: '0 references',
           command: ''
         }
         return codeLens

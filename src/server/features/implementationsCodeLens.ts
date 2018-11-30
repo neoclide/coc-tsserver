@@ -54,7 +54,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
     }
 
     codeLens.command = {
-      title: 'Could not determine implementations',
+      title: '0 implementations',
       command: ''
     }
     return codeLens
