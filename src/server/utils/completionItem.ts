@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { workspace } from 'coc.nvim'
 import { CompletionItem, CompletionItemKind, InsertTextFormat, Position, TextEdit } from 'vscode-languageserver-protocol'
-import { Document, workspace } from 'coc.nvim'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 
@@ -11,51 +11,6 @@ interface CommitCharactersSettings {
   readonly isNewIdentifierLocation: boolean
   readonly isInValidCommitCharacterContext: boolean
   readonly useCodeSnippetsOnMethodSuggest: boolean
-}
-
-export function resolveItem(
-  item: CompletionItem,
-  document: Document,
-): void {
-  let { textEdit, label } = item // tslint:disable-line
-  let { position } = item.data
-  if (textEdit) return
-  // try replace more characters after cursor
-  const wordRange = document.getWordRangeAtPosition(position)
-  let text = document.textDocument.getText({
-    start: {
-      line: position.line,
-      character: Math.max(0, position.character - label.length),
-    },
-    end: {
-      line: position.line,
-      character: position.character
-    }
-  })
-
-  text = text.toLowerCase()
-  const entryName = label.toLowerCase()
-
-  for (let i = entryName.length; i >= 0; --i) {
-    if (text.endsWith(entryName.substr(0, i)) &&
-      (!wordRange ||
-        wordRange.start.character > position.character - i)) {
-      item.textEdit = {
-        newText: label,
-        range: {
-          start: {
-            line: position.line,
-            character: Math.max(0, position.character - i)
-          },
-          end: {
-            line: position.line,
-            character: position.character
-          }
-        }
-      }
-      break
-    }
-  }
 }
 
 export function convertCompletionEntry(
@@ -85,16 +40,8 @@ export function convertCompletionEntry(
       kind === CompletionItemKind.Method)
   ) ? InsertTextFormat.Snippet : InsertTextFormat.PlainText
 
-  let textEdit: TextEdit = null
   let insertText = tsEntry.insertText
   let document = workspace.getDocument(uri)
-  if (insertText) {
-    textEdit = {
-      range: document.getWordRangeAtPosition(position),
-      newText: insertText
-    }
-    insertText = null
-  }
   let preText = document.getline(position.line).slice(0, position.character)
   const isInValidCommitCharacterContext = preText.match(/(^|[a-z_$\(\)\[\]\{\}]|[^.]\.)\s*$/ig) !== null
 
@@ -104,7 +51,6 @@ export function convertCompletionEntry(
     label,
     insertText,
     kind,
-    textEdit,
     insertTextFormat,
     sortText,
     commitCharacters,

@@ -10,7 +10,7 @@ import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { applyCodeAction } from '../utils/codeAction'
-import { convertCompletionEntry, resolveItem } from '../utils/completionItem'
+import { convertCompletionEntry } from '../utils/completionItem'
 import * as Previewer from '../utils/previewer'
 import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
@@ -185,7 +185,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     if (!filepath) return undefined
     let document = workspace.getDocument(uri)
     if (!document) return undefined
-    resolveItem(item, document)
     const args: Proto.CompletionDetailsRequestArgs = {
       ...typeConverters.Position.toFileLocationRequestArgs(
         filepath,
@@ -345,18 +344,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     const methodName = detail.displayParts.find(
       part => part.kind === 'methodName'
     )
-    let { textEdit, data } = item
-    let { position, uri } = data
-
-    if (textEdit) {
-      snippet += item.insertText || textEdit.newText // tslint:disable-line
-    } else {
-      let document = workspace.getDocument(uri)
-      if (!document) return
-      let range = document.getWordRangeAtPosition(position)
-      textEdit = { range, newText: '' }
-      snippet += item.insertText || (methodName && methodName.text) || item.label // tslint:disable-line
-    }
+    snippet += item.insertText || (methodName && methodName.text) || item.label // tslint:disable-line
     snippet += '('
     let holderIndex = 1
     let parenCount = 0
@@ -395,8 +383,8 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     }
     snippet += ')'
     snippet += '$0'
-    textEdit.newText = snippet
-    item.textEdit = textEdit
+    // tslint:disable-next-line:deprecation
+    item.insertText = snippet
   }
 
   private async isValidFunctionCompletionContext(
