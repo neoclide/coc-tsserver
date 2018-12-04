@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { workspace } from 'coc.nvim'
-import { CompletionItem, CompletionItemKind, InsertTextFormat, Position, TextEdit } from 'vscode-languageserver-protocol'
+import { CompletionItem, CompletionItemKind, InsertTextFormat, Position } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 
@@ -11,6 +11,11 @@ interface CommitCharactersSettings {
   readonly isNewIdentifierLocation: boolean
   readonly isInValidCommitCharacterContext: boolean
   readonly useCodeSnippetsOnMethodSuggest: boolean
+}
+
+interface ParamterListParts {
+  readonly parts: ReadonlyArray<Proto.SymbolDisplayPart>
+  readonly hasOptionalParameters: boolean
 }
 
 export function convertCompletionEntry(
@@ -97,7 +102,6 @@ function convertKind(kind: string): CompletionItemKind {
     case PConst.Kind.interface:
       return CompletionItemKind.Interface
     case PConst.Kind.warning:
-    case PConst.Kind.file:
     case PConst.Kind.script:
       return CompletionItemKind.File
     case PConst.Kind.directory:
@@ -139,4 +143,62 @@ function getCommitCharacters(tsEntry: Proto.CompletionEntry, settings: CommitCha
       break
   }
   return commitCharacters.length === 0 ? undefined : commitCharacters
+}
+
+export function getParameterListParts(
+  displayParts: ReadonlyArray<Proto.SymbolDisplayPart>
+): ParamterListParts {
+  const parts: Proto.SymbolDisplayPart[] = []
+  let isInMethod = false
+  let hasOptionalParameters = false
+  let parenCount = 0
+  let braceCount = 0
+
+  outer: for (let i = 0; i < displayParts.length; ++i) {
+    const part = displayParts[i]
+    switch (part.kind) {
+      case PConst.DisplayPartKind.methodName:
+      case PConst.DisplayPartKind.functionName:
+      case PConst.DisplayPartKind.text:
+      case PConst.DisplayPartKind.propertyName:
+        if (parenCount === 0 && braceCount === 0) {
+          isInMethod = true
+        }
+        break
+
+      case PConst.DisplayPartKind.parameterName:
+        if (parenCount === 1 && isInMethod) {
+          // Only take top level paren names
+          const next = displayParts[i + 1]
+          // Skip optional parameters
+          const nameIsFollowedByOptionalIndicator = next && next.text === '?'
+          if (!nameIsFollowedByOptionalIndicator) {
+            parts.push(part)
+          }
+          hasOptionalParameters = hasOptionalParameters || nameIsFollowedByOptionalIndicator
+        }
+        break
+
+      case PConst.DisplayPartKind.punctuation:
+        if (part.text === '(') {
+          ++parenCount
+        } else if (part.text === ')') {
+          --parenCount
+          if (parenCount <= 0 && isInMethod) {
+            break outer
+          }
+        } else if (part.text === '...' && parenCount === 1) {
+          // Found rest parmeter. Do not fill in any further arguments
+          hasOptionalParameters = true
+          break outer
+        } else if (part.text === '{') {
+          ++braceCount
+        } else if (part.text === '}') {
+          --braceCount
+        }
+        break
+    }
+  }
+
+  return { hasOptionalParameters, parts }
 }

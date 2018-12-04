@@ -10,7 +10,7 @@ import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { applyCodeAction } from '../utils/codeAction'
-import { convertCompletionEntry } from '../utils/completionItem'
+import { convertCompletionEntry, getParameterListParts } from '../utils/completionItem'
 import * as Previewer from '../utils/previewer'
 import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
@@ -337,52 +337,21 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     item: CompletionItem,
     detail: Proto.CompletionEntryDetails
   ): void {
-    let hasOptionalParameters = false
-    let hasAddedParameters = false
-
-    let snippet = ''
-    const methodName = detail.displayParts.find(
-      part => part.kind === 'methodName'
-    )
-    snippet += item.insertText || (methodName && methodName.text) || item.label // tslint:disable-line
-    snippet += '('
-    let holderIndex = 1
-    let parenCount = 0
-    let i = 0
-    for (; i < detail.displayParts.length; ++i) {
-      const part = detail.displayParts[i]
-      // Only take top level paren names
-      if (part.kind === 'parameterName' && parenCount === 1) {
-        const next = detail.displayParts[i + 1]
-        // Skip optional parameters
-        const nameIsFollowedByOptionalIndicator = next && next.text === '?'
-        if (!nameIsFollowedByOptionalIndicator) {
-          if (hasAddedParameters) snippet += ', '
-          hasAddedParameters = true
-          // tslint:disable-next-line:no-invalid-template-strings
-          snippet += '${' + holderIndex + ':' + part.text + '}'
-          holderIndex = holderIndex + 1
-        }
-        hasOptionalParameters =
-          hasOptionalParameters || nameIsFollowedByOptionalIndicator
-      } else if (part.kind === 'punctuation') {
-        if (part.text === '(') {
-          ++parenCount
-        } else if (part.text === ')') {
-          --parenCount
-        } else if (part.text === '...' && parenCount === 1) {
-          // Found rest parmeter. Do not fill in any further arguments
-          hasOptionalParameters = true
-          break
-        }
+    let { displayParts } = detail
+    let snippet = (item.insertText || item.label) + '(' // tslint:disable-line
+    const parameterListParts = getParameterListParts(displayParts)
+    let { parts, hasOptionalParameters } = parameterListParts
+    let idx = 1
+    for (let part of parts) {
+      snippet += '${' + idx + ':' + part.text + '}' // tslint:disable-line
+      if (idx == parts.length) {
+        if (hasOptionalParameters) snippet += '${' + (idx + 1) + '}' // tslint:disable-line
+      } else {
+        snippet += ', '
       }
+      idx = idx + 1
     }
-    if (hasOptionalParameters) {
-      // tslint:disable-next-line:no-invalid-template-strings
-      snippet += '${' + holderIndex + '}'
-    }
-    snippet += ')'
-    snippet += '$0'
+    snippet += ')$0'
     // tslint:disable-next-line:deprecation
     item.insertText = snippet
   }
