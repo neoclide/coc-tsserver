@@ -42,7 +42,7 @@ class WatchCommand implements Command {
     }
     let { nvim } = workspace
     nvim.setVar('tsc_status', s, true)
-    nvim.command('redraws')
+    nvim.command('redraws', true)
   }
 
   public async execute(): Promise<void> {
@@ -115,14 +115,14 @@ class WatchCommand implements Command {
       }
     }
     for (let line of doc.content.split('\n')) {
-      parseLine(line)
+      parseLine(line) // tslint:disable-line
     }
     doc.onDocumentChange(e => {
       let { contentChanges } = e
       for (let change of contentChanges) {
         let lines = change.text.split('\n')
         for (let line of lines) {
-          parseLine(line)
+          parseLine(line) // tslint:disable-line
         }
       }
     })
@@ -142,30 +142,26 @@ export default class WatchProject implements Disposable {
     workspace.documents.forEach(doc => {
       let { uri } = doc
       if (this.isTscBuffer(uri)) {
-        cmd.onTerminalCreated(doc).catch(_e => {
-          // noop
-        })
+        cmd.onTerminalCreated(doc) // tslint:disable-line
       }
     })
     workspace.onDidOpenTextDocument(doc => {
       let { uri } = doc
       if (this.isTscBuffer(uri)) {
-        cmd.onTerminalCreated(workspace.getDocument(uri)).catch(_e => {
-          // noop
-        })
+        cmd.onTerminalCreated(workspace.getDocument(uri)) // tslint:disable-line
       }
     }, this, this.disposables)
     workspace.onDidCloseTextDocument(doc => {
       let { uri } = doc
       if (this.isTscBuffer(uri)) {
         workspace.nvim.setVar('tsc_status', 'init', true)
-        workspace.nvim.command('redraws')
+        workspace.nvim.command('redraws', true)
       }
     }, this, this.disposables)
   }
 
   private isTscBuffer(uri: string): boolean {
-    return uri.startsWith('term://') && uri.indexOf(TSC) !== -1
+    return uri.startsWith('term:/') && uri.indexOf(TSC) !== -1
   }
 
   public dispose(): void {
