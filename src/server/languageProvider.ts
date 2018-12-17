@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Diagnostic, Disposable } from 'vscode-languageserver-protocol'
+import { Diagnostic, Disposable, CodeActionKind } from 'vscode-languageserver-protocol'
 import Uri from 'vscode-uri'
 import { workspace, commands, events, languages, DiagnosticKind, ServiceStat, disposeAll } from 'coc.nvim'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
@@ -234,14 +234,16 @@ export default class LanguageProvider {
         languages.registerCodeActionProvider(
           languageIds,
           new RefactorProvider(client, this.fileConfigurationManager),
-          'tsserver'))
+          'tsserver',
+          [CodeActionKind.Refactor]))
     }
 
     this.disposables.push(
       languages.registerCodeActionProvider(
         languageIds,
         new QuickfixProvider(client, this.diagnosticsManager, this.bufferSyncSupport),
-        'tsserver'))
+        'tsserver',
+        [CodeActionKind.QuickFix]))
     let cachedResponse = new CachedNavTreeResponse()
     if (this.client.apiVersion.gte(API.v206)
       && conf.get<boolean>('referencesCodeLens.enable')) {
