@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { workspace } from 'coc.nvim'
-import { CompletionItem, CompletionItemKind, InsertTextFormat, Position } from 'vscode-languageserver-protocol'
+import { Range, CompletionItem, CompletionItemKind, InsertTextFormat, Position, TextEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 
@@ -52,9 +52,20 @@ export function convertCompletionEntry(
 
   let commitCharacters = getCommitCharacters(tsEntry, { isNewIdentifierLocation, isInValidCommitCharacterContext, useCodeSnippetsOnMethodSuggest })
   let optional = tsEntry.kindModifiers && tsEntry.kindModifiers.match(/\boptional\b/)
+  let textEdit: TextEdit | null = null
+  if (tsEntry.replacementSpan) {
+    let { start, end } = tsEntry.replacementSpan
+    if (start.line == end.line) {
+      textEdit = {
+        range: Range.create(start.line - 1, start.offset - 1, end.line - 1, end.offset - 1),
+        newText: insertText || label
+      }
+    }
+  }
   return {
     label,
     insertText,
+    textEdit,
     kind,
     insertTextFormat,
     sortText,

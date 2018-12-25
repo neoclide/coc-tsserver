@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Command, CompletionContext, CompletionItem, InsertTextFormat, MarkupContent, MarkupKind, Position, TextDocument, TextEdit } from 'vscode-languageserver-protocol'
+import { CancellationToken, Command, CompletionContext, CompletionItem, InsertTextFormat, MarkupContent, MarkupKind, Position, TextDocument, TextEdit, CompletionList } from 'vscode-languageserver-protocol'
 import { commands, workspace } from 'coc.nvim'
 import { CompletionItemProvider } from 'coc.nvim/lib/provider'
 import Proto from '../protocol'
@@ -49,7 +49,7 @@ class ApplyCompletionCodeActionCommand implements CommandItem {
 
 export default class TypeScriptCompletionItemProvider implements CompletionItemProvider {
 
-  public static readonly triggerCharacters = ['.', '@', '<']
+  public static readonly triggerCharacters = ['.', '"', '\'', '/', '@', '<']
   private completeOption: SuggestOptions
   private noSemicolons = false
 
@@ -87,25 +87,26 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     position: Position,
     token: CancellationToken,
     context: CompletionContext,
-  ): Promise<CompletionItem[]> {
+  ): Promise<CompletionList | null> {
     if (this.typingsStatus.isAcquiringTypings) {
       workspace.showMessage('Acquiring typings...', 'warning')
-      return []
+      return null
     }
     let { uri } = document
     const file = this.client.toPath(document.uri)
-    if (!file) return []
+    if (!file) return null
     let preText = document.getText({
       start: { line: position.line, character: 0 },
       end: position
     })
-    let { triggerCharacter } = context
+    let { triggerCharacter, option } = context as any
 
-    if (!this.shouldTrigger(triggerCharacter, preText)) {
-      return []
+    if (!this.shouldTrigger(triggerCharacter, preText, option)) {
+      return null
     }
 
     const { completeOption } = this
+    const doc = workspace.getDocument(uri)
 
     const args: Proto.CompletionsRequestArgs = {
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),
@@ -134,7 +135,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     } else {
       const response = await this.client.execute('completions', args, token)
       msg = response.body
-      if (!msg) return []
+      if (!msg) return null
     }
 
     const completionItems: CompletionItem[] = []
@@ -151,8 +152,16 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       )
       completionItems.push(item)
     }
-
-    return completionItems
+    let startcol: number | null = null
+    if (triggerCharacter == '@' && !doc.isWord('@')) {
+      startcol = option.col - 1
+    }
+    let res: any = {
+      startcol,
+      isIncomplete: false,
+      items: completionItems
+    }
+    return res
   }
 
   private getTsTriggerCharacter(context: CompletionContext): Proto.CompletionsTriggerCharacter | undefined {
@@ -293,12 +302,17 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   private shouldTrigger(
     triggerCharacter: string,
     pre: string,
+    option: any
   ): boolean {
     if (triggerCharacter === '.') {
       if (pre.match(/[\s\.'"]\.$/)) {
         return false
       }
     } else if (triggerCharacter === '@') {
+      // trigger in string
+      if (option.synname && /string/i.test(option.synname)) {
+        return true
+      }
       // make sure we are in something that looks like the start of a jsdoc comment
       if (!pre.match(/^\s*\*[ ]?@/) && !pre.match(/\/\*\*+[ ]?@/)) {
         return false
