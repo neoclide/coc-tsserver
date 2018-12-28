@@ -356,6 +356,10 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     const parameterListParts = getParameterListParts(displayParts)
     let { parts, hasOptionalParameters } = parameterListParts
     let idx = 1
+    if (parts.length == 0 && hasOptionalParameters) {
+      item.insertText = snippet + '${1})$0'
+      return
+    }
     for (let part of parts) {
       snippet += '${' + idx + ':' + part.text + '}' // tslint:disable-line
       if (idx == parts.length) {
