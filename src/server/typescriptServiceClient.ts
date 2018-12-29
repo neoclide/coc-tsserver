@@ -162,7 +162,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private readonly _onDidEndInstallTypings = new Emitter<Proto.EndInstallTypesEventBody>()
   private readonly _onTypesInstallerInitializationFailed = new Emitter<
     Proto.TypesInstallerInitializationFailedEventBody
-    >()
+  >()
   private _apiVersion: API
   private readonly disposables: Disposable[] = []
 
@@ -266,7 +266,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public get onProjectLanguageServiceStateChanged(): Event<
     Proto.ProjectLanguageServiceStateEventBody
-    > {
+  > {
     return this._onProjectLanguageServiceStateChanged.event
   }
 
@@ -690,7 +690,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       case 'syntaxDiag':
       case 'semanticDiag':
       case 'suggestionDiag':
-        const diagnosticEvent: Proto.DiagnosticEvent = event
+        const diagnosticEvent = event as Proto.DiagnosticEvent
         if (diagnosticEvent.body && diagnosticEvent.body.diagnostics) {
           this._onDiagnosticsReceived.fire({
             kind: getDignosticsKind(event),
