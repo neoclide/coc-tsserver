@@ -59,6 +59,11 @@
         "title": "Run `tsc --watch` for current project in terminal buffer.",
         "category": "TSServer",
         "command": "tsserver.watchBuild"
+      },
+      {
+        "title": "Fix autofixable problems of current document.",
+        "category": "TSServer",
+        "command": "tsserver.executeAutofix"
       }
     ],
     "configuration": {

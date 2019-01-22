@@ -1,6 +1,6 @@
 import { commands, ExtensionContext, services, workspace } from 'coc.nvim'
 import TsserverService from './server'
-import { Command, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
+import { Command, OpenTsServerLogCommand, AutoFixCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
 import OrganizeImportsCommand from './server/organizeImports'
 
 export async function activate(context: ExtensionContext): Promise<void> {
@@ -22,6 +22,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     subscriptions.push(commands.registerCommand(id as string, execute, cmd))
   }
 
+  registCommand(new AutoFixCommand(service.clientHost))
   registCommand(new ReloadProjectsCommand(service.clientHost))
   registCommand(new OpenTsServerLogCommand(service.clientHost))
   registCommand(new TypeScriptGoToProjectConfigCommand(service.clientHost))
