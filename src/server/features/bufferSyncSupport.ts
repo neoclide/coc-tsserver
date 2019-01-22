@@ -101,7 +101,7 @@ export default class BufferSyncSupport {
       }
     }
     if (this.client.apiVersion.gte(API.v230)) {
-      args.projectRootPath = this.client.getWorkspaceRootForResource(document.uri)
+      args.projectRootPath = this.client.getProjectRootPath(document.uri)
     }
 
     this.client.execute('open', args, false) // tslint:disable-line

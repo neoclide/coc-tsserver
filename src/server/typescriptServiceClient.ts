@@ -318,7 +318,6 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       workspace.showMessage(`Can not find tsserver, run ':CocInstall coc-tsserver' to fix it!`, 'error')
       return
     }
-    workspace.showMessage(`Using tsserver from: ${currentVersion.path}`) // tslint:disable-line
     this._apiVersion = currentVersion.version
     this.versionStatus.onDidChangeTypeScriptVersion(currentVersion)
     this.requestQueue = new RequestQueue()
@@ -813,11 +812,11 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     return args
   }
 
-  public getWorkspaceRootForResource(uri: string): string {
+  public getProjectRootPath(uri: string): string {
     let u = Uri.parse(uri)
     if (u.scheme != 'file') return workspace.root
-    let res = findUp.sync(['package.json', '.vim', '.git', '.hg'], { cwd: path.dirname(u.fsPath) })
-    return res ? path.dirname(res) : null
+    let res = findUp.sync(['tsconfig.json', 'jsconfig.json', 'package.json'], { cwd: path.dirname(u.fsPath) })
+    return res ? path.dirname(res) : workspace.rootPath
   }
 }
 

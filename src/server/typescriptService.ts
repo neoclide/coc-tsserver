@@ -39,7 +39,7 @@ export interface ITypeScriptServiceClient {
   onTypesInstallerInitializationFailed: Event<Proto.TypesInstallerInitializationFailedEventBody>
   readonly logger: Logger
 
-  getWorkspaceRootForResource(uri: string): string
+  getProjectRootPath(uri: string): string
   normalizePath(resource: Uri): string | null
   asUrl(filepath: string): Uri
   toPath(uri: string): string
