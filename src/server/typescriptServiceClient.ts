@@ -507,7 +507,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public normalizePath(resource: Uri): string | null {
     if (this._apiVersion.gte(API.v213)) {
-      if (resource.scheme !== 'file') {
+      if (resource.scheme == 'untitled') {
         const dirName = path.dirname(resource.path)
         const fileName = this.inMemoryResourcePrefix + path.basename(resource.path)
         return resource
