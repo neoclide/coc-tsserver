@@ -4,7 +4,37 @@ import URI from 'vscode-uri'
 import * as Proto from './protocol'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import * as typeConverters from './utils/typeConverters'
-import { WorkspaceEdit, TextEdit } from 'vscode-languageserver-types'
+import { TextEdit, Range } from 'vscode-languageserver-types'
+
+const nodeModules = [
+  'assert',
+  'cluster',
+  'crypto',
+  'dns',
+  'domain',
+  'events',
+  'fs',
+  'http',
+  'http2',
+  'https',
+  'inspector',
+  'net',
+  'os',
+  'path',
+  'punycode',
+  'querystring',
+  'readline',
+  'repl',
+  'stream',
+  'string_decoder',
+  'tls',
+  'tty',
+  'url',
+  'util',
+  'v8',
+  'vm',
+  'zlib',
+  'perf_hooks']
 
 export interface Command {
   readonly id: string | string[]
@@ -113,6 +143,17 @@ export class AutoFixCommand implements Command {
       }
       const response: Proto.GetCodeFixesResponse = await client.execute('getCodeFixes', args)
       if (response.type !== 'response' || !response.body || response.body.length < 1) {
+        if (diagnostic.code == 2304) {
+          let { range } = diagnostic
+          let line = document.getline(range.start.line)
+          let name = line.slice(range.start.character, range.end.character)
+          if (nodeModules.indexOf(name) !== -1) {
+            edits.push({
+              range: Range.create(0, 0, 0, 0),
+              newText: `import ${name} from '${name}'\n`
+            })
+          }
+        }
         continue
       }
       const fix = response.body[0]
