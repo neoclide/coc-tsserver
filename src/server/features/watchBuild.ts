@@ -1,15 +1,18 @@
-import { disposeAll, Document, QuickfixItem, workspace } from 'coc.nvim'
+import { ChildProcess, spawn } from 'child_process'
+import { disposeAll, StatusBarItem, workspace } from 'coc.nvim'
 import { Command, CommandManager } from 'coc.nvim/lib/commands'
+import findUp from 'find-up'
 import fs from 'fs'
 import path from 'path'
-import { Disposable, Location, Range } from 'vscode-languageserver-protocol'
+import readline from 'readline'
+import { Disposable, Location } from 'vscode-languageserver-protocol'
 import Uri from 'vscode-uri'
+import which from 'which'
 import { resolveRoot } from '../utils/fs'
 
 const TSC = './node_modules/.bin/tsc'
-const countRegex = /Found\s(\d+)\serror/
-const startRegex = /File\s+change\s+detected/
-const errorRegex = /^(.+):(\d+):(\d+)\s-\s(\w+)\s+[A-Za-z]+(\d+):\s+(.*)$/
+const countRegex = /Found\s+(\d+)\s+error/
+const errorRegex = /^(.+)\((\d+),(\d+)\):\s(\w+)\sTS(\d+):\s*(.+)$/
 
 interface ErrorItem {
   location: Location
@@ -26,23 +29,73 @@ enum TscStatus {
 
 class WatchCommand implements Command {
   public readonly id: string = 'tsserver.watchBuild'
+  private statusItem: StatusBarItem
+  private isRunning = false
+  private process: ChildProcess
 
-  private setStatus(state: TscStatus): void {
-    let s = 'init'
-    switch (state) {
-      case TscStatus.COMPILING:
-        s = 'compiling'
-        break
-      case TscStatus.RUNNING:
-        s = 'running'
-        break
-      case TscStatus.ERROR:
-        s = 'error'
-        break
-    }
+  constructor() {
+    this.statusItem = workspace.createStatusBarItem(1, { progress: true })
+  }
+
+  private onStop(): void {
     let { nvim } = workspace
-    nvim.setVar('tsc_status', s, true)
-    nvim.command('redraws', true)
+    this.isRunning = false
+    nvim.setVar('Tsc_running', 0, true)
+    this.statusItem.hide()
+  }
+
+  private onStart(): void {
+    this.statusItem.text = 'compiling'
+    this.statusItem.isProgress = true
+    this.statusItem.show()
+    workspace.nvim.call('setqflist', [[], 'r'], true)
+  }
+
+  private async start(cmd: string, args: string[], cwd: string): Promise<void> {
+    if (this.isRunning) {
+      this.process.kill()
+      await wait(200)
+    }
+    this.isRunning = true
+    workspace.nvim.setVar('Tsc_running', 1, true)
+    this.process = spawn(cmd, args, { cwd })
+    this.process.on('error', e => {
+      workspace.showMessage(e.message, 'error')
+    })
+    const rl = readline.createInterface(this.process.stdout)
+    this.process.on('exit', () => {
+      this.onStop()
+      rl.close()
+    })
+    this.process.stderr.on('data', chunk => {
+      workspace.showMessage(chunk.toString('utf8'), 'error')
+    })
+    const startTexts = ['Starting compilation in watch mode', 'Starting incremental compilation']
+    rl.on('line', line => {
+      if (countRegex.test(line)) {
+        let ms = line.match(countRegex)
+        this.statusItem.text = ms[1] == '0' ? '✓' : '✗'
+        this.statusItem.isProgress = false
+      } else if (startTexts.findIndex(s => line.indexOf(s) !== -1) != -1) {
+        this.onStart()
+      } else {
+        let ms = line.match(errorRegex)
+        if (!ms) return
+        let fullpath = path.join(cwd, ms[1])
+        let uri = Uri.file(fullpath).toString()
+        let doc = workspace.getDocument(uri)
+        let bufnr = doc ? doc.bufnr : null
+        let item = {
+          filename: fullpath,
+          lnum: Number(ms[2]),
+          col: Number(ms[3]),
+          text: `[tsc ${ms[5]}] ${ms[6]}`,
+          type: /error/i.test(ms[4]) ? 'E' : 'W'
+        } as any
+        if (bufnr) item.bufnr = bufnr
+        workspace.nvim.call('setqflist', [[item], 'a'])
+      }
+    })
   }
 
   public async execute(): Promise<void> {
@@ -52,13 +105,23 @@ class WatchCommand implements Command {
     let document = await workspace.document
     let fsPath = Uri.parse(document.uri).fsPath
     let cwd = path.dirname(fsPath)
-    let dir = resolveRoot(cwd, ['node_modules'])
-    if (dir) {
-      let file = path.join(dir, 'node_modules/.bin/tsc')
-      if (!fs.existsSync(file)) dir = null
+    let res = findUp.sync(['node_modules'], { cwd })
+    let cmd: string
+    let root: string
+    if (!res) {
+      if (executable('tsc')) {
+        cmd = 'tsc'
+        root = workspace.cwd
+      }
+    } else {
+      let file = path.join(path.dirname(res), 'node_modules/.bin/tsc')
+      if (fs.existsSync(file)) {
+        cmd = './node_modules/.bin/tsc'
+        root = path.dirname(res)
+      }
     }
-    if (!dir) {
-      workspace.showMessage('typescript module not found!', 'error')
+    if (!cmd) {
+      workspace.showMessage(`Local & global tsc not found`, 'error')
       return
     }
     let configRoot = resolveRoot(cwd, ['tsconfig.json'])
@@ -66,105 +129,47 @@ class WatchCommand implements Command {
       workspace.showMessage('tsconfig.json not found!', 'error')
       return
     }
-    let configPath = path.relative(dir, path.join(configRoot, 'tsconfig.json'))
-    let cmd = `${TSC} -p ${configPath} --watch true`
-    await workspace.nvim.call('coc#util#open_terminal', {
-      keepfocus: 1,
-      cwd: dir,
-      cmd
-    })
-  }
-
-  public async onTerminalCreated(doc: Document): Promise<void> {
-    let items: ErrorItem[] = []
-    let cwd = await doc.getcwd()
-    if (!cwd) return
-    this.setStatus(TscStatus.RUNNING)
-    let parseLine = async (line: string): Promise<void> => {
-      if (startRegex.test(line)) {
-        this.setStatus(TscStatus.COMPILING)
-      } else if (errorRegex.test(line)) {
-        let ms = line.match(errorRegex)
-        let lnum = Number(ms[2]) - 1
-        let character = Number(ms[3]) - 1
-        let range = Range.create(lnum, character, lnum, character)
-        let uri = Uri.file(path.join(cwd, ms[1])).toString()
-        let location = Location.create(uri, range)
-        let item: ErrorItem = {
-          location,
-          text: `[tsc ${ms[5]}] ${ms[6]}`,
-          type: /error/.test(ms[4]) ? 'E' : 'W'
-        }
-        items.push(item)
-      } else if (countRegex.test(line)) {
-        let ms = line.match(countRegex)
-        if (ms[1] == '0' || items.length == 0) {
-          this.setStatus(TscStatus.RUNNING)
-          return
-        }
-        this.setStatus(TscStatus.ERROR)
-        let qfItems: QuickfixItem[] = []
-        for (let item of items) {
-          let o = await workspace.getQuickfixItem(item.location, item.text, item.type)
-          qfItems.push(o)
-        }
-        items = []
-        let { nvim } = workspace
-        await nvim.call('setqflist', [[], ' ', { title: 'Results of tsc', items: qfItems }])
-        await nvim.command('doautocmd User CocQuickfixChange')
-      }
-    }
-    for (let line of doc.content.split('\n')) {
-      parseLine(line) // tslint:disable-line
-    }
-    doc.onDocumentChange(e => {
-      let { contentChanges } = e
-      for (let change of contentChanges) {
-        let lines = change.text.split('\n')
-        for (let line of lines) {
-          parseLine(line) // tslint:disable-line
-        }
-      }
-    })
+    let configPath = path.relative(root, path.join(configRoot, 'tsconfig.json'))
+    this.start(cmd, ['-p', configPath, '--watch', 'true', '--pretty', 'false'], root)
   }
 }
 
 export default class WatchProject implements Disposable {
   private disposables: Disposable[] = []
+
   public constructor(
     commandManager: CommandManager
   ) {
     let cmd = new WatchCommand()
     commandManager.register(cmd)
-    this.disposables.push(Disposable.create(() => {
-      commandManager.unregister(cmd.id)
-    }))
-    workspace.documents.forEach(doc => {
-      let { uri } = doc
-      if (this.isTscBuffer(uri)) {
-        cmd.onTerminalCreated(doc) // tslint:disable-line
+    let { nvim } = workspace
+    nvim.getVar('Tsc_running').then(running => {
+      if (running) {
+        cmd.execute().catch(e => {
+          workspace.showMessage('TSC:' + e.message, 'error')
+        })
       }
     })
-    workspace.onDidOpenTextDocument(doc => {
-      let { uri } = doc
-      if (this.isTscBuffer(uri)) {
-        cmd.onTerminalCreated(workspace.getDocument(uri)) // tslint:disable-line
-      }
-    }, this, this.disposables)
-    workspace.onDidCloseTextDocument(doc => {
-      let { uri } = doc
-      if (this.isTscBuffer(uri)) {
-        workspace.nvim.setVar('tsc_status', 'init', true)
-        workspace.nvim.command('redraws', true)
-      }
-    }, this, this.disposables)
-  }
-
-  private isTscBuffer(uri: string): boolean {
-    return uri.startsWith('term:/') && uri.indexOf(TSC) !== -1
   }
 
   public dispose(): void {
     disposeAll(this.disposables)
   }
+}
+
+function executable(command: string): boolean {
+  try {
+    which.sync(command)
+  } catch (e) {
+    return false
+  }
+  return true
+}
+
+function wait(ms: number): Promise<any> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve()
+    }, ms)
+  })
 }
