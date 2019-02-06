@@ -1,5 +1,5 @@
 import { diagnosticManager, workspace } from 'coc.nvim'
-import { CancellationToken } from 'vscode-languageserver-protocol'
+import { CancellationToken, Diagnostic } from 'vscode-languageserver-protocol'
 import URI from 'vscode-uri'
 import * as Proto from './protocol'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
@@ -133,7 +133,13 @@ export class AutoFixCommand implements Command {
     diagnostics = diagnostics.filter(x => autoFixableDiagnosticCodes.has(x.code as number))
     if (diagnostics.length == 0) {
       workspace.showMessage('No autofixable diagnostics found', 'warning')
+      return
     }
+    diagnostics = diagnostics.reduce((arr, curr) => {
+      if (curr.code == 2304 && arr.findIndex(o => o.message == curr.message) != -1) return arr
+      arr.push(curr)
+      return arr
+    }, [] as Diagnostic[])
     let client = this.client.serviceClient
     let edits: TextEdit[] = []
     for (let diagnostic of diagnostics) {
