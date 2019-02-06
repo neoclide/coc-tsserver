@@ -5,6 +5,7 @@ import * as Proto from './protocol'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import * as typeConverters from './utils/typeConverters'
 import { TextEdit, Range } from 'vscode-languageserver-types'
+import { installModules } from './utils/modules'
 
 const nodeModules = [
   'assert',
@@ -130,11 +131,21 @@ export class AutoFixCommand implements Command {
     }
     let file = this.client.serviceClient.toPath(document.uri)
     let diagnostics = diagnosticManager.getDiagnostics(document.uri)
-    diagnostics = diagnostics.filter(x => autoFixableDiagnosticCodes.has(x.code as number))
-    if (diagnostics.length == 0) {
-      workspace.showMessage('No autofixable diagnostics found', 'warning')
-      return
+    let missingDiagnostics = diagnostics.filter(o => o.code == 2307)
+    if (missingDiagnostics.length) {
+      let names = missingDiagnostics.map(o => {
+        let ms = o.message.match(/module\s'(.+)'\./)
+        return ms ? ms[1] : null
+      })
+      names = names.filter(s => s != null)
+      if (names.length) {
+        installModules(document.uri, names).catch(e => {
+          console.error(e.message) // tslint:disable-line
+        })
+      }
     }
+    diagnostics = diagnostics.filter(x => autoFixableDiagnosticCodes.has(x.code as number))
+    if (diagnostics.length == 0) return
     diagnostics = diagnostics.reduce((arr, curr) => {
       if (curr.code == 2304 && arr.findIndex(o => o.message == curr.message) != -1) return arr
       arr.push(curr)

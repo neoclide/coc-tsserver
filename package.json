@@ -421,7 +421,7 @@
     "@types/fast-diff": "^1.2.0",
     "@types/find-up": "^2.1.1",
     "@types/node": "^10.12.18",
-    "coc.nvim": "0.0.39",
+    "coc.nvim": "0.0.52",
     "rimraf": "^2.6.2",
     "tslint": "^5.12.0"
   },

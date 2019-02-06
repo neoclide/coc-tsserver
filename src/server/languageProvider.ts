@@ -29,6 +29,7 @@ import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
 import WatchBuild from './features/watchBuild'
 import WorkspaceSymbolProvider from './features/workspaceSymbols'
 import TypeScriptServiceClient from './typescriptServiceClient'
+import InstallModuleProvider from './features/moduleInstall'
 import API from './utils/api'
 import { LanguageDescription } from './utils/languageDescription'
 import TypingsStatus from './utils/typingsStatus'
@@ -237,6 +238,13 @@ export default class LanguageProvider {
           'tsserver',
           [CodeActionKind.Refactor]))
     }
+
+    this.disposables.push(
+      languages.registerCodeActionProvider(
+        languageIds,
+        new InstallModuleProvider(client),
+        'tsserver')
+    )
 
     this.disposables.push(
       languages.registerCodeActionProvider(

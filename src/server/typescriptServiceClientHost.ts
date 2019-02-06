@@ -33,25 +33,22 @@ export default class TypeScriptServiceClientHost implements Disposable {
   private reportStyleCheckAsWarnings = true
 
   constructor(descriptions: LanguageDescription[]) {
+    let timer: NodeJS.Timer
     const handleProjectChange = () => {
-      setTimeout(() => {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
         this.triggerAllDiagnostics()
       }, 1500)
     }
 
     const configFileWatcher = workspace.createFileSystemWatcher('**/[tj]sconfig.json')
     this.disposables.push(configFileWatcher)
-    configFileWatcher.onDidCreate(
-      this.reloadProjects,
-      this,
-      this.disposables
-    )
-    configFileWatcher.onDidDelete(
-      this.reloadProjects,
-      this,
-      this.disposables
-    )
+    configFileWatcher.onDidCreate(this.reloadProjects, this, this.disposables)
+    configFileWatcher.onDidDelete(this.reloadProjects, this, this.disposables)
     configFileWatcher.onDidChange(handleProjectChange, this, this.disposables)
+    const packageFileWatcher = workspace.createFileSystemWatcher('**/package.json')
+    packageFileWatcher.onDidCreate(this.reloadProjects, this, this.disposables)
+    packageFileWatcher.onDidChange(handleProjectChange, this, this.disposables)
 
     this.client = new TypeScriptServiceClient()
     this.disposables.push(this.client)
