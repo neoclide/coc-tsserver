@@ -692,7 +692,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         const diagnosticEvent = event as Proto.DiagnosticEvent
         if (diagnosticEvent.body && diagnosticEvent.body.diagnostics) {
           this._onDiagnosticsReceived.fire({
-            kind: getDignosticsKind(event),
+            kind: getDiagnosticsKind(event),
             resource: this.asUrl(diagnosticEvent.body.file),
             diagnostics: diagnosticEvent.body.diagnostics
           })
@@ -821,7 +821,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   }
 }
 
-function getDignosticsKind(event: Proto.Event): DiagnosticKind {
+function getDiagnosticsKind(event: Proto.Event): DiagnosticKind {
   switch (event.event) {
     case 'syntaxDiag':
       return DiagnosticKind.Syntax
