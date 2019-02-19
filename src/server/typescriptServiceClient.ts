@@ -692,7 +692,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         const diagnosticEvent = event as Proto.DiagnosticEvent
         if (diagnosticEvent.body && diagnosticEvent.body.diagnostics) {
           this._onDiagnosticsReceived.fire({
-            kind: getDignosticsKind(event),
+            kind: getDiagnosticsKind(event),
             resource: this.asUrl(diagnosticEvent.body.file),
             diagnostics: diagnosticEvent.body.diagnostics
           })
@@ -815,13 +815,13 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   public getProjectRootPath(uri: string): string {
     let u = Uri.parse(uri)
     if (u.scheme != 'file') return workspace.cwd
-    if (u.fsPath.startsWith(workspace.root) && workspace.root != os.homedir()) return workspace.cwd
+    if (u.fsPath.startsWith(workspace.root) && workspace.root != os.homedir()) return workspace.root
     let res = findUp.sync(['tsconfig.json', 'jsconfig.json'], { cwd: path.dirname(u.fsPath) })
     return res ? path.dirname(res) : workspace.cwd
   }
 }
 
-function getDignosticsKind(event: Proto.Event): DiagnosticKind {
+function getDiagnosticsKind(event: Proto.Event): DiagnosticKind {
   switch (event.event) {
     case 'syntaxDiag':
       return DiagnosticKind.Syntax
