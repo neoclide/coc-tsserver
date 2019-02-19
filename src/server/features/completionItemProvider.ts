@@ -15,6 +15,7 @@ import * as Previewer from '../utils/previewer'
 import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
 import FileConfigurationManager, { SuggestOptions } from './fileConfigurationManager'
+import SnippetString from '../utils/SnippetString'
 
 // command center
 export interface CommandItem {
@@ -352,26 +353,16 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     detail: Proto.CompletionEntryDetails
   ): void {
     let { displayParts } = detail
-    let snippet = (item.insertText || item.label) + '(' // tslint:disable-line
     const parameterListParts = getParameterListParts(displayParts)
-    let { parts, hasOptionalParameters } = parameterListParts
-    let idx = 1
-    if (parts.length == 0 && hasOptionalParameters) {
-      item.insertText = snippet + '${1})$0'
-      return
+    const snippet = new SnippetString()
+    snippet.appendText(`${item.insertText || item.label}(`)
+    appendJoinedPlaceholders(snippet, parameterListParts.parts, ', ')
+    if (parameterListParts.hasOptionalParameters) {
+      snippet.appendTabstop()
     }
-    for (let part of parts) {
-      snippet += '${' + idx + ':' + part.text + '}' // tslint:disable-line
-      if (idx == parts.length) {
-        if (hasOptionalParameters) snippet += '${' + (idx + 1) + '}' // tslint:disable-line
-      } else {
-        snippet += ', '
-      }
-      idx = idx + 1
-    }
-    snippet += ')$0'
-    // tslint:disable-next-line:deprecation
-    item.insertText = snippet
+    snippet.appendText(')')
+    snippet.appendTabstop(0)
+    item.insertText = snippet.value
   }
 
   private async isValidFunctionCompletionContext(
@@ -414,4 +405,18 @@ function shouldExcludeCompletionEntry(
       (element.kind === PConst.Kind.directory || element.kind === PConst.Kind.script || element.kind === PConst.Kind.externalModuleName))
     || (!completionConfiguration.autoImports && element.hasAction)
   )
+}
+
+function appendJoinedPlaceholders(
+  snippet: SnippetString,
+  parts: ReadonlyArray<Proto.SymbolDisplayPart>,
+  joiner: string
+) {
+  for (let i = 0; i < parts.length; ++i) {
+    const paramterPart = parts[i]
+    snippet.appendPlaceholder(paramterPart.text)
+    if (i !== parts.length - 1) {
+      snippet.appendText(joiner)
+    }
+  }
 }
