@@ -20,6 +20,7 @@ import HoverProvider from './features/hover'
 import ImplementationsCodeLensProvider from './features/implementationsCodeLens'
 // import TagCompletionProvider from './features/tagCompletion'
 import QuickfixProvider from './features/quickfix'
+import ImportfixProvider from './features/importFix'
 import RefactorProvider from './features/refactor'
 import ReferenceProvider from './features/references'
 import ReferencesCodeLensProvider from './features/referencesCodeLens'
@@ -250,6 +251,13 @@ export default class LanguageProvider {
       languages.registerCodeActionProvider(
         languageIds,
         new QuickfixProvider(client, this.diagnosticsManager, this.bufferSyncSupport),
+        'tsserver',
+        [CodeActionKind.QuickFix]))
+
+    this.disposables.push(
+      languages.registerCodeActionProvider(
+        languageIds,
+        new ImportfixProvider(this.bufferSyncSupport),
         'tsserver',
         [CodeActionKind.QuickFix]))
     let cachedResponse = new CachedNavTreeResponse()

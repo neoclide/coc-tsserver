@@ -1,4 +1,4 @@
-import { diagnosticManager, workspace } from 'coc.nvim'
+import { diagnosticManager, workspace, commands } from 'coc.nvim'
 import { CancellationToken, Diagnostic } from 'vscode-languageserver-protocol'
 import URI from 'vscode-uri'
 import * as Proto from './protocol'
@@ -6,36 +6,7 @@ import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import * as typeConverters from './utils/typeConverters'
 import { TextEdit, Range } from 'vscode-languageserver-types'
 import { installModules } from './utils/modules'
-
-const nodeModules = [
-  'assert',
-  'cluster',
-  'crypto',
-  'dns',
-  'domain',
-  'events',
-  'fs',
-  'http',
-  'http2',
-  'https',
-  'inspector',
-  'net',
-  'os',
-  'path',
-  'punycode',
-  'querystring',
-  'readline',
-  'repl',
-  'stream',
-  'string_decoder',
-  'tls',
-  'tty',
-  'url',
-  'util',
-  'v8',
-  'vm',
-  'zlib',
-  'perf_hooks']
+import { nodeModules } from './utils/helper'
 
 export interface Command {
   readonly id: string | string[]
@@ -153,6 +124,8 @@ export class AutoFixCommand implements Command {
     }, [] as Diagnostic[])
     let client = this.client.serviceClient
     let edits: TextEdit[] = []
+    let command: string
+    let names: string[] = []
     for (let diagnostic of diagnostics) {
       const args: Proto.CodeFixRequestArgs = {
         ...typeConverters.Range.toFileRangeRequestArgs(file, diagnostic.range),
@@ -164,11 +137,13 @@ export class AutoFixCommand implements Command {
           let { range } = diagnostic
           let line = document.getline(range.start.line)
           let name = line.slice(range.start.character, range.end.character)
-          if (nodeModules.indexOf(name) !== -1) {
+          if (nodeModules.indexOf(name) !== -1 && names.indexOf(name) == -1) {
+            names.push(name)
             edits.push({
               range: Range.create(0, 0, 0, 0),
               newText: `import ${name} from '${name}'\n`
             })
+            command = 'tsserver.organizeImports'
           }
         }
         continue
@@ -186,5 +161,6 @@ export class AutoFixCommand implements Command {
       }
     }
     if (edits.length) await document.applyEdits(workspace.nvim, edits)
+    if (command) await commands.executeCommand(command)
   }
 }
