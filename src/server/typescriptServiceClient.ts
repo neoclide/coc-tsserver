@@ -837,6 +837,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     if (this.apiVersion.gte(API.v314)) {
       if (!this.servicePromise) return
       this.servicePromise.then(() => {
+        // tslint:disable-next-line: no-floating-promises
         this.execute('configurePlugin', { pluginName, configuration }, false)
       })
     }
