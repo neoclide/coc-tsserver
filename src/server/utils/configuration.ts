@@ -64,10 +64,6 @@ export class TypeScriptServiceConfiguration {
     return this._configuration.get<string>('typingsCacheLocation', '')
   }
 
-  public get tsServerPluginNames(): string[] {
-    return this._configuration.get<string[]>('pluginNames', [])
-  }
-
   public get tsServerPluginRoot(): string | null {
     return this._configuration.get<string | null>('tsServerPluginRoot', null)
   }

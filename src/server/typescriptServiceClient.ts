@@ -23,6 +23,7 @@ import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
 import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionProvider'
 import VersionStatus from './utils/versionStatus'
+import { PluginManager } from '../utils/plugins'
 import { ICallback, Reader } from './utils/wireProtocol'
 
 interface CallbackItem {
@@ -166,7 +167,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private _apiVersion: API
   private readonly disposables: Disposable[] = []
 
-  constructor() {
+  constructor(private pluginManager: PluginManager) {
     this.pathSeparator = path.sep
     this.lastStart = Date.now()
     this.servicePromise = null
@@ -180,6 +181,13 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this._apiVersion = API.defaultVersion
     this.tracer = new Tracer(this.logger)
     this.versionStatus = new VersionStatus(this.normalizePath.bind(this))
+    pluginManager.onDidUpdateConfig(update => {
+      this.configurePlugin(update.pluginId, update.config)
+    }, null, this.disposables)
+
+    pluginManager.onDidChangePlugins(() => {
+      this.restartTsServer()
+    }, null, this.disposables)
   }
 
   private _onDiagnosticsReceived = new Emitter<TsDiagnostics>()
@@ -781,13 +789,19 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
 
     if (this.apiVersion.gte(API.v230)) {
-      const plugins = this._configuration.tsServerPluginNames
+      const pluginNames = this.pluginManager.plugins.map(x => x.name)
       const pluginRoot = this._configuration.tsServerPluginRoot
-      if (plugins.length) {
-        args.push('--globalPlugins', plugins.join(','))
-        if (pluginRoot) {
-          args.push('--pluginProbeLocations', pluginRoot)
+      const pluginPaths = pluginRoot ? [pluginRoot] : []
+
+      if (pluginNames.length) {
+        args.push('--globalPlugins', pluginNames.join(','))
+        for (const plugin of this.pluginManager.plugins) {
+          pluginPaths.push(plugin.path)
         }
+      }
+
+      if (pluginPaths.length) {
+        args.push('--pluginProbeLocations', pluginPaths.join(','))
       }
     }
 
@@ -808,7 +822,6 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     if (this.apiVersion.gte(API.v291)) {
       args.push('--noGetErrOnBackgroundUpdate')
     }
-
     return args
   }
 
@@ -818,6 +831,15 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     if (u.fsPath.startsWith(workspace.root) && workspace.root != os.homedir()) return workspace.root
     let res = findUp.sync(['tsconfig.json', 'jsconfig.json'], { cwd: path.dirname(u.fsPath) })
     return res ? path.dirname(res) : workspace.cwd
+  }
+
+  public configurePlugin(pluginName: string, configuration: {}): any {
+    if (this.apiVersion.gte(API.v314)) {
+      if (!this.servicePromise) return
+      this.servicePromise.then(() => {
+        this.execute('configurePlugin', { pluginName, configuration }, false)
+      })
+    }
   }
 }
 

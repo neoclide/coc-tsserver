@@ -7,6 +7,7 @@ import * as typeConverters from './utils/typeConverters'
 import { TextEdit, Range } from 'vscode-languageserver-types'
 import { installModules } from './utils/modules'
 import { nodeModules } from './utils/helper'
+import { PluginManager } from '../utils/plugins'
 
 export interface Command {
   readonly id: string | string[]
@@ -162,5 +163,17 @@ export class AutoFixCommand implements Command {
     }
     if (edits.length) await document.applyEdits(workspace.nvim, edits)
     if (command) await commands.executeCommand(command)
+  }
+}
+
+export class ConfigurePluginCommand implements Command {
+  public readonly id = '_typescript.configurePlugin'
+
+  public constructor(
+    private readonly pluginManager: PluginManager,
+  ) { }
+
+  public execute(pluginId: string, configuration: any) {
+    this.pluginManager.setConfiguration(pluginId, configuration)
   }
 }

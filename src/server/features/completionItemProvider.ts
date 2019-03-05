@@ -50,7 +50,7 @@ class ApplyCompletionCodeActionCommand implements CommandItem {
 
 export default class TypeScriptCompletionItemProvider implements CompletionItemProvider {
 
-  public static readonly triggerCharacters = ['.', '"', '\'', '/', '@', '<']
+  public static readonly triggerCharacters = ['.', '"', '\'', '/', '@']
   private completeOption: SuggestOptions
   private noSemicolons = false
 

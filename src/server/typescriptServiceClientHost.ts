@@ -12,6 +12,7 @@ import TypeScriptServiceClient from './typescriptServiceClient'
 import { LanguageDescription } from './utils/languageDescription'
 import * as typeConverters from './utils/typeConverters'
 import TypingsStatus, { AtaProgressReporter } from './utils/typingsStatus'
+import { PluginManager } from '../utils/plugins'
 
 // Style check diagnostics that can be reported as warnings
 const styleCheckDiagnostics = [
@@ -32,7 +33,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
   private readonly disposables: Disposable[] = []
   private reportStyleCheckAsWarnings = true
 
-  constructor(descriptions: LanguageDescription[]) {
+  constructor(descriptions: LanguageDescription[], pluginManager: PluginManager) {
     let timer: NodeJS.Timer
     const handleProjectChange = () => {
       if (timer) clearTimeout(timer)
@@ -50,7 +51,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
     packageFileWatcher.onDidCreate(this.reloadProjects, this, this.disposables)
     packageFileWatcher.onDidChange(handleProjectChange, this, this.disposables)
 
-    this.client = new TypeScriptServiceClient()
+    this.client = new TypeScriptServiceClient(pluginManager)
     this.disposables.push(this.client)
     this.client.onDiagnosticsReceived(({ kind, resource, diagnostics }) => {
       this.diagnosticsReceived(kind, resource, diagnostics)

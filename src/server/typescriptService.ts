@@ -51,6 +51,11 @@ export interface ITypeScriptServiceClient {
     token?: CancellationToken
   ): Promise<Proto.ConfigureResponse>
   execute(
+    command: 'configurePlugin',
+    args: Proto.ConfigurePluginRequestArguments,
+    token?: CancellationToken
+  ): Promise<Proto.ConfigureResponse>
+  execute(
     command: 'open',
     args: Proto.OpenRequestArgs,
     expectedResult: boolean,

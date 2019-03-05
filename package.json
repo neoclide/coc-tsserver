@@ -131,17 +131,12 @@
           ],
           "description": "Trace level of tsserver"
         },
-        "tserver.pluginNames": {
-          "type": "array",
+        "tsserver.pluginRoot": {
+          "type": "string",
           "default": [],
           "items": {
             "type": "string"
           },
-          "description": "Module names of tsserver plugins"
-        },
-        "tsserver.pluginRoot": {
-          "type": "string",
-          "default": "",
           "description": "Folder contains tsserver plugins"
         },
         "tsserver.debugPort": {

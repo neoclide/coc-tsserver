@@ -1,21 +1,25 @@
 import { commands, ExtensionContext, services, workspace } from 'coc.nvim'
 import TsserverService from './server'
-import { Command, OpenTsServerLogCommand, AutoFixCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
+import { AutoFixCommand, Command, ConfigurePluginCommand, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
 import OrganizeImportsCommand from './server/organizeImports'
+import { PluginManager } from './utils/plugins'
 
-export async function activate(context: ExtensionContext): Promise<void> {
+interface API {
+  configurePlugin(pluginId: string, configuration: {}): void
+}
+
+export async function activate(context: ExtensionContext): Promise<API> {
   let { subscriptions } = context
   const config = workspace.getConfiguration().get<any>('tsserver', {})
   if (!config.enable) return
-  const service = new TsserverService()
+  const pluginManager = new PluginManager()
+  const service = new TsserverService(pluginManager)
 
   subscriptions.push(
     (services as any).regist(service)
   )
 
-  if (!service.clientHost) {
-    await service.start()
-  }
+  await service.start()
 
   function registCommand(cmd: Command): void {
     let { id, execute } = cmd
@@ -27,6 +31,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   registCommand(new OpenTsServerLogCommand(service.clientHost))
   registCommand(new TypeScriptGoToProjectConfigCommand(service.clientHost))
   registCommand(new OrganizeImportsCommand(service.clientHost))
+  registCommand(new ConfigurePluginCommand(pluginManager))
   registCommand(commands.register({
     id: 'tsserver.restart',
     execute: (): void => {
@@ -38,4 +43,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
       })
     }
   }))
+  return {
+    configurePlugin: (pluginId: string, configuration: {}): void => {
+      pluginManager.setConfiguration(pluginId, configuration)
+    }
+  }
 }

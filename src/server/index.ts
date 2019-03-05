@@ -3,6 +3,7 @@ import { Disposable, DocumentSelector, Emitter, Event } from 'vscode-languageser
 import URI from 'vscode-uri'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import { LanguageDescription, standardLanguageDescriptions } from './utils/languageDescription'
+import { PluginManager } from '../utils/plugins'
 
 function wait(ms: number): Promise<any> {
   return new Promise(resolve => {
@@ -25,7 +26,7 @@ export default class TsserverService implements IServiceProvider {
   private readonly disposables: Disposable[] = []
   private descriptions: LanguageDescription[] = []
 
-  constructor() {
+  constructor(private pluginManager: PluginManager) {
     const config = workspace.getConfiguration('tsserver')
     const enableJavascript = !!config.get<boolean>('enableJavascript')
     this.enable = config.get<boolean>('enable')
@@ -42,8 +43,9 @@ export default class TsserverService implements IServiceProvider {
   }
 
   public start(): Promise<void> {
+    if (this.clientHost) return
     this.state = ServiceStat.Starting
-    this.clientHost = new TypeScriptServiceClientHost(this.descriptions)
+    this.clientHost = new TypeScriptServiceClientHost(this.descriptions, this.pluginManager)
     this.disposables.push(this.clientHost)
     let client = this.clientHost.serviceClient
     return new Promise(resolve => {
