@@ -34,7 +34,7 @@ export default class TypeScriptFormattingProvider
     )
     try {
       const response = await this.client.execute('format', args, token)
-      if (response.body) {
+      if (response.type == 'response' && response.body) {
         let edits = response.body.map(typeConverters.TextEdit.fromCodeEdit)
         if (this.formattingOptionsManager.removeSemicolons(document.languageId)) {
           return removeSemicolon(document, edits)
@@ -109,7 +109,11 @@ export default class TypeScriptFormattingProvider
       key: ch
     }
     try {
-      const { body } = await this.client.execute('formatonkey', args, token)
+      const res = await this.client.execute('formatonkey', args, token)
+      if (res.type != 'response') {
+        return []
+      }
+      const { body } = res
       const edits = body
       const result: TextEdit[] = []
       if (!edits) {

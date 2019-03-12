@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DidChangeTextDocumentParams, Disposable, TextDocument } from 'vscode-languageserver-protocol'
 import { disposeAll, workspace } from 'coc.nvim'
+import { CancellationTokenSource, DidChangeTextDocumentParams, Disposable, TextDocument } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
@@ -40,6 +40,7 @@ export default class BufferSyncSupport {
 
   private readonly pendingDiagnostics = new Map<string, number>()
   private readonly diagnosticDelayer: Delayer<any>
+  private pendingGetErr: GetErrRequest | undefined
 
   constructor(
     client: ITypeScriptServiceClient,
@@ -105,7 +106,7 @@ export default class BufferSyncSupport {
       if (root) args.projectRootPath = root
     }
 
-    this.client.execute('open', args, false) // tslint:disable-line
+    this.client.executeWithoutWaitingForResponse('open', args) // tslint:disable-line
     this.requestDiagnostic(uri)
   }
 
@@ -116,7 +117,7 @@ export default class BufferSyncSupport {
     const args: Proto.FileRequestArgs = {
       file: filepath
     }
-    this.client.execute('close', args, false) // tslint:disable-line
+    this.client.executeWithoutWaitingForResponse('close', args) // tslint:disable-line
   }
 
   private onDidChangeTextDocument(e: DidChangeTextDocumentParams): void {
@@ -133,9 +134,33 @@ export default class BufferSyncSupport {
         endOffset: range ? range.end.character + 1 : 1,
         insertString: text
       }
-      this.client.execute('change', args, false) // tslint:disable-line
+      this.client.executeWithoutWaitingForResponse('change', args) // tslint:disable-line
     }
-    this.requestDiagnostic(uri)
+    const didTrigger = this.requestDiagnostic(uri)
+    if (!didTrigger && this.pendingGetErr) {
+      // In this case we always want to re-trigger all diagnostics
+      this.pendingGetErr.cancel()
+      this.pendingGetErr = undefined
+      this.triggerDiagnostics()
+    }
+  }
+
+  public interuptGetErr<R>(f: () => R): R {
+    if (!this.pendingGetErr) {
+      return f()
+    }
+
+    this.pendingGetErr.cancel()
+    this.pendingGetErr = undefined
+    const result = f()
+    this.triggerDiagnostics()
+    return result
+  }
+
+  private triggerDiagnostics(delay = 200): void {
+    this.diagnosticDelayer.trigger(() => {
+      this.sendPendingDiagnostics()
+    }, delay)
   }
 
   public requestAllDiagnostics(): void {
@@ -150,19 +175,17 @@ export default class BufferSyncSupport {
     }, 200)
   }
 
-  public requestDiagnostic(uri: string): void {
+  public requestDiagnostic(uri: string): boolean {
     if (!this._validate) {
-      return
+      return false
     }
     let document = workspace.getDocument(uri)
-    if (!document) return
+    if (!document) return false
     this.pendingDiagnostics.set(uri, Date.now())
-    let delay = 300
     const lineCount = document.lineCount
-    delay = Math.min(Math.max(Math.ceil(lineCount / 20), 300), 800)
-    this.diagnosticDelayer.trigger(() => {
-      this.sendPendingDiagnostics()
-    }, delay) // tslint:disable-line
+    const delay = Math.min(Math.max(Math.ceil(lineCount / 20), 300), 800)
+    this.triggerDiagnostics(delay)
+    return true
   }
 
   public hasPendingDiagnostics(uri: string): boolean {
@@ -173,24 +196,68 @@ export default class BufferSyncSupport {
     if (!this._validate) {
       return
     }
-    const files = Array.from(this.pendingDiagnostics.entries())
+    const uris = Array.from(this.pendingDiagnostics.entries())
       .sort((a, b) => a[1] - b[1])
-      .map(entry => this.client.toPath(entry[0]))
+      .map(entry => entry[0])
 
     // Add all open TS buffers to the geterr request. They might be visible
     for (const uri of this.uris) {
-      if (!this.pendingDiagnostics.get(uri)) {
-        let file = this.client.toPath(uri)
-        files.push(file)
+      if (uris.indexOf(uri) == -1) {
+        uris.push(uri)
       }
     }
+    let files = uris.map(uri => this.client.toPath(uri))
     if (files.length) {
-      const args: Proto.GeterrRequestArgs = {
-        delay: 0,
-        files
-      }
-      this.client.execute('geterr', args, false) // tslint:disable-line
+      if (this.pendingGetErr) this.pendingGetErr.cancel()
+      const getErr = this.pendingGetErr = GetErrRequest.executeGetErrRequest(this.client, files, () => {
+        if (this.pendingGetErr === getErr) {
+          this.pendingGetErr = undefined
+        }
+      })
     }
     this.pendingDiagnostics.clear()
+  }
+}
+
+class GetErrRequest {
+
+  public static executeGetErrRequest(
+    client: ITypeScriptServiceClient,
+    files: string[],
+    onDone: () => void
+  ): GetErrRequest {
+    const token = new CancellationTokenSource()
+    return new GetErrRequest(client, files, token, onDone)
+  }
+
+  private _done = false
+
+  private constructor(
+    client: ITypeScriptServiceClient,
+    public readonly files: string[],
+    private readonly _token: CancellationTokenSource,
+    onDone: () => void
+  ) {
+    const args: Proto.GeterrRequestArgs = {
+      delay: 0,
+      files: this.files
+    }
+    const done = () => {
+      if (this._done) {
+        return
+      }
+      this._done = true
+      onDone()
+    }
+
+    client.executeAsync('geterr', args, _token.token).then(done, done)
+  }
+
+  public cancel(): any {
+    if (!this._done) {
+      this._token.cancel()
+    }
+
+    this._token.dispose()
   }
 }

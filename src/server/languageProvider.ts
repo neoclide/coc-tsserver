@@ -117,6 +117,7 @@ export default class LanguageProvider {
           client,
           typingsStatus,
           this.fileConfigurationManager,
+          this.bufferSyncSupport,
           this.description.id
         ),
         CompletionItemProvider.triggerCharacters

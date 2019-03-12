@@ -13,7 +13,7 @@ import which from 'which'
 import { DiagnosticKind, ServiceStat, workspace, disposeAll } from 'coc.nvim'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import * as Proto from './protocol'
-import { ITypeScriptServiceClient } from './typescriptService'
+import { ITypeScriptServiceClient, ServerResponse } from './typescriptService'
 import API from './utils/api'
 import { TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
@@ -25,83 +25,8 @@ import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionPro
 import VersionStatus from './utils/versionStatus'
 import { PluginManager } from '../utils/plugins'
 import { ICallback, Reader } from './utils/wireProtocol'
-
-interface CallbackItem {
-  c: (value: any) => void
-  e: (err: any) => void
-  start: number
-}
-
-class CallbackMap {
-  private readonly callbacks: Map<number, CallbackItem> = new Map()
-  public pendingResponses = 0
-
-  public destroy(e: any): void {
-    for (const callback of this.callbacks.values()) {
-      callback.e(e)
-    }
-    this.callbacks.clear()
-    this.pendingResponses = 0
-  }
-
-  public add(seq: number, callback: CallbackItem): void {
-    this.callbacks.set(seq, callback)
-    ++this.pendingResponses
-  }
-
-  public fetch(seq: number): CallbackItem | undefined {
-    const callback = this.callbacks.get(seq)
-    this.delete(seq)
-    return callback
-  }
-
-  private delete(seq: number): void {
-    if (this.callbacks.delete(seq)) {
-      --this.pendingResponses
-    }
-  }
-}
-
-interface RequestItem {
-  request: Proto.Request
-  callbacks: CallbackItem | null
-}
-
-class RequestQueue {
-  private queue: RequestItem[] = []
-  private sequenceNumber = 0
-
-  public get length(): number {
-    return this.queue.length
-  }
-
-  public push(item: RequestItem): void {
-    this.queue.push(item)
-  }
-
-  public shift(): RequestItem | undefined {
-    return this.queue.shift()
-  }
-
-  public tryCancelPendingRequest(seq: number): boolean {
-    for (let i = 0; i < this.queue.length; i++) {
-      if (this.queue[i].request.seq === seq) {
-        this.queue.splice(i, 1)
-        return true
-      }
-    }
-    return false
-  }
-
-  public createRequest(command: string, args: any): Proto.Request {
-    return {
-      seq: this.sequenceNumber++,
-      type: 'request',
-      command,
-      arguments: args
-    }
-  }
-}
+import { CallbackMap } from './callbackMap'
+import { RequestItem, RequestQueue, RequestQueueingType } from './requestQueue'
 
 class ForkedTsServerProcess {
   constructor(private childProcess: cp.ChildProcess) { }
@@ -154,8 +79,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private lastStart: number
   private numberRestarts: number
   private cancellationPipeName: string | null = null
-  private requestQueue: RequestQueue
-  private callbacks: CallbackMap
+  private _callbacks = new CallbackMap<Proto.Response>()
+  private _requestQueue = new RequestQueue()
+  private _pendingResponses = new Set<number>()
+
   private versionStatus: VersionStatus
   private readonly _onTsServerStarted = new Emitter<API>()
   private readonly _onProjectLanguageServiceStateChanged = new Emitter<Proto.ProjectLanguageServiceStateEventBody>()
@@ -174,8 +101,6 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.lastError = null
     this.numberRestarts = 0
     this.fileConfigurationManager = new FileConfigurationManager(this)
-    this.requestQueue = new RequestQueue()
-    this.callbacks = new CallbackMap()
     this._configuration = TypeScriptServiceConfiguration.loadFromWorkspace()
     this.versionProvider = new TypeScriptVersionProvider(this._configuration)
     this._apiVersion = API.defaultVersion
@@ -328,8 +253,6 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
     this._apiVersion = currentVersion.version
     this.versionStatus.onDidChangeTypeScriptVersion(currentVersion)
-    this.requestQueue = new RequestQueue()
-    this.callbacks = new CallbackMap()
     this.lastError = null
     const tsServerForkArgs = await this.getTsServerArgs()
     const debugPort = this._configuration.debugPort
@@ -436,7 +359,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       const configureOptions: Proto.ConfigureRequestArguments = {
         hostInfo: 'nvim-coc'
       }
-      this.execute('configure', configureOptions) // tslint:disable-line
+      this.execute('configure', configureOptions, CancellationToken.None) // tslint:disable-line
     }
     this.setCompilerOptionsForInferredProjects(this._configuration)
     if (resendModels) {
@@ -451,7 +374,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     const args: Proto.SetCompilerOptionsForInferredProjectsArgs = {
       options: this.getCompilerOptionsForInferredProjects(configuration)
     }
-    this.execute('compilerOptionsForInferredProjects', args, true) // tslint:disable-line
+    this.executeWithoutWaitingForResponse('compilerOptionsForInferredProjects', args) // tslint:disable-line
   }
 
   private getCompilerOptionsForInferredProjects(
@@ -469,8 +392,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.state = ServiceStat.Stopped
     this.servicePromise = null
     this.tsServerLogFile = null
-    this.callbacks.destroy(new Error('Service died.'))
-    this.callbacks = new CallbackMap()
+    this._callbacks.destroy('Service died.')
+    this._callbacks = new CallbackMap<Proto.Response>()
+    this._requestQueue = new RequestQueue()
+    this._pendingResponses = new Set<number>()
     if (restart) {
       const diff = Date.now() - this.lastStart
       this.numberRestarts++
@@ -558,58 +483,72 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   }
 
   public execute(
-    command: string,
-    args: any,
-    expectsResultOrToken?: boolean | CancellationToken
-  ): Promise<any> {
+    command: string, args: any,
+    token: CancellationToken,
+    lowPriority?: boolean): Promise<ServerResponse.Response<Proto.Response>> {
+    return this.executeImpl(command, args, {
+      isAsync: false,
+      token,
+      expectsResult: true,
+      lowPriority
+    })
+  }
+
+  public executeAsync(
+    command: string, args: Proto.GeterrRequestArgs,
+    token: CancellationToken): Promise<ServerResponse.Response<Proto.Response>> {
+    return this.executeImpl(command, args, {
+      isAsync: true,
+      token,
+      expectsResult: true
+    })
+  }
+
+  public executeWithoutWaitingForResponse(command: string, args: any): void {
+    this.executeImpl(command, args, {
+      isAsync: false,
+      token: undefined,
+      expectsResult: false
+    })
+  }
+
+  private executeImpl(command: string, args: any, executeInfo: { isAsync: boolean, token?: CancellationToken, expectsResult: false, lowPriority?: boolean }): undefined
+  private executeImpl(command: string, args: any, executeInfo: { isAsync: boolean, token?: CancellationToken, expectsResult: boolean, lowPriority?: boolean }): Promise<ServerResponse.Response<Proto.Response>>
+  private executeImpl(command: string, args: any, executeInfo: { isAsync: boolean, token?: CancellationToken, expectsResult: boolean, lowPriority?: boolean }): Promise<ServerResponse.Response<Proto.Response>> | undefined {
     if (this.servicePromise == null) {
-      return Promise.resolve()
-    }
-    let token: CancellationToken | undefined
-    let expectsResult = true
-    if (typeof expectsResultOrToken === 'boolean') {
-      expectsResult = expectsResultOrToken
-    } else {
-      token = expectsResultOrToken
+      return
     }
 
-    const request = this.requestQueue.createRequest(command, args)
+    const request = this._requestQueue.createRequest(command, args)
     const requestInfo: RequestItem = {
       request,
-      callbacks: null
+      expectsResponse: executeInfo.expectsResult,
+      isAsync: executeInfo.isAsync,
+      queueingType: getQueueingType(command, executeInfo.lowPriority)
     }
-    let result: Promise<any>
-    if (expectsResult) {
-      let wasCancelled = false
-      result = new Promise<any>((resolve, reject) => {
-        requestInfo.callbacks = { c: resolve, e: reject, start: Date.now() }
-        if (token) {
-          token.onCancellationRequested(() => {
-            wasCancelled = true
-            this.tryCancelRequest(request.seq)
+    let result: Promise<ServerResponse.Response<Proto.Response>> | undefined
+    if (executeInfo.expectsResult) {
+      result = new Promise<ServerResponse.Response<Proto.Response>>((resolve, reject) => {
+        this._callbacks.add(request.seq, { onSuccess: resolve, onError: reject, startTime: Date.now(), isAsync: executeInfo.isAsync }, executeInfo.isAsync)
+
+        if (executeInfo.token) {
+          executeInfo.token.onCancellationRequested(() => {
+            this.tryCancelRequest(request.seq, command)
           })
         }
-      }).catch((err: any) => {
-        if (!wasCancelled && command != 'signatureHelp') {
-          this.error(`'${command}' request failed with error.`, err)
-        }
+      }).catch((err: Error) => {
         throw err
       })
-    } else {
-      result = Promise.resolve(null)
     }
-    this.requestQueue.push(requestInfo)
-    this.sendNextRequests()
 
+    this._requestQueue.enqueue(requestInfo)
+    this.sendNextRequests()
     return result
   }
 
   private sendNextRequests(): void {
-    while (
-      this.callbacks.pendingResponses === 0 &&
-      this.requestQueue.length > 0
-    ) {
-      const item = this.requestQueue.shift()
+    while (this._pendingResponses.size === 0 && this._requestQueue.length > 0) {
+      const item = this._requestQueue.dequeue()
       if (item) {
         this.sendRequest(item)
       }
@@ -618,35 +557,32 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   private sendRequest(requestItem: RequestItem): void {
     const serverRequest = requestItem.request
-    this.tracer.traceRequest(
-      serverRequest,
-      !!requestItem.callbacks,
-      this.requestQueue.length
-    )
-    if (requestItem.callbacks) {
-      this.callbacks.add(serverRequest.seq, requestItem.callbacks)
+    this.tracer.traceRequest(serverRequest, requestItem.expectsResponse, this._requestQueue.length)
+
+    if (requestItem.expectsResponse && !requestItem.isAsync) {
+      this._pendingResponses.add(requestItem.request.seq)
     }
-    this.service()
-      .then(childProcess => {
+    this.service().then(childProcess => {
+      try {
         childProcess.write(serverRequest)
-      })
-      .then(undefined, err => {
-        const callback = this.callbacks.fetch(serverRequest.seq)
+      } catch (err) {
+        const callback = this.fetchCallback(serverRequest.seq)
         if (callback) {
-          callback.e(err)
+          callback.onError(err)
         }
-      })
+      }
+    })
   }
 
-  private tryCancelRequest(seq: number): boolean {
+  private tryCancelRequest(seq: number, command: string): boolean {
     try {
-      if (this.requestQueue.tryCancelPendingRequest(seq)) {
-        this.tracer.logTrace(`TypeScript Service: canceled request with sequence number ${seq}`)
+      if (this._requestQueue.tryDeletePendingRequest(seq)) {
+        this.tracer.logTrace(`TypeScript Server: canceled request with sequence number ${seq}`)
         return true
       }
 
-      if (this.apiVersion.gte(API.v222) && this.cancellationPipeName) {
-        this.tracer.logTrace(`TypeScript Service: trying to cancel ongoing request with sequence number ${seq}`)
+      if (this.cancellationPipeName) {
+        this.tracer.logTrace(`TypeScript Server: trying to cancel ongoing request with sequence number ${seq}`)
         try {
           fs.writeFileSync(this.cancellationPipeName + seq, '')
         } catch {
@@ -655,40 +591,70 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         return true
       }
 
-      this.tracer.logTrace(
-        `TypeScript Service: tried to cancel request with sequence number ${seq}. But request got already delivered.`
-      )
+      this.tracer.logTrace(`TypeScript Server: tried to cancel request with sequence number ${seq}. But request got already delivered.`)
       return false
     } finally {
-      const p = this.callbacks.fetch(seq)
-      if (p) {
-        p.e(new Error(`Cancelled Request ${seq}`))
+      const callback = this.fetchCallback(seq)
+      if (callback) {
+        callback.onSuccess(new ServerResponse.Cancelled(`Cancelled request ${seq} - ${command}`))
       }
     }
   }
 
+  private fetchCallback(seq: number): any {
+    const callback = this._callbacks.fetch(seq)
+    if (!callback) {
+      return undefined
+    }
+
+    this._pendingResponses.delete(seq)
+    return callback
+  }
+
   private dispatchMessage(message: Proto.Message): void {
     try {
-      if (message.type === 'response') {
-        const response: Proto.Response = message as Proto.Response
-        const p = this.callbacks.fetch(response.request_seq)
-        if (p) {
-          this.tracer.traceResponse(response, p.start)
-          if (response.success) {
-            p.c(response)
+      switch (message.type) {
+        case 'response':
+          this.dispatchResponse(message as Proto.Response)
+          break
+
+        case 'event':
+          const event = message as Proto.Event
+          if (event.event === 'requestCompleted') {
+            const seq = (event as Proto.RequestCompletedEvent).body.request_seq
+            const p = this._callbacks.fetch(seq)
+            if (p) {
+              this.tracer.traceRequestCompleted('requestCompleted', seq, p.startTime)
+              p.onSuccess(undefined)
+            }
           } else {
-            p.e(response)
+            this.tracer.traceEvent(event)
+            this.dispatchEvent(event)
           }
-        }
-      } else if (message.type === 'event') {
-        const event: Proto.Event = message as Proto.Event
-        this.tracer.traceEvent(event)
-        this.dispatchEvent(event)
-      } else {
-        throw new Error('Unknown message type ' + message.type + ' received')
+          break
+
+        default:
+          throw new Error(`Unknown message type ${message.type} received`)
       }
     } finally {
       this.sendNextRequests()
+    }
+  }
+
+  private dispatchResponse(response: Proto.Response): void {
+    const callback = this.fetchCallback(response.request_seq)
+    if (!callback) {
+      return
+    }
+
+    this.tracer.traceResponse(response, callback.startTime)
+    if (response.success) {
+      callback.onSuccess(response)
+    } else if (response.message === 'No content available.') {
+      // Special case where response itself is successful but there is not any data to return.
+      callback.onSuccess(ServerResponse.NoContent)
+    } else {
+      callback.onError(new Error(response.message))
     }
   }
 
@@ -838,7 +804,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       if (!this.servicePromise) return
       this.servicePromise.then(() => {
         // tslint:disable-next-line: no-floating-promises
-        this.execute('configurePlugin', { pluginName, configuration }, false)
+        this.executeWithoutWaitingForResponse('configurePlugin', { pluginName, configuration })
       })
     }
   }
@@ -854,4 +820,16 @@ function getDiagnosticsKind(event: Proto.Event): DiagnosticKind {
       return DiagnosticKind.Suggestion
   }
   throw new Error('Unknown dignostics kind')
+}
+
+const fenceCommands = new Set(['change', 'close', 'open'])
+
+function getQueueingType(
+  command: string,
+  lowPriority?: boolean
+): RequestQueueingType {
+  if (fenceCommands.has(command)) {
+    return RequestQueueingType.Fence
+  }
+  return lowPriority ? RequestQueueingType.LowPriority : RequestQueueingType.Normal
 }

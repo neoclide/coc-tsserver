@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { TextDocumentWillSaveEvent, workspace } from 'coc.nvim'
-import { TextDocument, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
+import { TextDocument, TextEdit, WorkspaceEdit, CancellationToken } from 'vscode-languageserver-protocol'
 import { Command } from './commands'
 import Proto from './protocol'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
@@ -45,8 +45,8 @@ export default class OrganizeImportsCommand implements Command {
         }
       }
     }
-    const response = await client.execute('organizeImports', args)
-    if (!response || !response.success) {
+    const response = await client.execute('organizeImports', args, CancellationToken.None)
+    if (!response || response.type != 'response' || !response.success) {
       return
     }
 

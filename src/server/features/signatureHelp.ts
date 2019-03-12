@@ -31,7 +31,7 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
     let info: Proto.SignatureHelpItems | undefined
     try {
       const response = await this.client.execute('signatureHelp', args, token)
-      info = response.body
+      info = (response as any).body
       if (!info) return undefined
     } catch {
       return undefined

@@ -25,7 +25,7 @@ export default class TypeScriptDocumentHighlightProvider implements DocumentHigh
     )
     try {
       const response = await this.client.execute('occurrences', args, token)
-      if (response && response.body) {
+      if (response.type == 'response' && response.body) {
         return response.body
           .filter(x => !x.isInString)
           .map(documentHighlightFromOccurance)

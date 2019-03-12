@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { DiagnosticKind, disposeAll, workspace } from 'coc.nvim'
-import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position } from 'vscode-languageserver-protocol'
+import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position, CancellationToken } from 'vscode-languageserver-protocol'
 import Uri from 'vscode-uri'
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
@@ -113,7 +113,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
   }
 
   public reloadProjects(): void {
-    this.client.execute('reloadProjects', null, false) // tslint:disable-line
+    this.client.execute('reloadProjects', null, CancellationToken.None)
     this.triggerAllDiagnostics()
   }
 

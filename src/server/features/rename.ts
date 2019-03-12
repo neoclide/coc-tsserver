@@ -72,7 +72,7 @@ export default class TypeScriptRenameProvider implements RenameProvider {
     document: TextDocument,
     position: Position,
     token: CancellationToken
-  ): Promise<ServerResponse<Proto.RenameResponse> | undefined> {
+  ): Promise<ServerResponse.Response<Proto.RenameResponse> | undefined> {
     const file = this.client.toPath(document.uri)
     if (!file) return undefined
 

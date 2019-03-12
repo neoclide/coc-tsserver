@@ -9,24 +9,61 @@ import API from './utils/api'
 import { TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
 
-export class CancelledResponse {
-  public readonly type: 'cancelled' = 'cancelled'
+export namespace ServerResponse {
 
-  constructor(
-    public readonly reason: string
-  ) { }
+  export class Cancelled {
+    public readonly type = 'cancelled'
+
+    constructor(
+      public readonly reason: string
+    ) { }
+  }
+
+  // tslint:disable-next-line: new-parens
+  export const NoContent = new class { public readonly type = 'noContent' }
+
+  export type Response<T extends Proto.Response> = T | Cancelled | typeof NoContent
 }
-
-export class NoContentResponse {
-  public readonly type: 'noContent' = 'noContent'
-}
-
-export type ServerResponse<T extends Proto.Response> = T | CancelledResponse | NoContentResponse
 
 export interface TypeScriptServerPlugin {
   readonly path: string
   readonly name: string
   readonly languages: string[]
+}
+
+export interface TypeScriptRequestTypes {
+  'applyCodeActionCommand': [Proto.ApplyCodeActionCommandRequestArgs, Proto.ApplyCodeActionCommandResponse]
+  'completionEntryDetails': [Proto.CompletionDetailsRequestArgs, Proto.CompletionDetailsResponse]
+  'completionInfo': [Proto.CompletionsRequestArgs, Proto.CompletionInfoResponse]
+  // tslint:disable-next-line: deprecation
+  'completions': [Proto.CompletionsRequestArgs, Proto.CompletionsResponse]
+  'configure': [Proto.ConfigureRequestArguments, Proto.ConfigureResponse]
+  'definition': [Proto.FileLocationRequestArgs, Proto.DefinitionResponse]
+  'definitionAndBoundSpan': [Proto.FileLocationRequestArgs, Proto.DefinitionInfoAndBoundSpanReponse]
+  'docCommentTemplate': [Proto.FileLocationRequestArgs, Proto.DocCommandTemplateResponse]
+  'documentHighlights': [Proto.DocumentHighlightsRequestArgs, Proto.DocumentHighlightsResponse]
+  'format': [Proto.FormatRequestArgs, Proto.FormatResponse]
+  'formatonkey': [Proto.FormatOnKeyRequestArgs, Proto.FormatResponse]
+  'getApplicableRefactors': [Proto.GetApplicableRefactorsRequestArgs, Proto.GetApplicableRefactorsResponse]
+  'getCodeFixes': [Proto.CodeFixRequestArgs, Proto.CodeFixResponse]
+  'getCombinedCodeFix': [Proto.GetCombinedCodeFixRequestArgs, Proto.GetCombinedCodeFixResponse]
+  'getEditsForFileRename': [Proto.GetEditsForFileRenameRequestArgs, Proto.GetEditsForFileRenameResponse]
+  'getEditsForRefactor': [Proto.GetEditsForRefactorRequestArgs, Proto.GetEditsForRefactorResponse]
+  'getOutliningSpans': [Proto.FileRequestArgs, Proto.OutliningSpansResponse]
+  'getSupportedCodeFixes': [null, Proto.GetSupportedCodeFixesResponse]
+  'implementation': [Proto.FileLocationRequestArgs, Proto.ImplementationResponse]
+  'jsxClosingTag': [Proto.JsxClosingTagRequestArgs, Proto.JsxClosingTagResponse]
+  'navto': [Proto.NavtoRequestArgs, Proto.NavtoResponse]
+  'navtree': [Proto.FileRequestArgs, Proto.NavTreeResponse]
+  // tslint:disable-next-line: deprecation
+  'occurrences': [Proto.FileLocationRequestArgs, Proto.OccurrencesResponse]
+  'organizeImports': [Proto.OrganizeImportsRequestArgs, Proto.OrganizeImportsResponse]
+  'projectInfo': [Proto.ProjectInfoRequestArgs, Proto.ProjectInfoResponse]
+  'quickinfo': [Proto.FileLocationRequestArgs, Proto.QuickInfoResponse]
+  'references': [Proto.FileLocationRequestArgs, Proto.ReferencesResponse]
+  'rename': [Proto.RenameRequestArgs, Proto.RenameResponse]
+  'signatureHelp': [Proto.SignatureHelpRequestArgs, Proto.SignatureHelpResponse]
+  'typeDefinition': [Proto.FileLocationRequestArgs, Proto.TypeDefinitionResponse]
 }
 
 export interface ITypeScriptServiceClient {
@@ -45,191 +82,20 @@ export interface ITypeScriptServiceClient {
   toPath(uri: string): string
   toResource(path: string): string
 
-  execute(
-    command: 'configure',
-    args: Proto.ConfigureRequestArguments,
-    token?: CancellationToken
-  ): Promise<Proto.ConfigureResponse>
-  execute(
-    command: 'configurePlugin',
-    args: Proto.ConfigurePluginRequestArguments,
-    token?: CancellationToken
-  ): Promise<Proto.ConfigureResponse>
-  execute(
-    command: 'open',
-    args: Proto.OpenRequestArgs,
-    expectedResult: boolean,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'close',
-    args: Proto.FileRequestArgs,
-    expectedResult: boolean,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'change',
-    args: Proto.ChangeRequestArgs,
-    expectedResult: boolean,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'geterr',
-    args: Proto.GeterrRequestArgs,
-    expectedResult: boolean,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'geterrForProject',
-    args: Proto.GeterrForProjectRequestArgs,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'quickinfo',
-    args: Proto.FileLocationRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.QuickInfoResponse>
-  execute(
-    command: 'completions',
-    args: Proto.CompletionsRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.CompletionsResponse> // tslint:disable-line
-  execute(
-    command: 'completionEntryDetails',
-    args: Proto.CompletionDetailsRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.CompletionDetailsResponse>
-  execute(
-    command: 'signatureHelp',
-    args: Proto.SignatureHelpRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.SignatureHelpResponse>
-  execute(
-    command: 'definition',
-    args: Proto.FileLocationRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.DefinitionResponse>
-  execute(
-    command: 'implementation',
-    args: Proto.FileLocationRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.ImplementationResponse>
-  execute(
-    command: 'typeDefinition',
-    args: Proto.FileLocationRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.TypeDefinitionResponse>
-  execute(
-    command: 'references',
-    args: Proto.FileLocationRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.ReferencesResponse>
-  execute(
-    command: 'navto',
-    args: Proto.NavtoRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.NavtoResponse>
-  execute(
-    command: 'navbar',
-    args: Proto.FileRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.NavBarResponse>
-  execute(
-    command: 'format',
-    args: Proto.FormatRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.FormatResponse>
-  execute(
-    command: 'formatonkey',
-    args: Proto.FormatOnKeyRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.FormatResponse>
-  execute(
-    command: 'rename',
-    args: Proto.RenameRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.RenameResponse>
-  execute(
-    command: 'projectInfo',
-    args: Proto.ProjectInfoRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.ProjectInfoResponse>
-  execute(
-    command: 'reloadProjects',
-    args: any,
-    expectedResult: boolean,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'reload',
-    args: Proto.ReloadRequestArgs,
-    expectedResult: boolean,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'compilerOptionsForInferredProjects',
-    args: Proto.SetCompilerOptionsForInferredProjectsArgs,
-    token?: CancellationToken
-  ): Promise<any>
-  execute(
-    command: 'navtree',
-    args: Proto.FileRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.NavTreeResponse>
-  execute(
-    command: 'getCodeFixes',
-    args: Proto.CodeFixRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.GetCodeFixesResponse>
-  execute(
-    command: 'getSupportedCodeFixes',
-    args: null,
-    token?: CancellationToken
-  ): Promise<Proto.GetSupportedCodeFixesResponse>
-  execute(
-    command: 'getCombinedCodeFix',
-    args: Proto.GetCombinedCodeFixRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.GetCombinedCodeFixResponse>
-  execute(
-    command: 'docCommentTemplate',
-    args: Proto.FileLocationRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.DocCommandTemplateResponse>
-  execute(
-    command: 'getApplicableRefactors',
-    args: Proto.GetApplicableRefactorsRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.GetApplicableRefactorsResponse>
-  execute(
-    command: 'getEditsForRefactor',
-    args: Proto.GetEditsForRefactorRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.GetEditsForRefactorResponse>
-  execute(
-    command: 'getEditsForFileRename',
-    args: Proto.GetEditsForFileRenameRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.GetEditsForFileRenameResponse>
-  execute(
-    command: 'applyCodeActionCommand',
-    args: Proto.ApplyCodeActionCommandRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.ApplyCodeActionCommandResponse>
-  execute(
-    command: 'organizeImports',
-    args: Proto.OrganizeImportsRequestArgs,
-    token?: CancellationToken
-  ): Promise<Proto.OrganizeImportsResponse>
-  execute(
-    command: 'getOutliningSpans',
-    args: Proto.FileRequestArgs,
-    token: CancellationToken
-  ): Promise<Proto.OutliningSpansResponse>
-  execute(
-    command: string,
-    args: any,
-    expectedResult: boolean | CancellationToken,
-    token?: CancellationToken
-  ): Promise<any>
+  execute<K extends keyof TypeScriptRequestTypes>(
+    command: K,
+    args: TypeScriptRequestTypes[K][0],
+    token: CancellationToken,
+    lowPriority?: boolean
+  ): Promise<ServerResponse.Response<TypeScriptRequestTypes[K][1]>>
+
+  executeWithoutWaitingForResponse(command: 'open', args: Proto.OpenRequestArgs): void
+  executeWithoutWaitingForResponse(command: 'close', args: Proto.FileRequestArgs): void
+  executeWithoutWaitingForResponse(command: 'change', args: Proto.ChangeRequestArgs): void
+  // executeWithoutWaitingForResponse(command: 'updateOpen', args: Proto.UpdateOpenRequestArgs): void
+  executeWithoutWaitingForResponse(command: 'compilerOptionsForInferredProjects', args: Proto.SetCompilerOptionsForInferredProjectsArgs): void
+  executeWithoutWaitingForResponse(command: 'reloadProjects', args: null): void
+  executeWithoutWaitingForResponse(command: 'configurePlugin', args: Proto.ConfigurePluginRequestArguments): void
+
+  executeAsync(command: 'geterr', args: Proto.GeterrRequestArgs, token: CancellationToken): Promise<ServerResponse.Response<Proto.Response>>
 }

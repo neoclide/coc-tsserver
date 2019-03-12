@@ -29,7 +29,7 @@ class ApplyRefactoringCommand implements Command {
       refactor,
       action
     }
-    const response = await this.client.execute('getEditsForRefactor', args)
+    const response = await this.client.execute('getEditsForRefactor', args, CancellationToken.None) as any
     const body = response && response.body
     if (!body || !body.edits.length) {
       return false
@@ -125,7 +125,7 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
       file,
       range
     )
-    let response: Proto.GetApplicableRefactorsResponse
+    let response
     try {
       response = await this.client.execute('getApplicableRefactors', args, token)
       if (!response || !response.body) {

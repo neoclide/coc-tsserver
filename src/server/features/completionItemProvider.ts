@@ -7,7 +7,7 @@ import { commands, workspace } from 'coc.nvim'
 import { CompletionItemProvider } from 'coc.nvim/lib/provider'
 import Proto from '../protocol'
 import * as PConst from '../protocol.const'
-import { ITypeScriptServiceClient } from '../typescriptService'
+import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
 import API from '../utils/api'
 import { applyCodeAction } from '../utils/codeAction'
 import { convertCompletionEntry, getParameterListParts } from '../utils/completionItem'
@@ -16,6 +16,7 @@ import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
 import FileConfigurationManager, { SuggestOptions } from './fileConfigurationManager'
 import SnippetString from '../utils/SnippetString'
+import BufferSyncSupport from './bufferSyncSupport'
 
 // command center
 export interface CommandItem {
@@ -58,6 +59,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     private readonly client: ITypeScriptServiceClient,
     private readonly typingsStatus: TypingsStatus,
     private readonly fileConfigurationManager: FileConfigurationManager,
+    private readonly bufferSyncSupport: BufferSyncSupport,
     languageId: string
   ) {
 
@@ -90,8 +92,13 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     context: CompletionContext,
   ): Promise<CompletionList | null> {
     if (this.typingsStatus.isAcquiringTypings) {
-      workspace.showMessage('Acquiring typings...', 'warning')
-      return null
+      return Promise.resolve({
+        isIncomplete: true,
+        items: [{
+          label: 'Acquiring typings...',
+          detail: 'Acquiring typings definitions for IntelliSense.'
+        }]
+      })
     }
     let { uri } = document
     const file = this.client.toPath(document.uri)
@@ -121,7 +128,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     let isNewIdentifierLocation = true
     if (this.client.apiVersion.gte(API.v300)) {
       try {
-        const response = await this.client.execute('completionInfo', args, token)
+        const response = await this.bufferSyncSupport.interuptGetErr(() => this.client.execute('completionInfo', args, token))
         if (response.type !== 'response' || !response.body) {
           return null
         }
@@ -134,9 +141,11 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         throw e
       }
     } else {
-      const response = await this.client.execute('completions', args, token)
+      const response = await this.bufferSyncSupport.interuptGetErr(() => this.client.execute('completions', args, token))
+      if (response.type !== 'response' || !response.body) {
+        return null
+      }
       msg = response.body
-      if (!msg) return null
     }
 
     const completionItems: CompletionItem[] = []
@@ -207,7 +216,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       ]
     }
 
-    let response: Proto.CompletionDetailsResponse
+    let response: ServerResponse.Response<Proto.CompletionDetailsResponse>
     try {
       response = await this.client.execute(
         'completionEntryDetails',
@@ -215,6 +224,9 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         token
       )
     } catch {
+      return item
+    }
+    if (response.type !== 'response' || !response.body) {
       return item
     }
 
@@ -237,7 +249,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         this.createSnippetOfFunctionCall(item, detail)
       }
     }
-
     return item
   }
 
@@ -319,7 +330,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         return false
       }
     } else if (triggerCharacter === '<') {
-      return this.client.apiVersion.gte(API.v290)
+      return false
     }
 
     return true
@@ -411,7 +422,7 @@ function appendJoinedPlaceholders(
   snippet: SnippetString,
   parts: ReadonlyArray<Proto.SymbolDisplayPart>,
   joiner: string
-) {
+): void {
   for (let i = 0; i < parts.length; ++i) {
     const paramterPart = parts[i]
     snippet.appendPlaceholder(paramterPart.text)

@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { WorkspaceEdit } from 'vscode-languageserver-protocol'
+import { WorkspaceEdit, CancellationToken } from 'vscode-languageserver-protocol'
 import { workspace } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -37,8 +37,8 @@ export async function applyCodeActionCommands(
   // make sure there is command
   if (action.commands && action.commands.length) {
     for (const command of action.commands) {
-      const response = await client.execute('applyCodeActionCommand', { command })
-      if (!response || !response.body) {
+      const response = await client.execute('applyCodeActionCommand', { command }, CancellationToken.None)
+      if (!response || response.type != 'response' || !response.body) {
         return false
       }
     }

@@ -1,6 +1,6 @@
 import { disposeAll, workspace } from 'coc.nvim'
 import { Command, CommandManager } from 'coc.nvim/lib/commands'
-import { Disposable } from 'vscode-languageserver-protocol'
+import { Disposable, CancellationToken } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as languageIds from '../utils/languageModeIds'
@@ -21,7 +21,8 @@ class ProjectErrorCommand implements Command {
       file,
       delay: 20
     }
-    const response = await this.client.execute('geterrForProject', args)
+    const response = null
+    // await this.client.execute('geterrForProject', args, CancellationToken.None)
     if (!response || !response.success) {
       return
     }

@@ -60,7 +60,7 @@ export default class TypeScriptDocumentSymbolProvider implements DocumentSymbolP
 
     try {
       const response = await this.client.execute('navtree', args, token)
-      if (response.body) {
+      if (response.type == 'response' && response.body) {
         // The root represents the file. Ignore this when showing in the UI
         const tree = response.body
         if (tree.childItems) {

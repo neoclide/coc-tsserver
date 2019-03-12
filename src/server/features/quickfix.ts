@@ -52,10 +52,11 @@ class ApplyFixAllCodeAction implements Command {
     }
 
     try {
-      const { body } = await this.client.execute('getCombinedCodeFix', args)
-      if (!body) {
+      const res = await this.client.execute('getCombinedCodeFix', args, CancellationToken.None)
+      if (res.type != 'response') {
         return
       }
+      let { body } = res
 
       const edit = typeConverters.WorkspaceEdit.fromFileCodeEdits(
         this.client,
@@ -121,11 +122,16 @@ class SupportedCodeActionProvider {
 
   private get supportedCodeActions(): Promise<Set<number>> {
     if (!this._supportedCodeActions) {
-      this._supportedCodeActions = this.client
-        .execute('getSupportedCodeFixes', null, undefined)
-        .then(response => response.body || [])
-        .then(codes => codes.map(code => +code).filter(code => !isNaN(code)))
-        .then(codes => new Set(codes))
+      return new Promise<Set<number>>((resolve, reject) => {
+        this.client.execute('getSupportedCodeFixes', null, CancellationToken.None).then(res => {
+          if (res.type !== 'response') {
+            resolve(new Set())
+            return
+          }
+          let codes = res.body.map(code => +code).filter(code => !isNaN(code))
+          resolve(new Set(codes))
+        }, reject)
+      })
     }
     return Promise.resolve(this._supportedCodeActions)
   }
@@ -199,6 +205,9 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
       args,
       token
     )
+    if (codeFixesResponse.type != 'response') {
+      return []
+    }
     if (codeFixesResponse.body) {
       const results: CodeAction[] = []
       for (const tsCodeFix of codeFixesResponse.body) {

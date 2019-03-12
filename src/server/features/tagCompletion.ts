@@ -29,7 +29,7 @@ export default class TypeScriptTagCompletion implements CompletionItemProvider {
     let body: Proto.TextInsertion | undefined
     try {
       const response = await this.client.execute('jsxClosingTag', args, token)
-      body = response && response.body
+      body = response && (response as any).body
       if (!body) {
         return undefined
       }

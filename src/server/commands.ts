@@ -59,7 +59,7 @@ async function goToProjectConfig(clientHost: TypeScriptServiceClientHost, uri: s
   }
   const client = clientHost.serviceClient
   const file = client.toPath(uri)
-  let res: Proto.ProjectInfoResponse | undefined
+  let res
   try {
     res = await client.execute('projectInfo', { file, needFileNameList: false }, CancellationToken.None)
   } catch {
@@ -132,7 +132,7 @@ export class AutoFixCommand implements Command {
         ...typeConverters.Range.toFileRangeRequestArgs(file, diagnostic.range),
         errorCodes: [+(diagnostic.code!)]
       }
-      const response: Proto.GetCodeFixesResponse = await client.execute('getCodeFixes', args)
+      const response = await client.execute('getCodeFixes', args, CancellationToken.None)
       if (response.type !== 'response' || !response.body || response.body.length < 1) {
         if (diagnostic.code == 2304) {
           let { range } = diagnostic
@@ -162,7 +162,7 @@ export class AutoFixCommand implements Command {
       }
     }
     if (edits.length) await document.applyEdits(workspace.nvim, edits)
-    if (command) await commands.executeCommand(command)
+    if (command) commands.executeCommand(command)
   }
 }
 
@@ -173,7 +173,7 @@ export class ConfigurePluginCommand implements Command {
     private readonly pluginManager: PluginManager,
   ) { }
 
-  public execute(pluginId: string, configuration: any) {
+  public execute(pluginId: string, configuration: any): void {
     this.pluginManager.setConfiguration(pluginId, configuration)
   }
 }

@@ -50,7 +50,7 @@ export default class TypeScriptWorkspaceSymbolProvider implements WorkspaceSymbo
     }
 
     const response = await this.client.execute('navto', args, token)
-    if (!response.body) return []
+    if (response.type !== 'response' || response.body == null) return []
 
     const result: SymbolInformation[] = []
     for (const item of response.body) {

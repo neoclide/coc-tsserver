@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument } from 'vscode-languageserver-protocol'
+import { TextDocument, CancellationToken } from 'vscode-languageserver-protocol'
 import { WorkspaceConfiguration, workspace } from 'coc.nvim'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -58,7 +58,7 @@ export default class FileConfigurationManager {
       hostInfo: 'nvim-coc',
       ...currentOptions
     } as Proto.ConfigureRequestArguments
-    await this.client.execute('configure', args)
+    await this.client.execute('configure', args, CancellationToken.None)
     this.cachedOption = options
     this.requesting = false
   }

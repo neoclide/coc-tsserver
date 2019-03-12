@@ -15,7 +15,7 @@ export default class TypeScriptDefinitionProvider implements DefinitionProvider,
     definitionType: 'definition' | 'implementation' | 'typeDefinition',
     document: TextDocument,
     position: Position,
-    token: CancellationToken | boolean
+    token: CancellationToken
   ): Promise<Location[] | undefined> {
     const filepath = this.client.toPath(document.uri)
     if (!filepath) {
@@ -28,7 +28,7 @@ export default class TypeScriptDefinitionProvider implements DefinitionProvider,
     )
     try {
       const response = await this.client.execute(definitionType, args, token)
-      const locations: Proto.FileSpan[] = (response && response.body) || []
+      const locations: Proto.FileSpan[] = (response.type == 'response' && response.body) || []
       return locations.map(location =>
         typeConverters.Location.fromTextSpan(
           this.client.toResource(location.file),
@@ -43,7 +43,7 @@ export default class TypeScriptDefinitionProvider implements DefinitionProvider,
   public provideDefinition(
     document: TextDocument,
     position: Position,
-    token: CancellationToken | boolean
+    token: CancellationToken
   ): Promise<Definition | undefined> {
     return this.getSymbolLocations('definition', document, position, token)
   }

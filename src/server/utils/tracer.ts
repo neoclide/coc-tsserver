@@ -98,4 +98,11 @@ export default class Tracer {
       this.logger.logLevel('Trace', message, data)
     }
   }
+
+  public traceRequestCompleted(command: string, request_seq: number, startTime: number): any {
+    if (this.trace === Trace.Off) {
+      return
+    }
+    this.logTrace(`Async response received: ${command} (${request_seq}). Request took ${Date.now() - startTime} ms.`)
+  }
 }

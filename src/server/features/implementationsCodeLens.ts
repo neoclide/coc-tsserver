@@ -21,8 +21,8 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
       codeLens.range.start
     )
     try {
-      const response = await this.client.execute('implementation', args, token)
-      if (response && response.body) {
+      const response = await this.client.execute('implementation', args, token, true)
+      if (response && response.type == 'response' && response.body) {
         const locations = response.body
           .map(reference => {
             return {

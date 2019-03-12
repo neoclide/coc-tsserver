@@ -26,7 +26,7 @@ export default class TypeScriptReferences implements ReferenceProvider {
     )
     try {
       const msg = await this.client.execute('references', args, token)
-      if (!msg.body) {
+      if (!msg || msg.type != 'response' || !msg.body) {
         return []
       }
       const result: Location[] = []

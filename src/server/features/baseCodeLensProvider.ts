@@ -63,7 +63,7 @@ export abstract class TypeScriptBaseCodeLensProvider implements CodeLensProvider
 
     try {
       const response = await this.cachedResponse.execute(document, () =>
-        this.client.execute('navtree', { file: filepath }, token)
+        this.client.execute('navtree', { file: filepath }, token) as any
       )
       if (!response) {
         return []

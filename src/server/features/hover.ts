@@ -27,7 +27,7 @@ export default class TypeScriptHoverProvider implements HoverProvider {
     )
     try {
       const response = await this.client.execute('quickinfo', args, token)
-      if (response && response.body) {
+      if (response && response.type == 'response' && response.body) {
         const data = response.body
         return {
           contents: TypeScriptHoverProvider.getContents(data),

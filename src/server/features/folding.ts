@@ -25,7 +25,11 @@ export default class TypeScriptFoldingProvider implements FoldingRangeProvider {
     }
 
     const args: Proto.FileRequestArgs = { file }
-    const { body } = await this.client.execute('getOutliningSpans', args, token)
+    const res = await this.client.execute('getOutliningSpans', args, token)
+    if (res.type != 'response') {
+      return
+    }
+    const { body } = res
     if (!body) {
       return
     }
