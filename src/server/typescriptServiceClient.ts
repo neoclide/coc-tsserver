@@ -516,7 +516,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private executeImpl(command: string, args: any, executeInfo: { isAsync: boolean, token?: CancellationToken, expectsResult: boolean, lowPriority?: boolean }): Promise<ServerResponse.Response<Proto.Response>>
   private executeImpl(command: string, args: any, executeInfo: { isAsync: boolean, token?: CancellationToken, expectsResult: boolean, lowPriority?: boolean }): Promise<ServerResponse.Response<Proto.Response>> | undefined {
     if (this.servicePromise == null) {
-      return
+      return Promise.resolve(undefined)
     }
 
     const request = this._requestQueue.createRequest(command, args)
