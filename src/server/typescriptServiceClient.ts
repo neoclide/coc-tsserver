@@ -793,8 +793,16 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public getProjectRootPath(uri: string): string {
     let u = Uri.parse(uri)
-    if (u.scheme != 'file') return workspace.cwd
-    if (u.fsPath.startsWith(workspace.root) && workspace.root != os.homedir()) return workspace.root
+    let { cwd } = workspace
+    if (u.scheme != 'file') return cwd
+    if (u.fsPath.startsWith(cwd) && cwd != os.homedir()) {
+      let files = fs.readdirSync(cwd)
+      if (files.indexOf('tsconfig.json') !== -1
+        || files.indexOf('jsconfig.json') !== -1
+        || files.indexOf('package.json') !== -1) {
+        return cwd
+      }
+    }
     let res = findUp.sync(['tsconfig.json', 'jsconfig.json'], { cwd: path.dirname(u.fsPath) })
     return res ? path.dirname(res) : workspace.cwd
   }

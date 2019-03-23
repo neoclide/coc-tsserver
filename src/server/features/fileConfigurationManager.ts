@@ -148,6 +148,7 @@ export default class FileConfigurationManager {
       disableSuggestions: !config.get<boolean>('suggest.enabled', true),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
       quotePreference: config.get<'single' | 'double'>('preferences.quoteStyle', 'single'),
+      allowRenameOfImportPath: true,
       allowTextChangesInNewFiles: true,
     }
   }
