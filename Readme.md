@@ -99,6 +99,13 @@ module would be used.
 And more, which are same as VSCode, trigger completion with `tsserver`, `typescript`
 or `javascript` in your `coc-settings.json` to get full list.
 
+## Related extensions
+
+- [coc-tslint-plugin](https://github.com/neoclide/coc-tslint-plugin): enable [tslint](https://github.com/palantir/tslint)
+  plugin for tsserver.
+- [coc-vetur](https://github.com/neoclide/coc-vetur): [vue](https://github.com/vuejs/vue) extension.
+- [coc-angular](https://github.com/iamcco/coc-angular): [angular](https://github.com/angular/angular) extension.
+
 ## Trouble shooting
 
 - Add `"tsserver.log": "verbose"` to your `coc-settings.json` (opened by command
