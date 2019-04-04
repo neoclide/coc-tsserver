@@ -34,6 +34,36 @@
     "onCommand:tsserver.watchBuild"
   ],
   "contributes": {
+    "rootPatterns": [
+      {
+        "filetype": "javascript",
+        "patterns": [
+          "package.json",
+          "jsconfig.json"
+        ]
+      },
+      {
+        "filetype": "javascriptreact",
+        "patterns": [
+          "package.json",
+          "jsconfig.json"
+        ]
+      },
+      {
+        "filetype": "typescript",
+        "patterns": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      },
+      {
+        "filetype": "typescriptreact",
+        "patterns": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
+    ],
     "commands": [
       {
         "title": "Reload current project",
