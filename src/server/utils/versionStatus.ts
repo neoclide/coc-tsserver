@@ -8,7 +8,8 @@ export default class VersionStatus {
   private readonly _versionBarEntry: StatusBarItem
 
   constructor(
-    private readonly _normalizePath: (resource: Uri) => string | null
+    private readonly _normalizePath: (resource: Uri) => string | null,
+    private readonly enableJavascript: boolean
   ) {
     this._versionBarEntry = workspace.createStatusBarItem(99)
     this._onChangeEditorSub = events.on('BufEnter', this.showHideStatus, this)
@@ -33,8 +34,12 @@ export default class VersionStatus {
       this._versionBarEntry.hide()
       return
     }
+    let filetypes = ['typescript', 'typescriptreact']
+    if (this.enableJavascript) {
+      filetypes.push('javascript', 'javascriptreact')
+    }
 
-    if (['typescript', 'typescriptreact'].indexOf(document.filetype) !== -1) {
+    if (filetypes.indexOf(document.filetype) !== -1) {
       if (this._normalizePath(Uri.parse(document.uri))) {
         this._versionBarEntry.show()
       } else {
