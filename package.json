@@ -455,7 +455,7 @@
     "find-up": "^3.0.0",
     "semver": "^6.0.0",
     "tslib": "^1.9.3",
-    "typescript": "^3.4.1",
+    "typescript": "3.3.4000",
     "vscode-languageserver-protocol": "^3.15.0-next.1",
     "vscode-uri": "^1.0.6",
     "which": "^1.3.1"
