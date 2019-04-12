@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "publisher": "chemzqm",
   "engines": {
-    "coc": "^0.0.35"
+    "coc": "^0.0.65"
   },
   "keywords": [
     "coc.nvim",
@@ -446,7 +446,7 @@
     "@types/fast-diff": "^1.2.0",
     "@types/find-up": "^2.1.1",
     "@types/node": "^11.13.0",
-    "coc.nvim": "0.0.62",
+    "coc.nvim": "^0.0.65",
     "rimraf": "^2.6.3",
     "tslint": "^5.15.0"
   },
