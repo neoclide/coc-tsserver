@@ -42,9 +42,9 @@ export default class WatchProject implements Disposable {
   ) {
     this.statusItem = workspace.createStatusBarItem(1, { progress: true })
     let task = this.task = workspace.createTask('TSC')
-    this.options = this.getOptions()
     this.disposables.push(commandManager.registerCommand(WatchProject.id, async () => {
-      await this.start(this.options)
+      let opts = this.options = this.getOptions()
+      await this.start(opts)
     }))
     task.onExit(code => {
       if (code != 0) {
