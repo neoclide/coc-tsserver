@@ -30,10 +30,9 @@ function getManager(uri: string): string {
   return res.endsWith('yarn.lock') ? 'yarn' : 'npm'
 }
 
-function getRoot(uri: string): string {
-  let dir = path.dirname(Uri.parse(uri).fsPath)
-  let res = findUp.sync(['package.json'], { cwd: dir })
-  if (!res) return dir
+function getRoot(): string | null {
+  let res = findUp.sync(['package.json'], { cwd: workspace.cwd })
+  if (!res) return null
   return path.dirname(res)
 }
 
@@ -76,7 +75,11 @@ export function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
 
 export async function installModules(uri: string, names: string[]): Promise<void> {
   names = distinct(names)
-  let root = getRoot(uri)
+  let root = getRoot()
+  if (!root) {
+    workspace.showMessage(`package.json not found from cwd: ${workspace.cwd}`, 'error')
+    return
+  }
   let arr = names.concat(names.map(s => `@types/${s}`))
   let statusItem = workspace.createStatusBarItem(99, { progress: true })
   statusItem.text = `Checking module ${arr.join(' ')}`

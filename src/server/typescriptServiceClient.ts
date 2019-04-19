@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import cp from 'child_process'
-import findUp from 'find-up'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -791,20 +790,22 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     return args
   }
 
-  public getProjectRootPath(uri: string): string {
+  public getProjectRootPath(uri: string): string | null {
+    let root = workspace.cwd
     let u = Uri.parse(uri)
-    let { cwd } = workspace
-    if (u.scheme != 'file') return cwd
-    if (u.fsPath.startsWith(cwd) && cwd != os.homedir()) {
-      let files = fs.readdirSync(cwd)
-      if (files.indexOf('tsconfig.json') !== -1
-        || files.indexOf('jsconfig.json') !== -1
-        || files.indexOf('package.json') !== -1) {
-        return cwd
+    if (u.scheme == 'file') {
+      let folder = workspace.getWorkspaceFolder(uri)
+      if (folder) {
+        root = Uri.parse(folder.uri).fsPath
+      } else {
+        let filepath = Uri.parse(uri).fsPath
+        if (!filepath.startsWith(root)) {
+          root = path.dirname(filepath)
+        }
       }
     }
-    let res = findUp.sync(['tsconfig.json', 'jsconfig.json'], { cwd: path.dirname(u.fsPath) })
-    return res ? path.dirname(res) : workspace.cwd
+    if (root == os.homedir()) return null
+    return root
   }
 
   public configurePlugin(pluginName: string, configuration: {}): any {

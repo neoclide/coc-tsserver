@@ -1,15 +1,13 @@
-import { ChildProcess, spawn } from 'child_process'
-import { disposeAll, StatusBarItem, workspace, TaskOptions } from 'coc.nvim'
-import { Command, CommandManager } from 'coc.nvim/lib/commands'
+import { disposeAll, StatusBarItem, TaskOptions, workspace } from 'coc.nvim'
+import { CommandManager } from 'coc.nvim/lib/commands'
+import Task from 'coc.nvim/lib/model/task'
 import findUp from 'find-up'
 import fs from 'fs'
 import path from 'path'
-import readline from 'readline'
 import { Disposable, Location } from 'vscode-languageserver-protocol'
 import Uri from 'vscode-uri'
 import which from 'which'
 import { resolveRoot } from '../utils/fs'
-import Task from 'coc.nvim/lib/model/task'
 
 const TSC = './node_modules/.bin/tsc'
 const countRegex = /Found\s+(\d+)\s+error/
@@ -126,13 +124,7 @@ export default class WatchProject implements Disposable {
     let docs = workspace.documents
     let idx = docs.findIndex(doc => doc.uri.indexOf(TSC) !== -1)
     if (idx !== -1) return
-    let doc = workspace.getDocument(workspace.bufnr)
-    let cwd: string
-    if (doc && doc.schema == 'file') {
-      cwd = path.dirname(Uri.parse(doc.uri).fsPath)
-    } else {
-      cwd = workspace.cwd
-    }
+    let cwd = workspace.cwd
     let res = findUp.sync(['node_modules'], { cwd })
     let cmd: string
     let root: string
@@ -177,12 +169,4 @@ function executable(command: string): boolean {
     return false
   }
   return true
-}
-
-function wait(ms: number): Promise<any> {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve()
-    }, ms)
-  })
 }

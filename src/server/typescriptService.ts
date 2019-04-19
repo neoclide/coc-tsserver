@@ -76,7 +76,7 @@ export interface ITypeScriptServiceClient {
   onTypesInstallerInitializationFailed: Event<Proto.TypesInstallerInitializationFailedEventBody>
   readonly logger: Logger
 
-  getProjectRootPath(uri: string): string
+  getProjectRootPath(uri: string): string | null
   normalizePath(resource: Uri): string | null
   asUrl(filepath: string): Uri
   toPath(uri: string): string
