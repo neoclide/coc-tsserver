@@ -7,9 +7,7 @@ import path from 'path'
 import { Disposable, Location } from 'vscode-languageserver-protocol'
 import Uri from 'vscode-uri'
 import which from 'which'
-import { resolveRoot } from '../utils/fs'
 
-const TSC = './node_modules/.bin/tsc'
 const countRegex = /Found\s+(\d+)\s+error/
 const errorRegex = /^(.+)\((\d+),(\d+)\):\s(\w+)\sTS(\d+):\s*(.+)$/
 
@@ -31,7 +29,6 @@ export default class WatchProject implements Disposable {
   public static readonly id: string = 'tsserver.watchBuild'
   public static readonly startTexts: string[] = ['Starting compilation in watch mode', 'Starting incremental compilation']
   private statusItem: StatusBarItem
-  private isRunning = false
   private task: Task
   private options: TaskOptions
 
@@ -69,6 +66,7 @@ export default class WatchProject implements Disposable {
   private async check(): Promise<void> {
     let running = await this.task.running
     if (running) {
+      this.options = this.getOptions()
       this.statusItem.isProgress = false
       this.statusItem.text = '?'
       this.statusItem.show()
@@ -82,8 +80,6 @@ export default class WatchProject implements Disposable {
   }
 
   private onStop(): void {
-    let { nvim } = workspace
-    this.isRunning = false
     this.statusItem.hide()
   }
 
@@ -121,13 +117,10 @@ export default class WatchProject implements Disposable {
   }
 
   public getOptions(): TaskOptions {
-    let docs = workspace.documents
-    let idx = docs.findIndex(doc => doc.uri.indexOf(TSC) !== -1)
-    if (idx !== -1) return
-    let cwd = workspace.cwd
-    let res = findUp.sync(['node_modules'], { cwd })
-    let cmd: string
+    let res = findUp.sync(['node_modules'], { cwd: workspace.root })
     let root: string
+    let cmd: string
+    // let root: string
     if (!res) {
       if (executable('tsc')) {
         cmd = 'tsc'
@@ -144,11 +137,12 @@ export default class WatchProject implements Disposable {
       workspace.showMessage(`Local & global tsc not found`, 'error')
       return
     }
-    let configRoot = resolveRoot(cwd, ['tsconfig.json'])
-    if (!configRoot) {
+    let find = findUp.sync(['tsconfig.json'], { cwd: root })
+    if (!find) {
       workspace.showMessage('tsconfig.json not found!', 'error')
       return
     }
+    let configRoot = path.dirname(find)
     let configPath = path.relative(root, path.join(configRoot, 'tsconfig.json'))
     return {
       cmd,

@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import fs from 'fs'
 import path from 'path'
-import { getParentDirs } from './fs'
 import { workspace, Uri } from 'coc.nvim'
 import API from './api'
 import { TypeScriptServiceConfiguration } from './configuration'
