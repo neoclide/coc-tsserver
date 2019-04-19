@@ -242,7 +242,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   }
 
   private async startService(resendModels = false): Promise<ForkedTsServerProcess> {
-    let currentVersion = this.versionProvider.getLocalVersion(workspace.root)
+    let currentVersion = this.versionProvider.getLocalVersion()
     if (!currentVersion || !fs.existsSync(currentVersion.tsServerPath)) {
       currentVersion = await this.versionProvider.getDefaultVersion()
     }

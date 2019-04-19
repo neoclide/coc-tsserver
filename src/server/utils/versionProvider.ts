@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getParentDirs } from './fs'
-import { workspace } from 'coc.nvim'
+import { workspace, Uri } from 'coc.nvim'
 import API from './api'
 import { TypeScriptServiceConfiguration } from './configuration'
 
@@ -101,11 +101,10 @@ export class TypeScriptVersionProvider {
     return undefined
   }
 
-  public getLocalVersion(root): TypeScriptVersion | undefined {
-    let paths = getParentDirs(root)
-    paths.unshift(root)
-    for (let p of paths) {
-      if (fs.existsSync(path.join(p, 'node_modules'))) {
+  public getLocalVersion(): TypeScriptVersion | undefined {
+    let folders = workspace.workspaceFolders.map(f => Uri.parse(f.uri).fsPath)
+    for (let p of folders) {
+      if (fs.existsSync(path.join(p, 'node_modules/typescript/lib'))) {
         let lib = path.join(p, 'node_modules/typescript/lib')
         return new TypeScriptVersion(lib)
       }
