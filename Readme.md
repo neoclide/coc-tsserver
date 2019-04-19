@@ -4,7 +4,7 @@ Tsserver language server extension for [coc.nvim](https://github.com/neoclide/co
 
 Most of the code is from `typescript-language-features` extension which is bundled with VSCode.
 
-**Note:** if you're using neovim, you need configure `tsserver.npm` to be in your global
+**Note:** if you're using nvm, you need configure `tsserver.npm` to be in your global
 npm executable path.
 
 ## Install
