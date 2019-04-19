@@ -52,52 +52,76 @@ module would be used.
 
 ## Configuration options
 
-- `tsserver.enable` set to `false` to disable tsserver language server.
-- `tsserver.trace.server` trace LSP traffic in output channel.
-- `tsserver.orgnizeImportOnSave` orgnize import on file save, default `false`.
-- `tsserver.formatOnType` run format on special character inserted.
-- `tsserver.implicitProjectConfig.experimentalDecorators` enable experimentalDecorators for implicit project.
-- `typescript.updateImportsOnFileMove.enable` enable update imports on file move, requires [watchman](https://facebook.github.io/watchman/) installed, default `true`.
-- `typescript.implementationsCodeLens.enable` enable codeLens for
-  implementations, default `true`
-- `typescript.referencesCodeLens.enable` enable codeLens for
-  references, default `true`
-- `typescript.preferences.noSemicolons` remove semicolons on format for
-  typescript.
-- `typescript.preferences.quoteStyle` quote style of typescript, could be
-  `single` or `double`, default `"double"`
-- `typescript.suggestionActions.enabled` enable suggestion actions for
-  typescript, default `true`
-- `typescript.validate.enable` enable typescript validation, default `true`
-- `typescript.suggest.enabled` enable typescript completion, default `true`
-- `typescript.suggest.paths` enable suggest paths in import statement and
-  require calls, default `true`
-- `typescript.suggest.autoImports` enable suggest for auto import, default
-  `true`
-- `typescript.suggest.completeFunctionCalls` enable using snippet for method
-  suggestion.
-- `javascript.updateImportsOnFileMove.enable` enable update imports on file move, requires [watchman](https://facebook.github.io/watchman/) installed, default `true`.
-- `javascript.implementationsCodeLens.enable` enable codeLens for
-  implementations, default `true`
-- `javascript.referencesCodeLens.enable` enable codeLens for
-  references, default `true`
-- `javascript.preferences.noSemicolons` remove semicolons on format for
-  javascript.
-- `javascript.preferences.quoteStyle` quote style of javascript, could be
-  `single` or `double`, default `"double"`
-- `javascript.suggestionActions.enabled` enable suggestion actions for
-  javascript, default `true`
-- `javascript.validate.enable` enable javascript validation, default `true`
-- `javascript.suggest.enabled` enable javascript completion, default `true`
-- `javascript.suggest.paths` enable suggest paths in import statement and
-  require calls, default `true`
-- `javascript.suggest.autoImports` enable suggest for auto import, default
-  `true`
-- `javascript.suggest.completeFunctionCalls` enable using snippet for method
-  suggestion.
+- `tsserver.enable`:Enable tsserver extension, default: `true`
+- `tsserver.locale`:Locale of tsserver, default: `""`
+- `tsserver.typingsCacheLocation`:Folder path for cache typings, default: `""`
+- `tsserver.orgnizeImportOnSave`:Orgnize import on buffer will save, default: `false`
+- `tsserver.formatOnType`:Run format on type special characters., default: `true`
+- `tsserver.enableJavascript`:Use tsserver for javascript files, default: `true`
+- `tsserver.tsdk`:Directory contains tsserver.js,, default: `""`
+- `tsserver.npm`:Executable path of npm for download typings, default: `""`
+- `tsserver.log`:Log level of tsserver, default: `"off"`
+- `tsserver.trace.server`:Trace level of tsserver, default: `"off"`
+- `tsserver.pluginRoot`:Folder contains tsserver plugins, default: `[]`
+- `tsserver.debugPort`:Debug port number of tsserver
+- `tsserver.reportStyleChecksAsWarnings` default: `true`
+- `tsserver.implicitProjectConfig.checkJs`:Enable checkJs for implicit project, default: `false`
+- `tsserver.implicitProjectConfig.experimentalDecorators`:Enable experimentalDecorators for implicit project, default: `false`
+- `tsserver.disableAutomaticTypeAcquisition`:Disable download of typings, default: `false`
+- `typescript.updateImportsOnFileMove.enable`:Enable update imports on file move., default: `true`
+- `typescript.implementationsCodeLens.enable`:Enable codeLens for implementations, default: `true`
+- `typescript.referencesCodeLens.enable`:Enable codeLens for references, default: `true`
+- `typescript.preferences.importModuleSpecifier` default: `"non-relative"`
+- `typescript.preferences.noSemicolons` default: `false`
+- `typescript.preferences.quoteStyle` default: `"single"`
+- `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
+- `typescript.validate.enable`:Enable/disable TypeScript validation., default: `true`
+- `typescript.suggest.enabled` default: `true`
+- `typescript.suggest.paths`:Enable/disable suggest paths in import statement and require calls, default: `true`
+- `typescript.suggest.autoImports`:Enable/disable auto import suggests., default: `true`
+- `typescript.suggest.completeFunctionCalls`:Enable snippet for method suggestion, default: `true`
+- `typescript.format.insertSpaceAfterCommaDelimiter` default: `true`
+- `typescript.format.insertSpaceAfterConstructor` default: `false`
+- `typescript.format.insertSpaceAfterSemicolonInForStatements` default: `true`
+- `typescript.format.insertSpaceBeforeAndAfterBinaryOperators` default: `true`
+- `typescript.format.insertSpaceAfterKeywordsInControlFlowStatements` default: `true`
+- `typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions` default: `true`
+- `typescript.format.insertSpaceBeforeFunctionParenthesis` default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis` default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces` default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces` default: `false`
+- `typescript.format.insertSpaceAfterTypeAssertion` default: `false`
+- `typescript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
+- `typescript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
+- `javascript.updateImportsOnFileMove.enable` default: `true`
+- `javascript.implementationsCodeLens.enable` default: `true`
+- `javascript.referencesCodeLens.enable` default: `true`
+- `javascript.preferences.importModuleSpecifier` default: `"non-relative"`
+- `javascript.preferences.noSemicolons` default: `false`
+- `javascript.preferences.quoteStyle` default: `"single"`
+- `javascript.validate.enable`:Enable/disable JavaScript validation., default: `true`
+- `javascript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
+- `javascript.suggest.names` default: `true`
+- `javascript.suggest.enabled` default: `true`
+- `javascript.suggest.paths`:Enable/disable suggest paths in import statement and require calls, default: `true`
+- `javascript.suggest.autoImports`:Enable/disable auto import suggests., default: `true`
+- `javascript.suggest.completeFunctionCalls`:Enable snippet for method suggestion, default: `true`
+- `javascript.format.insertSpaceAfterCommaDelimiter` default: `true`
+- `javascript.format.insertSpaceAfterConstructor` default: `false`
+- `javascript.format.insertSpaceAfterSemicolonInForStatements` default: `true`
+- `javascript.format.insertSpaceBeforeAndAfterBinaryOperators` default: `true`
+- `javascript.format.insertSpaceAfterKeywordsInControlFlowStatements` default: `true`
+- `javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions` default: `true`
+- `javascript.format.insertSpaceBeforeFunctionParenthesis` default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis` default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces` default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces` default: `false`
+- `javascript.format.insertSpaceAfterTypeAssertion` default: `false`
+- `javascript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
+- `javascript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
 
-And more, which are same as VSCode, trigger completion with `tsserver`, `typescript`
-or `javascript` in your `coc-settings.json` to get full list.
+Configurations are same as VSCode, try completion with `tsserver`, `typescript`
+or `javascript` in your `coc-settings.json`.
 
 ## Related extensions
 
