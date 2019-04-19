@@ -2,9 +2,9 @@
 
 Tsserver language server extension for [coc.nvim](https://github.com/neoclide/coc.nvim).
 
-Most code from `typescript-language-features` extension which bundled with VSCode.
+Most of the code is from `typescript-language-features` extension which is bundled with VSCode.
 
-**Note:** if you're using nvm, you need configure `tsserver.npm` to your global
+**Note:** if you're using neovim, you need configure `tsserver.npm` to be in your global
 npm executable path.
 
 ## Install
@@ -17,10 +17,10 @@ In your vim/neovim, run command:
 
 ## Features
 
-Almost same as VSCode.
+Almost the same as VSCode.
 
-- Support javascript & typescript and jsx/tsx.
-- Install typings automatically.
+- Supports javascript & typescript and jsx/tsx.
+- Installs typings automatically.
 - Commands to work with tsserver, including:
   - `tsserver.reloadProjects`
   - `tsserver.openTsServerLog`
@@ -47,8 +47,8 @@ Almost same as VSCode.
 - Rename imports on file rename.
 - Search for workspace symbols.
 
-Tsserver module is resolved from local workspace, if not found, bundled tsserver
-module would be used.
+Tsserver module is resolved from your local workspace. If it's not found, the bundled tsserver
+module will be used.
 
 ## Configuration options
 
@@ -120,7 +120,7 @@ module would be used.
 - `javascript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `javascript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
 
-Configurations are same as VSCode, try completion with `tsserver`, `typescript`
+Configurations are the same as with VSCode. Try completion with `tsserver`, `typescript`
 or `javascript` in your `coc-settings.json`.
 
 ## Related extensions
@@ -140,6 +140,8 @@ or `javascript` in your `coc-settings.json`.
 - Make the issue happen.
 - Open tsserver log file by command `CocCommand tsserver.openTsServerLog`
 - Open tsserver output channel by command `CocCommand workspace.showOutput tsserver`
+
+If you find any issues, please [create an issue](https://github.com/neoclide/coc-tsserver/issues/new).
 
 ## License
 
