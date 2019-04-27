@@ -15,7 +15,7 @@
   "scripts": {
     "clean": "rimraf lib",
     "build": "tsc -p tsconfig.json",
-    "prepare": "yarn clean && yarn build"
+    "prepare": "npm run clean && npm run build"
   },
   "activationEvents": [
     "onLanguage:javascript",
