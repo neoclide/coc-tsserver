@@ -21,8 +21,8 @@ export default class VersionStatus {
     this._onChangeEditorSub.dispose()
   }
 
-  public onDidChangeTypeScriptVersion(version: TypeScriptVersion): void {
-    this._versionBarEntry.text = `TSC ${version.versionString}`
+  public onDidChangeTypeScriptVersion(_version: TypeScriptVersion): void {
+    this._versionBarEntry.text = `TSC`
     this.showHideStatus().catch(_e => {
       // noop
     })
