@@ -91,6 +91,8 @@ module will be used.
 - `typescript.format.insertSpaceAfterKeywordsInControlFlowStatements` default: `true`
 - `typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions` default: `true`
 - `typescript.format.insertSpaceBeforeFunctionParenthesis` default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets` default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` default: `false`
 - `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis` default: `false`
 - `typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces` default: `false`
 - `typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces` default: `false`
@@ -117,6 +119,8 @@ module will be used.
 - `javascript.format.insertSpaceAfterKeywordsInControlFlowStatements` default: `true`
 - `javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions` default: `true`
 - `javascript.format.insertSpaceBeforeFunctionParenthesis` default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets` default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` default: `false`
 - `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis` default: `false`
 - `javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces` default: `false`
 - `javascript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces` default: `false`
