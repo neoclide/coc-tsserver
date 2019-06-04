@@ -251,6 +251,7 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
     }
     codeAction.edit = getEditForCodeAction(this.client, tsAction)
     codeAction.diagnostics = [diagnostic]
+      ; (codeAction as any).isPrefered = true
     if (tsAction.commands) {
       codeAction.command = {
         command: ApplyCodeActionCommand.ID,
