@@ -115,11 +115,6 @@
           "default": "",
           "description": "Folder path for cache typings"
         },
-        "tsserver.orgnizeImportOnSave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Orgnize import on buffer will save"
-        },
         "tsserver.formatOnType": {
           "type": "boolean",
           "default": true,

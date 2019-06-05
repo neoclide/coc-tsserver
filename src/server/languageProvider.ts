@@ -34,6 +34,7 @@ import InstallModuleProvider from './features/moduleInstall'
 import API from './utils/api'
 import { LanguageDescription } from './utils/languageDescription'
 import TypingsStatus from './utils/typingsStatus'
+import { OrganizeImportsCodeActionProvider } from './organizeImports'
 
 const validateSetting = 'validate.enable'
 const suggestionSetting = 'suggestionActions.enabled'
@@ -219,6 +220,11 @@ export default class LanguageProvider {
     if (this.client.apiVersion.gte(API.v280)) {
       this.disposables.push(
         languages.registerFoldingRangeProvider(languageIds, new Folding(this.client))
+      )
+      this.disposables.push(
+        languages.registerCodeActionProvider(languageIds,
+          new OrganizeImportsCodeActionProvider(this.client, this.fileConfigurationManager),
+          `tsserver-${this.description.id}`, [CodeActionKind.SourceOrganizeImports])
       )
     }
 

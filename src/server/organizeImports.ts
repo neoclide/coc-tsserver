@@ -2,40 +2,26 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocumentWillSaveEvent, workspace } from 'coc.nvim'
-import { TextDocument, TextEdit, WorkspaceEdit, CancellationToken } from 'vscode-languageserver-protocol'
+import { workspace, CodeActionProvider, CodeActionProviderMetadata } from 'coc.nvim'
+import { CancellationToken, Range, TextDocument, CodeActionContext, WorkspaceEdit, CodeActionKind, CodeAction } from 'vscode-languageserver-protocol'
 import { Command } from './commands'
 import Proto from './protocol'
-import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import { standardLanguageDescriptions } from './utils/languageDescription'
 import { languageIds } from './utils/languageModeIds'
 import * as typeconverts from './utils/typeConverters'
+import FileConfigurationManager from './features/fileConfigurationManager'
+import TypeScriptServiceClient from './typescriptServiceClient'
 
-export default class OrganizeImportsCommand implements Command {
+export class OrganizeImportsCommand implements Command {
   public readonly id: string = 'tsserver.organizeImports'
 
   constructor(
-    private readonly client: TypeScriptServiceClientHost
+    private readonly client: TypeScriptServiceClient
   ) {
-    workspace.onWillSaveUntil(this.onWillSaveUntil, this, 'tsserver')
-  }
-
-  private onWillSaveUntil(event: TextDocumentWillSaveEvent): void {
-    let config = workspace.getConfiguration('tsserver')
-    let format = config.get('orgnizeImportOnSave', false)
-    if (!format) return
-    let { document } = event
-    if (languageIds.indexOf(document.languageId) == -1) return
-    let willSaveWaitUntil = async (): Promise<TextEdit[]> => {
-      let edit = await this.getTextEdits(document)
-      if (!edit) return []
-      return edit.changes ? edit.changes[document.uri] : []
-    }
-    event.waitUntil(willSaveWaitUntil())
   }
 
   private async getTextEdits(document: TextDocument): Promise<WorkspaceEdit | null> {
-    let client = this.client.serviceClient
+    let client = this.client
     let file = client.toPath(document.uri)
     const args: Proto.OrganizeImportsRequestArgs = {
       scope: {
@@ -64,7 +50,7 @@ export default class OrganizeImportsCommand implements Command {
       if (changes) {
         for (let c of Object.keys(changes)) {
           for (let textEdit of changes[c]) {
-            textEdit.newText = textEdit.newText.replace(/;/g, '')
+            textEdit.newText = textEdit.newText.replace(/;(?:(\n|$))/g, '')
           }
         }
       }
@@ -72,11 +58,48 @@ export default class OrganizeImportsCommand implements Command {
     return edit
   }
 
-  public async execute(): Promise<void> {
-    let document = await workspace.document
-    if (languageIds.indexOf(document.filetype) == -1) return
-    let edit = await this.getTextEdits(document.textDocument)
+  public async execute(document?: TextDocument): Promise<void> {
+    if (!document) {
+      let doc = await workspace.document
+      if (languageIds.indexOf(doc.filetype) == -1) return
+      document = doc.textDocument
+    }
+    let edit = await this.getTextEdits(document)
     if (edit) await workspace.applyEdit(edit)
     return
+  }
+}
+
+export class OrganizeImportsCodeActionProvider implements CodeActionProvider {
+  // public static readonly minVersion = API.v280
+
+  public constructor(
+    private readonly client: TypeScriptServiceClient,
+    private readonly fileConfigManager: FileConfigurationManager,
+  ) {
+  }
+
+  public readonly metadata: CodeActionProviderMetadata = {
+    providedCodeActionKinds: [CodeActionKind.SourceOrganizeImports]
+  }
+
+  public provideCodeActions(
+    document: TextDocument,
+    _range: Range,
+    context: CodeActionContext,
+    _token: CancellationToken
+  ): CodeAction[] {
+    if (languageIds.indexOf(document.languageId) == -1) return
+
+    if (!context.only || !context.only.includes(CodeActionKind.SourceOrganizeImports)) {
+      return []
+    }
+
+    const action = CodeAction.create('Organize Imports', {
+      title: '',
+      command: 'tsserver.organizeImports',
+      arguments: [document]
+    }, CodeActionKind.SourceOrganizeImports)
+    return [action]
   }
 }
