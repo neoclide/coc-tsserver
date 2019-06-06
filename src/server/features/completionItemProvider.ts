@@ -300,7 +300,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     if (additionalTextEdits.length && this.noSemicolons) {
       // remove comma
       additionalTextEdits.forEach(o => {
-        o.newText = o.newText.replace(/;(?:(\n|$))/g, '')
+        o.newText = o.newText.replace(/;(?=(\n|$))/g, '')
       })
     }
     return {

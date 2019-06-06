@@ -50,7 +50,7 @@ export class OrganizeImportsCommand implements Command {
       if (changes) {
         for (let c of Object.keys(changes)) {
           for (let textEdit of changes[c]) {
-            textEdit.newText = textEdit.newText.replace(/;(?:(\n|$))/g, '')
+            textEdit.newText = textEdit.newText.replace(/;(?=(\n|$))/g, '')
           }
         }
       }
