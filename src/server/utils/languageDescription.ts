@@ -7,10 +7,16 @@ import * as languageModeIds from './languageModeIds'
 export interface LanguageDescription {
   readonly id: string
   readonly diagnosticSource: string
+  readonly diagnosticLanguage: DiagnosticLanguage
   readonly modeIds: string[]
   readonly configFile?: string
   readonly isExternal?: boolean
   readonly diagnosticOwner: string
+}
+
+export const enum DiagnosticLanguage {
+  JavaScript,
+  TypeScript
 }
 
 export const standardLanguageDescriptions: LanguageDescription[] = [
@@ -20,6 +26,7 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     diagnosticOwner: 'typescript',
     modeIds: [languageModeIds.typescript, languageModeIds.typescriptreact,
     languageModeIds.typescripttsx, languageModeIds.typescriptjsx],
+    diagnosticLanguage: DiagnosticLanguage.TypeScript,
     configFile: 'tsconfig.json'
   },
   {
@@ -27,6 +34,7 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     diagnosticSource: 'ts',
     diagnosticOwner: 'typescript',
     modeIds: [languageModeIds.javascript, languageModeIds.javascriptreact],
+    diagnosticLanguage: DiagnosticLanguage.JavaScript,
     configFile: 'jsconfig.json'
   }
 ]

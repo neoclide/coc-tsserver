@@ -127,7 +127,9 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
     )
     let response
     try {
-      response = await this.client.execute('getApplicableRefactors', args, token)
+      response = await this.client.interruptGetErr(() => {
+        return this.client.execute('getApplicableRefactors', args, token)
+      })
       if (!response || !response.body) {
         return undefined
       }

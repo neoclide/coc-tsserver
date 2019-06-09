@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Uri, DiagnosticKind, disposeAll, workspace } from 'coc.nvim'
-import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position, CancellationToken } from 'vscode-languageserver-protocol'
+import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position, CancellationToken, DiagnosticRelatedInformation } from 'vscode-languageserver-protocol'
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
 import * as PConst from './protocol.const'
@@ -64,13 +64,13 @@ export default class TypeScriptServiceClientHost implements Disposable {
         let language = this.findLanguage(uri)
         if (!language) return
         if (diagnostics.length == 0) {
-          language.configFileDiagnosticsReceived(uri, [])
+          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), [])
         } else {
           let range = Range.create(Position.create(0, 0), Position.create(0, 1))
           let { text, code, category } = diagnostics[0]
           let severity = category == 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
           let diagnostic = Diagnostic.create(range, text, severity, code)
-          language.configFileDiagnosticsReceived(uri, [diagnostic])
+          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), [diagnostic])
         }
       }
     }, null, this.disposables)
@@ -158,22 +158,34 @@ export default class TypeScriptServiceClientHost implements Disposable {
     }
   }
 
-  private createMarkerDatas(diagnostics: Proto.Diagnostic[]): Diagnostic[] {
+  private createMarkerDatas(diagnostics: Proto.Diagnostic[]): (Diagnostic & { reportUnnecessary: any })[] {
     return diagnostics.map(tsDiag => this.tsDiagnosticToLspDiagnostic(tsDiag))
   }
 
-  private tsDiagnosticToLspDiagnostic(diagnostic: Proto.Diagnostic): Diagnostic {
+  private tsDiagnosticToLspDiagnostic(diagnostic: Proto.Diagnostic): (Diagnostic & { reportUnnecessary: any }) {
     const { start, end, text } = diagnostic
     const range = {
       start: typeConverters.Position.fromLocation(start),
       end: typeConverters.Position.fromLocation(end)
+    }
+    let relatedInformation: DiagnosticRelatedInformation[]
+    if (diagnostic.relatedInformation) {
+      relatedInformation = diagnostic.relatedInformation.map(o => {
+        let { span, message } = o
+        return {
+          location: typeConverters.Location.fromTextSpan(this.client.toResource(span.file), span),
+          message
+        }
+      })
     }
     return {
       range,
       message: text,
       code: diagnostic.code ? diagnostic.code : null,
       severity: this.getDiagnosticSeverity(diagnostic),
+      reportUnnecessary: diagnostic.reportsUnnecessary,
       source: diagnostic.source || 'tsserver',
+      relatedInformation
     }
   }
 

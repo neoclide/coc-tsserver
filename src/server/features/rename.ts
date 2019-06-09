@@ -81,7 +81,9 @@ export default class TypeScriptRenameProvider implements RenameProvider {
       findInComments: false
     }
 
-    return this.client.execute('rename', args, token)
+    return this.client.interruptGetErr(() => {
+      return this.client.execute('rename', args, token)
+    })
   }
 
   private toWorkspaceEdit(

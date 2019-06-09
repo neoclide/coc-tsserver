@@ -74,11 +74,13 @@ export default class UpdateImportsOnFileRenameHandler {
 
   private async getEditsForFileRename(document: TextDocument, oldFile: string, newFile: string): Promise<WorkspaceEdit> {
     await this.fileConfigurationManager.ensureConfigurationForDocument(document)
-    const args: Proto.GetEditsForFileRenameRequestArgs = {
-      oldFilePath: oldFile,
-      newFilePath: newFile
-    }
-    const response = await this.client.execute('getEditsForFileRename', args, CancellationToken.None)
+    const response = await this.client.interruptGetErr(() => {
+      const args: Proto.GetEditsForFileRenameRequestArgs = {
+        oldFilePath: oldFile,
+        newFilePath: newFile,
+      }
+      return this.client.execute('getEditsForFileRename', args, CancellationToken.None)
+    })
     if (!response || response.type != 'response' || !response.body) {
       return
     }

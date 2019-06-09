@@ -93,9 +93,7 @@ export class DiagnosticsManager {
     diagnostics: Diagnostic[]
   ): void {
     const collection = this._diagnostics.get(kind)
-    if (!collection) {
-      return
-    }
+    if (!collection) return
 
     if (diagnostics.length === 0) {
       const existing = collection.get(uri)

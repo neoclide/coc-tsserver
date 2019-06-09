@@ -31,7 +31,7 @@ export class OrganizeImportsCommand implements Command {
         }
       }
     }
-    const response = await client.execute('organizeImports', args, CancellationToken.None)
+    const response = await this.client.interruptGetErr(() => this.client.execute('organizeImports', args, CancellationToken.None))
     if (!response || response.type != 'response' || !response.success) {
       return
     }

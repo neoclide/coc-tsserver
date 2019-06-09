@@ -2,13 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Diagnostic, Disposable, CodeActionKind } from 'vscode-languageserver-protocol'
+import { Diagnostic, Disposable, CodeActionKind, DiagnosticSeverity } from 'vscode-languageserver-protocol'
 import { Uri, workspace, commands, events, languages, DiagnosticKind, ServiceStat, disposeAll } from 'coc.nvim'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
-import BufferSyncSupport from './features/bufferSyncSupport'
 import CompletionItemProvider from './features/completionItemProvider'
 import DefinitionProvider from './features/definitionProvider'
-import { DiagnosticsManager } from './features/diagnostics'
 import DirectiveCommentCompletionProvider from './features/directiveCommentCompletions'
 import DocumentHighlight from './features/documentHighlight'
 import DocumentSymbolProvider from './features/documentSymbol'
@@ -28,6 +26,7 @@ import SignatureHelpProvider from './features/signatureHelp'
 import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
 import WatchBuild from './features/watchBuild'
 import WorkspaceSymbolProvider from './features/workspaceSymbols'
+import SmartSelection from './features/smartSelect'
 import TypeScriptServiceClient from './typescriptServiceClient'
 import InstallModuleProvider from './features/moduleInstall'
 import API from './utils/api'
@@ -35,15 +34,8 @@ import { LanguageDescription } from './utils/languageDescription'
 import TypingsStatus from './utils/typingsStatus'
 import { OrganizeImportsCodeActionProvider } from './organizeImports'
 
-const validateSetting = 'validate.enable'
-const suggestionSetting = 'suggestionActions.enabled'
-
 export default class LanguageProvider {
-  private readonly diagnosticsManager: DiagnosticsManager
-  private readonly bufferSyncSupport: BufferSyncSupport
   public readonly fileConfigurationManager: FileConfigurationManager // tslint:disable-line
-  private _validate = true
-  private _enableSuggestionDiagnostics = true
   private readonly disposables: Disposable[] = []
 
   constructor(
@@ -52,54 +44,33 @@ export default class LanguageProvider {
     typingsStatus: TypingsStatus
   ) {
     this.fileConfigurationManager = new FileConfigurationManager(client)
-    this.bufferSyncSupport = new BufferSyncSupport(
-      client,
-      description.modeIds,
-      this._validate
-    )
-    this.diagnosticsManager = new DiagnosticsManager()
-    this.disposables.push(this.diagnosticsManager)
-
-    client.onTsServerStarted(async () => {
-      let document = await workspace.document
-      if (description.modeIds.indexOf(document.filetype) !== -1) {
-        this.fileConfigurationManager.ensureConfigurationForDocument(document.textDocument) // tslint:disable-line
-      }
-    })
 
     events.on('BufEnter', bufnr => {
       let doc = workspace.getDocument(bufnr)
-      if (!doc) return
+      if (!doc || client.state !== ServiceStat.Running) return
       if (description.modeIds.indexOf(doc.filetype) == -1) return
-      if (client.state !== ServiceStat.Running) return
       this.fileConfigurationManager.ensureConfigurationForDocument(doc.textDocument) // tslint:disable-line
     }, this, this.disposables)
 
-    this.configurationChanged()
-    workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
-
     let initialized = false
 
-    client.onTsServerStarted(() => { // tslint:disable-line
+    client.onTsServerStarted(async () => { // tslint:disable-line
       if (!initialized) {
+        for (let doc of workspace.documents) {
+          if (description.modeIds.indexOf(doc.filetype) !== -1) {
+            this.fileConfigurationManager.ensureConfigurationForDocument(doc.textDocument) // tslint:disable-line
+          }
+        }
         initialized = true
         this.registerProviders(client, typingsStatus)
-        this.bufferSyncSupport.listen()
       } else {
-        this.reInitialize()
+        this.client.diagnosticsManager.reInitialize()
       }
     })
   }
 
   public dispose(): void {
     disposeAll(this.disposables)
-    this.bufferSyncSupport.dispose()
-  }
-
-  private configurationChanged(): void {
-    const config = workspace.getConfiguration(this.id)
-    this.updateValidate(config.get(validateSetting, true))
-    this.updateSuggestionDiagnostics(config.get(suggestionSetting, true))
   }
 
   private registerProviders(
@@ -117,7 +88,6 @@ export default class LanguageProvider {
           client,
           typingsStatus,
           this.fileConfigurationManager,
-          this.bufferSyncSupport,
           this.description.id
         ),
         CompletionItemProvider.triggerCharacters
@@ -256,14 +226,14 @@ export default class LanguageProvider {
     this.disposables.push(
       languages.registerCodeActionProvider(
         languageIds,
-        new QuickfixProvider(client, this.diagnosticsManager, this.bufferSyncSupport),
+        new QuickfixProvider(client),
         'tsserver',
         [CodeActionKind.QuickFix]))
 
     this.disposables.push(
       languages.registerCodeActionProvider(
         languageIds,
-        new ImportfixProvider(this.bufferSyncSupport),
+        new ImportfixProvider(this.client.bufferSyncSupport),
         'tsserver',
         [CodeActionKind.QuickFix]))
     let cachedResponse = new CachedNavTreeResponse()
@@ -281,6 +251,11 @@ export default class LanguageProvider {
         languages.registerCodeLensProvider(
           languageIds,
           new ImplementationsCodeLensProvider(client, cachedResponse)))
+    }
+    if (this.client.apiVersion.gte(API.v350)) {
+      this.disposables.push(
+        languages.registerSelectionRangeProvider(languageIds, new SmartSelection(this.client))
+      )
     }
 
     if (this.description.id == 'typescript') {
@@ -329,51 +304,31 @@ export default class LanguageProvider {
     return this.description.diagnosticSource
   }
 
-  private updateValidate(value: boolean): void {
-    if (this._validate === value) {
-      return
-    }
-    this._validate = value
-    this.bufferSyncSupport.validate = value
-    this.diagnosticsManager.validate = value
-    if (value) {
-      this.triggerAllDiagnostics()
-    }
-  }
-
-  private updateSuggestionDiagnostics(value: boolean): void {
-    if (this._enableSuggestionDiagnostics === value) {
-      return
-    }
-    this._enableSuggestionDiagnostics = value
-    this.diagnosticsManager.enableSuggestions = value
-    if (value) {
-      this.triggerAllDiagnostics()
-    }
-  }
-
-  public reInitialize(): void {
-    this.diagnosticsManager.reInitialize()
-    this.bufferSyncSupport.reInitialize()
-  }
-
   public triggerAllDiagnostics(): void {
-    this.bufferSyncSupport.requestAllDiagnostics()
+    this.client.bufferSyncSupport.requestAllDiagnostics()
   }
 
   public diagnosticsReceived(
     diagnosticsKind: DiagnosticKind,
     file: Uri,
-    diagnostics: Diagnostic[]
+    diagnostics: (Diagnostic & { reportUnnecessary: any })[]
   ): void {
-    this.diagnosticsManager.diagnosticsReceived(
+    this.client.diagnosticsManager.diagnosticsReceived(
       diagnosticsKind,
       file.toString(),
       diagnostics
     )
-  }
 
-  public configFileDiagnosticsReceived(uri: Uri, diagnostics: Diagnostic[]): void {
-    this.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), diagnostics)
+    const config = workspace.getConfiguration(this.id, file.toString())
+    const reportUnnecessary = config.get<boolean>('showUnused', true)
+    this.client.diagnosticsManager.diagnosticsReceived(diagnosticsKind, file.toString(), diagnostics.filter(diag => {
+      if (!reportUnnecessary) {
+        diag.tags = undefined
+        if (diag.reportUnnecessary && diag.severity === DiagnosticSeverity.Hint) {
+          return false
+        }
+      }
+      return true
+    }))
   }
 }

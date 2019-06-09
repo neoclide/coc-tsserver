@@ -8,7 +8,7 @@ import os from 'os'
 import path from 'path'
 import { CancellationToken, Disposable, Emitter, Event } from 'vscode-languageserver-protocol'
 import which from 'which'
-import { Uri, DiagnosticKind, ServiceStat, workspace, disposeAll } from 'coc.nvim'
+import { Uri, ServiceStat, workspace, disposeAll } from 'coc.nvim'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import * as Proto from './protocol'
 import { ITypeScriptServiceClient, ServerResponse } from './typescriptService'
@@ -25,6 +25,8 @@ import { PluginManager } from '../utils/plugins'
 import { ICallback, Reader } from './utils/wireProtocol'
 import { CallbackMap } from './callbackMap'
 import { RequestItem, RequestQueue, RequestQueueingType } from './requestQueue'
+import BufferSyncSupport from './features/bufferSyncSupport'
+import { DiagnosticKind, DiagnosticsManager } from './features/diagnostics'
 
 class ForkedTsServerProcess {
   constructor(private childProcess: cp.ChildProcess) { }
@@ -66,6 +68,9 @@ export interface TsDiagnostics {
 export default class TypeScriptServiceClient implements ITypeScriptServiceClient {
   public state = ServiceStat.Initial
   public readonly logger: Logger = new Logger()
+  public readonly bufferSyncSupport: BufferSyncSupport
+  public readonly diagnosticsManager: DiagnosticsManager
+
   private fileConfigurationManager: FileConfigurationManager
   private pathSeparator: string
   private tracer: Tracer
@@ -111,6 +116,16 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     pluginManager.onDidChangePlugins(() => {
       this.restartTsServer()
     }, null, this.disposables)
+
+    this.bufferSyncSupport = new BufferSyncSupport(this)
+    this.onTsServerStarted(() => {
+      this.bufferSyncSupport.listen()
+    })
+
+    this.diagnosticsManager = new DiagnosticsManager()
+    this.bufferSyncSupport.onDelete(resource => {
+      this.diagnosticsManager.delete(resource)
+    }, null, this.disposables)
   }
 
   private _onDiagnosticsReceived = new Emitter<TsDiagnostics>()
@@ -140,7 +155,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         })
         .then(undefined, () => void 0)
     }
-
+    this.bufferSyncSupport.dispose()
     disposeAll(this.disposables)
     this.logger.dispose()
     this._onTsServerStarted.dispose()
@@ -516,6 +531,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     if (this.servicePromise == null) {
       return Promise.resolve(undefined)
     }
+    this.bufferSyncSupport.beforeCommand(command)
 
     const request = this._requestQueue.createRequest(command, args)
     const requestInfo: RequestItem = {
@@ -700,13 +716,24 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
           )
         }
         break
-
+      case 'projectsUpdatedInBackground':
+        const body = (event as Proto.ProjectsUpdatedInBackgroundEvent).body
+        const resources = body.openFiles.map(Uri.file)
+        this.bufferSyncSupport.getErr(resources)
+        break
       case 'typesInstallerInitializationFailed':
         if (event.body) {
           this._onTypesInstallerInitializationFailed.fire(
             (event as Proto.TypesInstallerInitializationFailedEvent).body
           )
         }
+        break
+      case 'projectLoadingStart':
+        this.versionStatus.loading = true
+        break
+
+      case 'projectLoadingFinish':
+        this.versionStatus.loading = false
         break
     }
   }
@@ -786,6 +813,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     if (this.apiVersion.gte(API.v291)) {
       args.push('--noGetErrOnBackgroundUpdate')
     }
+
+    if (this.apiVersion.gte(API.v345)) {
+      args.push('--validateDefaultNpmLocation')
+    }
     return args
   }
 
@@ -815,6 +846,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         this.executeWithoutWaitingForResponse('configurePlugin', { pluginName, configuration })
       })
     }
+  }
+
+  public interruptGetErr<R>(f: () => R): R {
+    return this.bufferSyncSupport.interuptGetErr(f)
   }
 }
 

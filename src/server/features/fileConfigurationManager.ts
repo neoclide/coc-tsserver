@@ -144,10 +144,11 @@ export default class FileConfigurationManager {
       return {}
     }
     const config = workspace.getConfiguration(`${language}`)
+    const defaultQuote = this.client.apiVersion.gte(API.v333) ? 'auto' : undefined
     return {
       disableSuggestions: !config.get<boolean>('suggest.enabled', true),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
-      quotePreference: config.get<'single' | 'double'>('preferences.quoteStyle', 'single'),
+      quotePreference: config.get<'single' | 'double' | 'auto'>('preferences.quoteStyle', defaultQuote),
       allowRenameOfImportPath: true,
       allowTextChangesInNewFiles: true,
     }

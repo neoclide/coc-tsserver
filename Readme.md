@@ -80,6 +80,8 @@ module will be used.
 - `typescript.preferences.quoteStyle` default: `"single"`
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default: `true`
+- `typescript.useBatchedBufferSync`: use batched buffer synchronize support.
+- `typescript.showUnused`: show unused variable hint.
 - `typescript.suggest.enabled` default: `true`
 - `typescript.suggest.paths`:Enable/disable suggest paths in import statement and require calls, default: `true`
 - `typescript.suggest.autoImports`:Enable/disable auto import suggests., default: `true`
@@ -99,6 +101,7 @@ module will be used.
 - `typescript.format.insertSpaceAfterTypeAssertion` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
+- `javascript.showUnused`: show unused variable hint.
 - `javascript.updateImportsOnFileMove.enable` default: `true`
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`

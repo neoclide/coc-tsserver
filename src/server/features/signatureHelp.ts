@@ -28,14 +28,11 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
       position
     )
 
-    let info: Proto.SignatureHelpItems | undefined
-    try {
-      const response = await this.client.execute('signatureHelp', args, token)
-      info = (response as any).body
-      if (!info) return undefined
-    } catch {
+    const response = await this.client.interruptGetErr(() => this.client.execute('signatureHelp', args, token))
+    if (response.type !== 'response' || !response.body) {
       return undefined
     }
+    let info = response.body
 
     const result: SignatureHelp = {
       activeSignature: info.selectedItemIndex,

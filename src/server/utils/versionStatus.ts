@@ -27,6 +27,10 @@ export default class VersionStatus {
     })
   }
 
+  public set loading(isLoading: boolean) {
+    this._versionBarEntry.isProgress = isLoading
+  }
+
   private async showHideStatus(): Promise<void> {
     let document = await workspace.document
     if (!document) {

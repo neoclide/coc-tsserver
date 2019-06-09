@@ -2,12 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { disposeAll, workspace } from 'coc.nvim'
-import { CancellationTokenSource, DidChangeTextDocumentParams, Disposable, TextDocument } from 'vscode-languageserver-protocol'
+import { Uri, disposeAll, workspace } from 'coc.nvim'
+import { CancellationTokenSource, Emitter, Event, DidChangeTextDocumentParams, Disposable, TextDocument, TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { Delayer } from '../utils/async'
+import * as typeConverters from '../utils/typeConverters'
 import * as languageModeIds from '../utils/languageModeIds'
 
 function mode2ScriptKind(
@@ -30,10 +31,117 @@ function mode2ScriptKind(
   return undefined
 }
 
+/**
+ * Manages synchronization of buffers with the TS server.
+ *
+ * If supported, batches together file changes. This allows the TS server to more efficiently process changes.
+ */
+class BufferSynchronizer {
+
+  private _pending: Proto.UpdateOpenRequestArgs = {}
+  private _pendingFiles = new Set<string>()
+
+  constructor(
+    private readonly client: ITypeScriptServiceClient
+  ) { }
+
+  public open(args: Proto.OpenRequestArgs): void {
+    if (this.supportsBatching) {
+      this.updatePending(args.file, pending => {
+        if (!pending.openFiles) {
+          pending.openFiles = []
+        }
+        pending.openFiles.push(args)
+      })
+    } else {
+      this.client.executeWithoutWaitingForResponse('open', args)
+    }
+  }
+
+  public close(filepath: string): void {
+    if (this.supportsBatching) {
+      this.updatePending(filepath, pending => {
+        if (!pending.closedFiles) {
+          pending.closedFiles = []
+        }
+        pending.closedFiles.push(filepath)
+      })
+    } else {
+      const args: Proto.FileRequestArgs = { file: filepath }
+      this.client.executeWithoutWaitingForResponse('close', args)
+    }
+  }
+
+  public change(filepath: string, events: TextDocumentContentChangeEvent[]): void {
+    if (!events.length) {
+      return
+    }
+
+    if (this.supportsBatching) {
+      this.updatePending(filepath, pending => {
+        if (!pending.changedFiles) {
+          pending.changedFiles = []
+        }
+        pending.changedFiles.push({
+          fileName: filepath,
+          textChanges: events.map((change): Proto.CodeEdit => ({
+            newText: change.text,
+            start: typeConverters.Position.toLocation(change.range.start),
+            end: typeConverters.Position.toLocation(change.range.end),
+          })).reverse(), // Send the edits end-of-document to start-of-document order
+        })
+      })
+    } else {
+      for (const { range, text } of events) {
+        const args: Proto.ChangeRequestArgs = {
+          insertString: text,
+          ...typeConverters.Range.toFormattingRequestArgs(filepath, range)
+        }
+        this.client.executeWithoutWaitingForResponse('change', args)
+      }
+    }
+  }
+
+  public beforeCommand(command: string): void {
+    if (command === 'updateOpen') {
+      return
+    }
+
+    this.flush()
+  }
+
+  private flush(): void {
+    if (!this.supportsBatching) {
+      // We've already eagerly synchronized
+      return
+    }
+
+    if (this._pending.changedFiles || this._pending.closedFiles || this._pending.openFiles) {
+      this.client.executeWithoutWaitingForResponse('updateOpen', this._pending)
+      this._pending = {}
+      this._pendingFiles.clear()
+    }
+  }
+
+  private get supportsBatching(): boolean {
+    return this.client.apiVersion.gte(API.v340) && workspace.getConfiguration('typescript').get<boolean>('useBatchedBufferSync', true)
+  }
+
+  private updatePending(filepath: string, f: (pending: Proto.UpdateOpenRequestArgs) => void): void {
+    if (this.supportsBatching && this._pendingFiles.has(filepath)) {
+      this.flush()
+      this._pendingFiles.clear()
+      f(this._pending)
+      this._pendingFiles.add(filepath)
+    } else {
+      f(this._pending)
+    }
+  }
+}
+
 export default class BufferSyncSupport {
   private readonly client: ITypeScriptServiceClient
 
-  private _validate: boolean
   private readonly modeIds: Set<string>
   private readonly uris: Set<string> = new Set()
   private readonly disposables: Disposable[] = []
@@ -41,19 +149,28 @@ export default class BufferSyncSupport {
   private readonly pendingDiagnostics = new Map<string, number>()
   private readonly diagnosticDelayer: Delayer<any>
   private pendingGetErr: GetErrRequest | undefined
+  private readonly synchronizer: BufferSynchronizer
+  private _validateJavaScript = true
+  private _validateTypeScript = true
+
+  private listening = false
+  private readonly _onDelete = new Emitter<string>()
+  public readonly onDelete: Event<string> = this._onDelete.event
 
   constructor(
     client: ITypeScriptServiceClient,
-    modeIds: string[],
-    validate: boolean
   ) {
     this.client = client
-    this.modeIds = new Set<string>(modeIds)
-    this._validate = validate || false
+    this.synchronizer = new BufferSynchronizer(client)
+    this.modeIds = new Set<string>(languageModeIds.languageIds)
     this.diagnosticDelayer = new Delayer<any>(300)
   }
 
   public listen(): void {
+    if (this.listening) {
+      return
+    }
+    this.listening = true
     workspace.onDidOpenTextDocument(
       this.onDidOpenTextDocument,
       this,
@@ -70,14 +187,8 @@ export default class BufferSyncSupport {
       this.disposables
     )
     workspace.textDocuments.forEach(this.onDidOpenTextDocument, this)
-  }
-
-  public reInitialize(): void {
-    workspace.textDocuments.forEach(this.onDidOpenTextDocument, this)
-  }
-
-  public set validate(value: boolean) {
-    this._validate = value
+    this.updateConfiguration()
+    workspace.onDidChangeConfiguration(this.updateConfiguration, this, this.disposables)
   }
 
   public dispose(): void {
@@ -105,8 +216,8 @@ export default class BufferSyncSupport {
       let root = this.client.getProjectRootPath(document.uri)
       if (root) args.projectRootPath = root
     }
-
-    this.client.executeWithoutWaitingForResponse('open', args) // tslint:disable-line
+    this.synchronizer.open(args)
+    // this.client.executeWithoutWaitingForResponse('open', args)
     this.requestDiagnostic(uri)
   }
 
@@ -114,10 +225,12 @@ export default class BufferSyncSupport {
     let { uri } = document
     if (!this.uris.has(uri)) return
     let filepath = this.client.toPath(uri)
-    const args: Proto.FileRequestArgs = {
-      file: filepath
-    }
-    this.client.executeWithoutWaitingForResponse('close', args) // tslint:disable-line
+    this.uris.delete(uri)
+    this.pendingDiagnostics.delete(uri)
+    this.synchronizer.close(filepath)
+    this._onDelete.fire(uri)
+    this.requestAllDiagnostics()
+    // this.client.executeWithoutWaitingForResponse('close', args)
   }
 
   private onDidChangeTextDocument(e: DidChangeTextDocumentParams): void {
@@ -125,17 +238,7 @@ export default class BufferSyncSupport {
     let { uri } = textDocument
     if (!this.uris.has(uri)) return
     let filepath = this.client.toPath(uri)
-    for (const { range, text } of contentChanges) {
-      const args: Proto.ChangeRequestArgs = {
-        file: filepath,
-        line: range ? range.start.line + 1 : 1,
-        offset: range ? range.start.character + 1 : 1,
-        endLine: range ? range.end.line + 1 : 2 ** 24,
-        endOffset: range ? range.end.character + 1 : 1,
-        insertString: text
-      }
-      this.client.executeWithoutWaitingForResponse('change', args) // tslint:disable-line
-    }
+    this.synchronizer.change(filepath, contentChanges)
     const didTrigger = this.requestDiagnostic(uri)
     if (!didTrigger && this.pendingGetErr) {
       // In this case we always want to re-trigger all diagnostics
@@ -143,6 +246,10 @@ export default class BufferSyncSupport {
       this.pendingGetErr = undefined
       this.triggerDiagnostics()
     }
+  }
+
+  public beforeCommand(command: string): void {
+    this.synchronizer.beforeCommand(command)
   }
 
   public interuptGetErr<R>(f: () => R): R {
@@ -157,6 +264,19 @@ export default class BufferSyncSupport {
     return result
   }
 
+  public getErr(resources: Uri[]): any {
+    const handledResources = resources.filter(resource => this.uris.has(resource.toString()))
+    if (!handledResources.length) {
+      return
+    }
+
+    for (const resource of handledResources) {
+      this.pendingDiagnostics.set(resource.toString(), Date.now())
+    }
+
+    this.triggerDiagnostics()
+  }
+
   private triggerDiagnostics(delay = 200): void {
     this.diagnosticDelayer.trigger(() => {
       this.sendPendingDiagnostics()
@@ -164,11 +284,11 @@ export default class BufferSyncSupport {
   }
 
   public requestAllDiagnostics(): void {
-    if (!this._validate) {
-      return
-    }
     for (const uri of this.uris) {
-      this.pendingDiagnostics.set(uri, Date.now())
+      let doc = workspace.getDocument(uri)
+      if (doc && this.shouldValidate(doc.filetype)) {
+        this.pendingDiagnostics.set(uri, Date.now())
+      }
     }
     this.diagnosticDelayer.trigger(() => { // tslint:disable-line
       this.sendPendingDiagnostics()
@@ -176,11 +296,8 @@ export default class BufferSyncSupport {
   }
 
   public requestDiagnostic(uri: string): boolean {
-    if (!this._validate) {
-      return false
-    }
     let document = workspace.getDocument(uri)
-    if (!document) return false
+    if (!document || !this.shouldValidate(document.filetype)) return false
     this.pendingDiagnostics.set(uri, Date.now())
     const lineCount = document.lineCount
     const delay = Math.min(Math.max(Math.ceil(lineCount / 20), 300), 800)
@@ -193,9 +310,6 @@ export default class BufferSyncSupport {
   }
 
   private sendPendingDiagnostics(): void {
-    if (!this._validate) {
-      return
-    }
     const uris = Array.from(this.pendingDiagnostics.entries())
       .sort((a, b) => a[1] - b[1])
       .map(entry => entry[0])
@@ -216,6 +330,23 @@ export default class BufferSyncSupport {
       })
     }
     this.pendingDiagnostics.clear()
+  }
+  private updateConfiguration(): void {
+    const jsConfig = workspace.getConfiguration('javascript', null)
+    const tsConfig = workspace.getConfiguration('typescript', null)
+
+    this._validateJavaScript = jsConfig.get<boolean>('validate.enable', true)
+    this._validateTypeScript = tsConfig.get<boolean>('validate.enable', true)
+  }
+
+  private shouldValidate(filetype: string): boolean {
+    if (languageModeIds.languageIds.indexOf(filetype) == -1) {
+      return false
+    }
+    if (filetype.startsWith('javascript')) {
+      return this._validateJavaScript
+    }
+    return this._validateTypeScript
   }
 }
 

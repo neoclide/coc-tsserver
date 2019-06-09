@@ -23,6 +23,14 @@ export namespace Range {
     }
   }
 
+  export const toFormattingRequestArgs = (file: string, range: language.Range): Proto.FormatRequestArgs => ({
+    file,
+    line: range.start.line + 1,
+    offset: range.start.character + 1,
+    endLine: range.end.line + 1,
+    endOffset: range.end.character + 1
+  })
+
   export const toFileRangeRequestArgs = (
     file: string,
     range: language.Range
@@ -42,6 +50,11 @@ export namespace Position {
       character: tslocation.offset - 1
     }
   }
+
+  export const toLocation = (position: language.Position): Proto.Location => ({
+    line: position.line + 1,
+    offset: position.character + 1,
+  })
 
   export const toFileLocationRequestArgs = (
     file: string,

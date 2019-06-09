@@ -8,6 +8,8 @@ import * as Proto from './protocol'
 import API from './utils/api'
 import { TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
+import BufferSyncSupport from './features/bufferSyncSupport'
+import { DiagnosticsManager } from './features/diagnostics'
 
 export namespace ServerResponse {
 
@@ -74,6 +76,8 @@ export interface ITypeScriptServiceClient {
   onDidEndInstallTypings: Event<Proto.EndInstallTypesEventBody>
   onTypesInstallerInitializationFailed: Event<Proto.TypesInstallerInitializationFailedEventBody>
   readonly logger: Logger
+  readonly bufferSyncSupport: BufferSyncSupport
+  readonly diagnosticsManager: DiagnosticsManager
 
   getProjectRootPath(uri: string): string | null
   normalizePath(resource: Uri): string | null
@@ -91,10 +95,15 @@ export interface ITypeScriptServiceClient {
   executeWithoutWaitingForResponse(command: 'open', args: Proto.OpenRequestArgs): void
   executeWithoutWaitingForResponse(command: 'close', args: Proto.FileRequestArgs): void
   executeWithoutWaitingForResponse(command: 'change', args: Proto.ChangeRequestArgs): void
-  // executeWithoutWaitingForResponse(command: 'updateOpen', args: Proto.UpdateOpenRequestArgs): void
+  executeWithoutWaitingForResponse(command: 'updateOpen', args: Proto.UpdateOpenRequestArgs): void
   executeWithoutWaitingForResponse(command: 'compilerOptionsForInferredProjects', args: Proto.SetCompilerOptionsForInferredProjectsArgs): void
   executeWithoutWaitingForResponse(command: 'reloadProjects', args: null): void
   executeWithoutWaitingForResponse(command: 'configurePlugin', args: Proto.ConfigurePluginRequestArguments): void
 
   executeAsync(command: 'geterr', args: Proto.GeterrRequestArgs, token: CancellationToken): Promise<ServerResponse.Response<Proto.Response>>
+
+  /**
+   * Cancel on going geterr requests and re-queue them after `f` has been evaluated.
+   */
+  interruptGetErr<R>(f: () => R): R
 }

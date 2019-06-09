@@ -142,8 +142,6 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
-    private readonly diagnosticsManager: DiagnosticsManager,
-    private readonly bufferSyncSupport: BufferSyncSupport,
   ) {
     commands.register(
       new ApplyCodeActionCommand(client)
@@ -177,7 +175,7 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
       return []
     }
 
-    if (this.bufferSyncSupport.hasPendingDiagnostics(document.uri)) {
+    if (this.client.bufferSyncSupport.hasPendingDiagnostics(document.uri)) {
       return []
     }
 
@@ -273,7 +271,7 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
     }
 
     // Make sure there are multiple diagnostics of the same type in the file
-    if (!this.diagnosticsManager
+    if (!this.client.diagnosticsManager
       .getDiagnostics(document.uri)
       .some(x => x.code === diagnostic.code && x !== diagnostic)) {
       return

@@ -16,7 +16,6 @@ import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
 import FileConfigurationManager, { SuggestOptions } from './fileConfigurationManager'
 import SnippetString from '../utils/SnippetString'
-import BufferSyncSupport from './bufferSyncSupport'
 
 // command center
 export interface CommandItem {
@@ -59,7 +58,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     private readonly client: ITypeScriptServiceClient,
     private readonly typingsStatus: TypingsStatus,
     private readonly fileConfigurationManager: FileConfigurationManager,
-    private readonly bufferSyncSupport: BufferSyncSupport,
     languageId: string
   ) {
 
@@ -128,7 +126,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     let isNewIdentifierLocation = true
     if (this.client.apiVersion.gte(API.v300)) {
       try {
-        const response = await this.bufferSyncSupport.interuptGetErr(() => this.client.execute('completionInfo', args, token))
+        const response = await this.client.interruptGetErr(() => this.client.execute('completionInfo', args, token))
         if (response.type !== 'response' || !response.body) {
           return null
         }
@@ -141,7 +139,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         throw e
       }
     } else {
-      const response = await this.bufferSyncSupport.interuptGetErr(() => this.client.execute('completions', args, token))
+      const response = await this.client.interruptGetErr(() => this.client.execute('completions', args, token))
       if (response.type !== 'response' || !response.body) {
         return null
       }
@@ -218,11 +216,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     let response: ServerResponse.Response<Proto.CompletionDetailsResponse>
     try {
-      response = await this.client.execute(
-        'completionEntryDetails',
-        args,
-        token
-      )
+      response = await this.client.interruptGetErr(() => this.client.execute('completionEntryDetails', args, token))
     } catch {
       return item
     }
