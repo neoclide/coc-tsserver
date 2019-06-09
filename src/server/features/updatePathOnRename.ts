@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Disposable, TextDocument, WorkspaceEdit, CancellationToken } from 'vscode-languageserver-protocol'
-import Uri from 'vscode-uri'
-import { disposeAll, workspace } from 'coc.nvim'
+import { Uri, disposeAll, workspace } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'

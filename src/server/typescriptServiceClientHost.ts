@@ -2,9 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DiagnosticKind, disposeAll, workspace } from 'coc.nvim'
+import { Uri, DiagnosticKind, disposeAll, workspace } from 'coc.nvim'
 import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position, CancellationToken } from 'vscode-languageserver-protocol'
-import Uri from 'vscode-uri'
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
 import * as PConst from './protocol.const'

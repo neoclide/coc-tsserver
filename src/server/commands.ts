@@ -1,6 +1,5 @@
-import { diagnosticManager, workspace, commands } from 'coc.nvim'
+import { Uri as URI, diagnosticManager, workspace, commands } from 'coc.nvim'
 import { CancellationToken, Diagnostic } from 'vscode-languageserver-protocol'
-import URI from 'vscode-uri'
 import * as Proto from './protocol'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import * as typeConverters from './utils/typeConverters'

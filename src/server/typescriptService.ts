@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { CancellationToken, Event } from 'vscode-languageserver-protocol'
-import Uri from 'vscode-uri'
+import { Uri } from 'coc.nvim'
 import * as Proto from './protocol'
 import API from './utils/api'
 import { TypeScriptServiceConfiguration } from './utils/configuration'

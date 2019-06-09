@@ -1,11 +1,10 @@
-import { disposeAll, StatusBarItem, TaskOptions, workspace } from 'coc.nvim'
+import { Uri, disposeAll, StatusBarItem, TaskOptions, workspace } from 'coc.nvim'
 import { CommandManager } from 'coc.nvim/lib/commands'
 import Task from 'coc.nvim/lib/model/task'
 import findUp from 'find-up'
 import fs from 'fs'
 import path from 'path'
 import { Disposable, Location } from 'vscode-languageserver-protocol'
-import Uri from 'vscode-uri'
 import which from 'which'
 
 const countRegex = /Found\s+(\d+)\s+error/
@@ -87,7 +86,7 @@ export default class WatchProject implements Disposable {
     this.statusItem.text = 'compiling'
     this.statusItem.isProgress = true
     this.statusItem.show()
-    workspace.nvim.call('setqflist', [[], 'r'], true)
+    workspace.nvim.call('setqflist', [[]], true)
   }
 
   private onLine(line: string): void {

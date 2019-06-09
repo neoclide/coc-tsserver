@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Diagnostic, Disposable, CodeActionKind } from 'vscode-languageserver-protocol'
-import Uri from 'vscode-uri'
-import { workspace, commands, events, languages, DiagnosticKind, ServiceStat, disposeAll } from 'coc.nvim'
+import { Uri, workspace, commands, events, languages, DiagnosticKind, ServiceStat, disposeAll } from 'coc.nvim'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
 import BufferSyncSupport from './features/bufferSyncSupport'
 import CompletionItemProvider from './features/completionItemProvider'

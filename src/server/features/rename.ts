@@ -2,14 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { RenameProvider } from 'coc.nvim/lib/provider'
+import { Uri, RenameProvider } from 'coc.nvim'
 import path from 'path'
 import { CancellationToken, Position, Range, TextDocument, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
 import API from '../utils/api'
 import * as typeConverters from '../utils/typeConverters'
-import Uri from 'vscode-uri'
 
 export default class TypeScriptRenameProvider implements RenameProvider {
   public constructor(private readonly client: ITypeScriptServiceClient) { }

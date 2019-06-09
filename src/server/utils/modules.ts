@@ -1,8 +1,7 @@
 import { exec } from 'child_process'
 import path from 'path'
-import { workspace } from 'coc.nvim'
+import { Uri, workspace } from 'coc.nvim'
 import findUp from 'find-up'
-import Uri from 'vscode-uri'
 
 export function runCommand(cmd: string, cwd: string, timeout?: number): Promise<string> {
   return new Promise<string>((resolve, reject) => {

@@ -1,6 +1,5 @@
-import { disposeAll, IServiceProvider, ServiceStat, workspace, WorkspaceConfiguration } from 'coc.nvim'
+import { Uri, disposeAll, IServiceProvider, ServiceStat, workspace, WorkspaceConfiguration } from 'coc.nvim'
 import { Disposable, DocumentSelector, Emitter, Event } from 'vscode-languageserver-protocol'
-import URI from 'vscode-uri'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import { LanguageDescription, standardLanguageDescriptions } from './utils/languageDescription'
 import { PluginManager } from '../utils/plugins'
@@ -71,7 +70,7 @@ export default class TsserverService implements IServiceProvider {
     let document = await workspace.document
     await wait(100)
 
-    let uri = URI.parse(document.uri)
+    let uri = Uri.parse(document.uri)
     let language = this.clientHost.findLanguage(uri)
     if (!language) return
     await language.fileConfigurationManager.ensureConfigurationForDocument(document.textDocument)

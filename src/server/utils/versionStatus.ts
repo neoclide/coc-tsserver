@@ -1,6 +1,5 @@
-import { StatusBarItem, workspace, events } from 'coc.nvim'
+import { Uri, StatusBarItem, workspace, events } from 'coc.nvim'
 import { Disposable } from 'vscode-languageserver-protocol'
-import Uri from 'vscode-uri'
 import { TypeScriptVersion } from './versionProvider'
 
 export default class VersionStatus {
