@@ -34,6 +34,8 @@ import { LanguageDescription } from './utils/languageDescription'
 import TypingsStatus from './utils/typingsStatus'
 import { OrganizeImportsCodeActionProvider } from './organizeImports'
 
+const suggestionSetting = 'suggestionActions.enabled'
+
 export default class LanguageProvider {
   public readonly fileConfigurationManager: FileConfigurationManager // tslint:disable-line
   private readonly disposables: Disposable[] = []
@@ -44,6 +46,9 @@ export default class LanguageProvider {
     typingsStatus: TypingsStatus
   ) {
     this.fileConfigurationManager = new FileConfigurationManager(client)
+
+    workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
+    this.configurationChanged()
 
     events.on('BufEnter', bufnr => {
       let doc = workspace.getDocument(bufnr)
@@ -67,6 +72,11 @@ export default class LanguageProvider {
         this.client.diagnosticsManager.reInitialize()
       }
     })
+  }
+
+  private configurationChanged(): void {
+    const config = workspace.getConfiguration(this.id, null)
+    this.client.diagnosticsManager.setEnableSuggestions(this.id, config.get(suggestionSetting, true))
   }
 
   public dispose(): void {

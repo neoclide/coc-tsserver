@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Diagnostic } from 'vscode-languageserver-protocol'
-import { languages, DiagnosticCollection } from 'coc.nvim'
+import { workspace, languages, DiagnosticCollection } from 'coc.nvim'
 import { ResourceMap } from './resourceMap'
 
 export class DiagnosticSet {
@@ -38,8 +38,8 @@ export class DiagnosticsManager {
   private readonly _diagnostics = new Map<DiagnosticKind, DiagnosticSet>()
   private readonly _currentDiagnostics: DiagnosticCollection
   private _pendingUpdates = new ResourceMap<any>()
-  private _validate = true
-  private _enableSuggestions = true
+  private _enableJavascriptSuggestions = true
+  private _enableTypescriptSuggestions = true
 
   private readonly updateDelay = 200
 
@@ -65,25 +65,15 @@ export class DiagnosticsManager {
     }
   }
 
-  public set validate(value: boolean) {
-    if (this._validate === value) {
+  public setEnableSuggestions(languageId: string, value: boolean): void {
+    let curr = languageId == 'javascript' ? this._enableJavascriptSuggestions : this._enableTypescriptSuggestions
+    if (curr == value) {
       return
     }
-
-    this._validate = value
-    if (!value) {
-      this._currentDiagnostics.clear()
-    }
-  }
-
-  public set enableSuggestions(value: boolean) {
-    if (this._enableSuggestions === value) {
-      return
-    }
-
-    this._enableSuggestions = value
-    if (!value) {
-      this._currentDiagnostics.clear()
+    if (languageId == 'javascript') {
+      this._enableJavascriptSuggestions = value
+    } else {
+      this._enableTypescriptSuggestions = value
     }
   }
 
@@ -139,10 +129,6 @@ export class DiagnosticsManager {
       this._pendingUpdates.delete(uri)
     }
 
-    if (!this._validate) {
-      return
-    }
-
     const allDiagnostics = [
       ...this._diagnostics.get(DiagnosticKind.Syntax)!.get(uri),
       ...this._diagnostics.get(DiagnosticKind.Semantic)!.get(uri),
@@ -152,15 +138,28 @@ export class DiagnosticsManager {
   }
 
   private getSuggestionDiagnostics(uri: string): Diagnostic[] {
+    const enabled = this.suggestionsEnabled(uri)
     return this._diagnostics
       .get(DiagnosticKind.Suggestion)!
       .get(uri)
       .filter(x => {
-        if (!this._enableSuggestions) {
+        if (!enabled) {
           // Still show unused
-          return x.code && x.code == 6133
+          return x.tags && x.tags.includes(1)
         }
-        return true
+        return enabled
       })
+  }
+
+  private suggestionsEnabled(uri: string): boolean {
+    let doc = workspace.getDocument(uri)
+    if (!doc) return false
+    if (doc.filetype.startsWith('javascript')) {
+      return this._enableJavascriptSuggestions
+    }
+    if (doc.filetype.startsWith('typescript')) {
+      return this._enableTypescriptSuggestions
+    }
+    return true
   }
 }

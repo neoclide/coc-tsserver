@@ -92,6 +92,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
     this.client.onTsServerStarted(() => {
       this.triggerAllDiagnostics()
     })
+    workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
     this.configurationChanged()
   }
 
