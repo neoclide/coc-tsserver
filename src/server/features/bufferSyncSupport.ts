@@ -271,7 +271,10 @@ export default class BufferSyncSupport {
     }
 
     for (const resource of handledResources) {
-      this.pendingDiagnostics.set(resource.toString(), Date.now())
+      let uri = resource.toString()
+      if (this.shouldValidate(uri)) {
+        this.pendingDiagnostics.set(uri, Date.now())
+      }
     }
 
     this.triggerDiagnostics()
@@ -285,8 +288,7 @@ export default class BufferSyncSupport {
 
   public requestAllDiagnostics(): void {
     for (const uri of this.uris) {
-      let doc = workspace.getDocument(uri)
-      if (doc && this.shouldValidate(doc.filetype)) {
+      if (this.shouldValidate(uri)) {
         this.pendingDiagnostics.set(uri, Date.now())
       }
     }
@@ -297,7 +299,7 @@ export default class BufferSyncSupport {
 
   public requestDiagnostic(uri: string): boolean {
     let document = workspace.getDocument(uri)
-    if (!document || !this.shouldValidate(document.filetype)) return false
+    if (!document || !this.shouldValidate(uri)) return false
     this.pendingDiagnostics.set(uri, Date.now())
     const lineCount = document.lineCount
     const delay = Math.min(Math.max(Math.ceil(lineCount / 20), 300), 800)
@@ -339,11 +341,13 @@ export default class BufferSyncSupport {
     this._validateTypeScript = tsConfig.get<boolean>('validate.enable', true)
   }
 
-  private shouldValidate(filetype: string): boolean {
-    if (languageModeIds.languageIds.indexOf(filetype) == -1) {
+  public shouldValidate(uri: string): boolean {
+    let doc = workspace.getDocument(uri)
+    if (!doc) return false
+    if (languageModeIds.languageIds.indexOf(doc.filetype) == -1) {
       return false
     }
-    if (filetype.startsWith('javascript')) {
+    if (doc.filetype.startsWith('javascript')) {
       return this._validateJavaScript
     }
     return this._validateTypeScript

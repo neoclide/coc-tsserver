@@ -313,12 +313,9 @@ export default class LanguageProvider {
     file: Uri,
     diagnostics: (Diagnostic & { reportUnnecessary: any })[]
   ): void {
-    this.client.diagnosticsManager.diagnosticsReceived(
-      diagnosticsKind,
-      file.toString(),
-      diagnostics
-    )
-
+    if (!this.client.bufferSyncSupport.shouldValidate(file.toString())) {
+      return
+    }
     const config = workspace.getConfiguration(this.id, file.toString())
     const reportUnnecessary = config.get<boolean>('showUnused', true)
     this.client.diagnosticsManager.diagnosticsReceived(diagnosticsKind, file.toString(), diagnostics.filter(diag => {
