@@ -470,7 +470,6 @@
     "@chemzqm/tsconfig": "^0.0.3",
     "@chemzqm/tslint-config": "^1.0.18",
     "@types/fast-diff": "^1.2.0",
-    "@types/find-up": "^2.1.1",
     "@types/node": "^12.0.7",
     "coc.nvim": "^0.0.69",
     "rimraf": "^2.6.3",
@@ -478,7 +477,6 @@
   },
   "dependencies": {
     "fast-diff": "^1.2.0",
-    "find-up": "^4.0.0",
     "semver": "^6.1.1",
     "tslib": "^1.9.3",
     "typescript": "3.5.1",

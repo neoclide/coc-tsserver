@@ -1,7 +1,6 @@
 import { Uri, disposeAll, StatusBarItem, TaskOptions, workspace } from 'coc.nvim'
 import { CommandManager } from 'coc.nvim/lib/commands'
 import Task from 'coc.nvim/lib/model/task'
-import findUp from 'find-up'
 import fs from 'fs'
 import path from 'path'
 import { Disposable, Location } from 'vscode-languageserver-protocol'
@@ -37,7 +36,7 @@ export default class WatchProject implements Disposable {
     this.statusItem = workspace.createStatusBarItem(1, { progress: true })
     let task = this.task = workspace.createTask('TSC')
     this.disposables.push(commandManager.registerCommand(WatchProject.id, async () => {
-      let opts = this.options = this.getOptions()
+      let opts = this.options = await this.getOptions()
       await this.start(opts)
     }))
     task.onExit(code => {
@@ -65,7 +64,7 @@ export default class WatchProject implements Disposable {
   private async check(): Promise<void> {
     let running = await this.task.running
     if (running) {
-      this.options = this.getOptions()
+      this.options = await this.getOptions()
       this.statusItem.isProgress = false
       this.statusItem.text = '?'
       this.statusItem.show()
@@ -115,8 +114,8 @@ export default class WatchProject implements Disposable {
     }
   }
 
-  public getOptions(): TaskOptions {
-    let res = findUp.sync(['node_modules'], { cwd: workspace.root })
+  public async getOptions(): Promise<TaskOptions> {
+    let res = await workspace.findUp(['node_modules'])
     let root: string
     let cmd: string
     // let root: string
@@ -136,7 +135,7 @@ export default class WatchProject implements Disposable {
       workspace.showMessage(`Local & global tsc not found`, 'error')
       return
     }
-    let find = findUp.sync(['tsconfig.json'], { cwd: root })
+    let find = await workspace.findUp(['tsconfig.json'])
     if (!find) {
       workspace.showMessage('tsconfig.json not found!', 'error')
       return

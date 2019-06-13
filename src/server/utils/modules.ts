@@ -1,7 +1,6 @@
 import { exec } from 'child_process'
 import path from 'path'
 import { Uri, workspace } from 'coc.nvim'
-import findUp from 'find-up'
 
 export function runCommand(cmd: string, cwd: string, timeout?: number): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -22,15 +21,14 @@ export function runCommand(cmd: string, cwd: string, timeout?: number): Promise<
   })
 }
 
-function getManager(uri: string): string {
-  let dir = path.dirname(Uri.parse(uri).fsPath)
-  let res = findUp.sync(['yarn.lock', 'package-lock.json'], { cwd: dir })
+async function getManager(): Promise<string> {
+  let res = await workspace.findUp(['yarn.lock', 'package-lock.json'])
   if (!res) return 'yarn'
   return res.endsWith('yarn.lock') ? 'yarn' : 'npm'
 }
 
-function getRoot(): string | null {
-  let res = findUp.sync(['package.json'], { cwd: workspace.cwd })
+async function getRoot(): Promise<string | null> {
+  let res = await workspace.findUp(['package.json'])
   if (!res) return null
   return path.dirname(res)
 }
@@ -74,7 +72,7 @@ export function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
 
 export async function installModules(uri: string, names: string[]): Promise<void> {
   names = distinct(names)
-  let root = getRoot()
+  let root = await getRoot()
   if (!root) {
     workspace.showMessage(`package.json not found from cwd: ${workspace.cwd}`, 'error')
     return
@@ -88,7 +86,7 @@ export async function installModules(uri: string, names: string[]): Promise<void
       return exists ? name : null
     })
   }))
-  let manager = getManager(uri)
+  let manager = await getManager()
   exists = exists.filter(s => s != null)
   if (!exists.length) return
   let devs = exists.filter(s => s.startsWith('@types'))
