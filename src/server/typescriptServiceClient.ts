@@ -96,6 +96,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   >()
   private _apiVersion: API
   private readonly disposables: Disposable[] = []
+  private isRestarting = false
 
   constructor(private pluginManager: PluginManager) {
     this.pathSeparator = path.sep
@@ -180,6 +181,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       return Promise.resolve(this.servicePromise.then(childProcess => {
         this.state = ServiceStat.Stopping
         this.info('Killing TS Server')
+        this.isRestarting = true
         childProcess.kill()
         this.servicePromise = null
       }).then(start))
@@ -312,7 +314,8 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
                 this.error(`TSServer exited with code: ${code}`)
               }
               this.info(`TSServer log file: ${this.tsServerLogFile || ''}`)
-              this.serviceExited(code != null)
+              this.serviceExited(!this.isRestarting)
+              this.isRestarting = false
             })
 
             handle.createReader(
