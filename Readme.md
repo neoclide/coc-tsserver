@@ -136,8 +136,6 @@ module will be used.
 Configurations are the same as with VSCode. Try completion with `tsserver`, `typescript`
 or `javascript` in your `coc-settings.json`.
 
-To disable tsserver with spcified buffer, use `let b:coc_tsserver_disable = 1` on buffer create.
-
 ## Related extensions
 
 - [coc-tslint-plugin](https://github.com/neoclide/coc-tslint-plugin): enable [tslint](https://github.com/palantir/tslint)

@@ -199,9 +199,6 @@ export default class BufferSyncSupport {
   private onDidOpenTextDocument(document: TextDocument): void {
     if (!this.modeIds.has(document.languageId)) return
     let { uri } = document
-    let disable = workspace.getDocument(document.uri).getVar('tsserver_disable', 0)
-    if (disable) return
-
     let filepath = this.client.toPath(uri)
     this.uris.add(uri)
     const args: Proto.OpenRequestArgs = {
