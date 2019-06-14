@@ -24,16 +24,19 @@ export default class TypeScriptDocumentHighlightProvider implements DocumentHigh
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),
       filesToSearch: [file]
     }
-    const response = await this.client.execute('documentHighlights', args, token)
-    if (response.type !== 'response' || !response.body) {
+    try {
+      const response = await this.client.execute('documentHighlights', args, token)
+      if (response.type !== 'response' || !response.body) {
+        return []
+      }
+      return flatten(
+        response.body
+          .filter(highlight => highlight.file === file)
+          .map(convertDocumentHighlight))
+
+    } catch (_e) {
       return []
     }
-
-    return flatten(
-      response.body
-        .filter(highlight => highlight.file === file)
-        .map(convertDocumentHighlight))
-
   }
 }
 
