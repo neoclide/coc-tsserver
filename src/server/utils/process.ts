@@ -135,7 +135,7 @@ export function fork(
   // Create the process
   logger.info('Forking TSServer', `PATH: ${newEnv['PATH']} `)
 
-  const bootstrapperPath = path.resolve(__dirname, '../../../bin/tsserverForkStart')
+  const bootstrapperPath = path.resolve(__dirname, '../bin/tsserverForkStart')
   childProcess = cp.fork(bootstrapperPath, [modulePath].concat(args), {
     silent: true,
     env: newEnv,
