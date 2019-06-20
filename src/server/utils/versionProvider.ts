@@ -7,6 +7,9 @@ import path from 'path'
 import { workspace, Uri } from 'coc.nvim'
 import API from './api'
 import { TypeScriptServiceConfiguration } from './configuration'
+declare var __webpack_require__: any
+declare var __non_webpack_require__: any
+const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require
 
 export class TypeScriptVersion {
   private _api: API | null | undefined
@@ -112,7 +115,7 @@ export class TypeScriptVersionProvider {
   }
 
   public get bundledVersion(): TypeScriptVersion | null {
-    const file = require.resolve('typescript')
+    const file = requireFunc.resolve('typescript')
     if (!file || !fs.existsSync(file)) {
       workspace.showMessage('Bundled typescript module not found', 'error')
       return null
