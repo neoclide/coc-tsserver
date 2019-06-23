@@ -2,17 +2,17 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Position, SignatureHelp, SignatureInformation, TextDocument } from 'vscode-languageserver-protocol'
-import { SignatureHelpProvider } from 'coc.nvim/lib/provider'
+import {CancellationToken, Position, SignatureHelp, SignatureInformation, TextDocument} from 'vscode-languageserver-protocol'
+import {SignatureHelpProvider} from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
-import { ITypeScriptServiceClient } from '../typescriptService'
+import {ITypeScriptServiceClient} from '../typescriptService'
 import * as Previewer from '../utils/previewer'
 import * as typeConverters from '../utils/typeConverters'
 
 export default class TypeScriptSignatureHelpProvider implements SignatureHelpProvider {
   public static readonly triggerCharacters = ['(', ',', '<']
 
-  public constructor(private readonly client: ITypeScriptServiceClient) { }
+  public constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public async provideSignatureHelp(
     document: TextDocument,
@@ -28,7 +28,12 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
       position
     )
 
-    const response = await this.client.interruptGetErr(() => this.client.execute('signatureHelp', args, token))
+    let response
+    try {
+      response = await this.client.interruptGetErr(() => this.client.execute('signatureHelp', args, token))
+    } catch (e) {
+      return undefined
+    }
     if (response.type !== 'response' || !response.body) {
       return undefined
     }
