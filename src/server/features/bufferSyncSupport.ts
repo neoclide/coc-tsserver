@@ -280,6 +280,10 @@ export default class BufferSyncSupport {
     this.triggerDiagnostics()
   }
 
+  public has(uri: string): boolean {
+    return this.uris.has(uri)
+  }
+
   private triggerDiagnostics(delay = 200): void {
     this.diagnosticDelayer.trigger(() => {
       this.sendPendingDiagnostics()
