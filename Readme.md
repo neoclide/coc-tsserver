@@ -53,8 +53,9 @@ Almost the same as VSCode.
 - Rename imports on file rename.
 - Search for workspace symbols.
 
-Tsserver module is resolved from your local workspace. If it's not found, the bundled tsserver
-module will be used.
+Tsserver module first resolved from your local workspace. If it's not found,
+use tsserver from `tsserver.tsdk` configuration or use bundled tsserver with
+this extension.
 
 ## Configuration options
 
@@ -83,7 +84,7 @@ module will be used.
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default: `true`
 - `typescript.useBatchedBufferSync`: use batched buffer synchronize support.
-- `typescript.showUnused`: show unused variable hint.
+- `typescript.showUnused`: show unused variable hint, default: `true`.
 - `typescript.suggest.enabled` default: `true`
 - `typescript.suggest.paths`:Enable/disable suggest paths in import statement and require calls, default: `true`
 - `typescript.suggest.autoImports`:Enable/disable auto import suggests., default: `true`

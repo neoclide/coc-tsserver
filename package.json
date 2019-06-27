@@ -7,6 +7,10 @@
   "engines": {
     "coc": "^0.0.69"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neoclide/coc-tsserver.git"
+  },
   "keywords": [
     "coc.nvim",
     "tsserver",
@@ -124,6 +128,11 @@
           "type": "boolean",
           "default": true,
           "description": "Use tsserver for javascript files"
+        },
+        "tsserver.ignoreLocalTsserver": {
+          "type": "boolean",
+          "default": false,
+          "description": "Always use tsserver module from tsserver.tsdk or tsserver extension."
         },
         "tsserver.tsdk": {
           "type": "string",

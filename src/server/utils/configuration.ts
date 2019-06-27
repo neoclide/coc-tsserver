@@ -56,6 +56,10 @@ export class TypeScriptServiceConfiguration {
     return this._configuration.get<string | null>('tsdk', null)
   }
 
+  public get ignoreLocalTsserver(): boolean {
+    return this._configuration.get<boolean>('ignoreLocalTsserver', false)
+  }
+
   public get tsServerLogLevel(): TsServerLogLevel {
     return TsServerLogLevel.fromString(this._configuration.get<string | null>('log', null))
   }

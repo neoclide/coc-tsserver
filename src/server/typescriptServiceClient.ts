@@ -258,12 +258,18 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   }
 
   private async startService(resendModels = false): Promise<ForkedTsServerProcess> {
-    let currentVersion = this.versionProvider.getLocalVersion()
+    const { ignoreLocalTsserver } = this.configuration
+    let currentVersion
+    if (!ignoreLocalTsserver) currentVersion = this.versionProvider.getLocalVersion()
     if (!currentVersion || !fs.existsSync(currentVersion.tsServerPath)) {
-      currentVersion = await this.versionProvider.getDefaultVersion()
+      currentVersion = this.versionProvider.getDefaultVersion()
     }
     if (!currentVersion || !currentVersion.isValid) {
-      workspace.showMessage(`Can not find tsserver, run ':CocInstall coc-tsserver' to fix it!`, 'error')
+      if (this.configuration.globalTsdk) {
+        workspace.showMessage(`Can not find typescript module, in 'tsserver.tsdk': ${this.configuration.globalTsdk}`, 'error')
+      } else {
+        workspace.showMessage(`Can not find typescript module, run ':CocInstall coc-tsserver' to fix it!`, 'error')
+      }
       return
     }
     this._apiVersion = currentVersion.version

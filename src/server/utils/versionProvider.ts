@@ -90,7 +90,7 @@ export class TypeScriptVersionProvider {
     this.configuration = configuration
   }
 
-  public async getDefaultVersion(): Promise<TypeScriptVersion> {
+  public getDefaultVersion(): TypeScriptVersion {
     // tsdk from configuration
     let { globalTsdk } = this.configuration
     if (globalTsdk) return new TypeScriptVersion(globalTsdk)
@@ -108,7 +108,8 @@ export class TypeScriptVersionProvider {
     for (let p of folders) {
       if (fs.existsSync(path.join(p, 'node_modules/typescript/lib'))) {
         let lib = path.join(p, 'node_modules/typescript/lib')
-        return new TypeScriptVersion(lib)
+        let version = new TypeScriptVersion(lib)
+        if (version.isValid) return version
       }
     }
     return null
