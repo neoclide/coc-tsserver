@@ -1,6 +1,6 @@
 {
   "name": "coc-tsserver",
-  "version": "1.3.11",
+  "version": "1.3.12",
   "description": "tsserver extension for coc.nvim",
   "main": "lib/index.js",
   "publisher": "chemzqm",
