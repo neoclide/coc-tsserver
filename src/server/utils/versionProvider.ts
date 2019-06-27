@@ -116,15 +116,15 @@ export class TypeScriptVersionProvider {
   }
 
   public get bundledVersion(): TypeScriptVersion | null {
-    const file = requireFunc.resolve('typescript')
-    if (!file || !fs.existsSync(file)) {
+    try {
+      const file = requireFunc.resolve('typescript')
+      const bundledVersion = new TypeScriptVersion(
+        path.dirname(file),
+        '')
+      return bundledVersion
+    } catch (e) {
       workspace.showMessage('Bundled typescript module not found', 'error')
       return null
     }
-    const bundledVersion = new TypeScriptVersion(
-      path.dirname(file),
-      ''
-    )
-    return bundledVersion
   }
 }
