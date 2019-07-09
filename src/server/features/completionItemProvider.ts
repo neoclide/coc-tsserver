@@ -310,21 +310,19 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     pre: string,
     option: any
   ): boolean {
-    if (triggerCharacter === '.') {
-      if (pre.match(/[\s\.'"]\.$/)) {
+    if (triggerCharacter && this.client.apiVersion.lt(API.v290)) {
+      if (triggerCharacter === '@') {
+        // trigger in string
+        if (option.synname && /string/i.test(option.synname)) {
+          return true
+        }
+        // make sure we are in something that looks like the start of a jsdoc comment
+        if (!pre.match(/^\s*\*[ ]?@/) && !pre.match(/\/\*\*+[ ]?@/)) {
+          return false
+        }
+      } else if (triggerCharacter === '<') {
         return false
       }
-    } else if (triggerCharacter === '@') {
-      // trigger in string
-      if (option.synname && /string/i.test(option.synname)) {
-        return true
-      }
-      // make sure we are in something that looks like the start of a jsdoc comment
-      if (!pre.match(/^\s*\*[ ]?@/) && !pre.match(/\/\*\*+[ ]?@/)) {
-        return false
-      }
-    } else if (triggerCharacter === '<') {
-      return false
     }
 
     return true
