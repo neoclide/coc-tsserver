@@ -145,7 +145,7 @@ export class DiagnosticsManager {
       .filter(x => {
         if (!enabled) {
           // Still show unused
-          return x.tags && x.tags.includes(1)
+          return x.code == 6133
         }
         return enabled
       })
