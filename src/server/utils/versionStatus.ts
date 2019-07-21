@@ -11,7 +11,7 @@ export default class VersionStatus {
     private readonly enableJavascript: boolean
   ) {
     this._versionBarEntry = workspace.createStatusBarItem(99)
-    this._onChangeEditorSub = events.on('BufEnter', this.showHideStatus, this)
+    this._onChangeEditorSub = events.on('BufEnter', this.onBufEnter, this)
     this._versionBarEntry.show()
   }
 
@@ -22,34 +22,25 @@ export default class VersionStatus {
 
   public onDidChangeTypeScriptVersion(_version: TypeScriptVersion): void {
     this._versionBarEntry.text = `TSC`
-    this.showHideStatus().catch(_e => {
-      // noop
-    })
   }
 
   public set loading(isLoading: boolean) {
     this._versionBarEntry.isProgress = isLoading
   }
 
-  private async showHideStatus(): Promise<void> {
-    let document = await workspace.document
-    if (!document) {
-      this._versionBarEntry.hide()
-      return
+  private checkFiletype(filetype: string): boolean {
+    if (filetype.startsWith('javascript') && this.enableJavascript) {
+      return true
     }
-    let filetypes = ['typescript', 'typescriptreact']
-    if (this.enableJavascript) {
-      filetypes.push('javascript', 'javascriptreact')
-    }
+    return filetype.startsWith('typescript')
+  }
 
-    if (filetypes.indexOf(document.filetype) !== -1) {
-      if (this._normalizePath(Uri.parse(document.uri))) {
-        this._versionBarEntry.show()
-      } else {
-        this._versionBarEntry.hide()
-      }
-      return
+  private async onBufEnter(bufnr: number): Promise<void> {
+    let filetype = await workspace.nvim.call('getbufvar', [bufnr, '&filetype', ''])
+    if (this.checkFiletype(filetype)) {
+      this._versionBarEntry.show()
+    } else {
+      this._versionBarEntry.hide()
     }
-    this._versionBarEntry.hide()
   }
 }
