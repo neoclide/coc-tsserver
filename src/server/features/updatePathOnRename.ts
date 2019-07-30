@@ -25,7 +25,7 @@ export default class UpdateImportsOnFileRenameHandler {
     private readonly fileConfigurationManager: FileConfigurationManager,
     languageId: string
   ) {
-    let glob = languageId == 'typescript' ? '**/*.ts' : '**/*.js'
+    let glob = languageId == 'typescript' ? '**/*.{ts,tsx}' : '**/*.{js,jsx}'
     const watcher = workspace.createFileSystemWatcher(glob)
     this.disposables.push(watcher)
     watcher.onDidRename(e => {
