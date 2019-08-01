@@ -226,7 +226,8 @@
           "default": "non-relative",
           "enum": [
             "non-relative",
-            "relative"
+            "relative",
+            "auto"
           ]
         },
         "typescript.preferences.noSemicolons": {
