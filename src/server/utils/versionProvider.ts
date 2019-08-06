@@ -21,7 +21,7 @@ export class TypeScriptVersion {
   }
 
   public get tsServerPath(): string {
-    return path.join(this.path, 'tsserver.js')
+    return path.resolve(this.path, 'tsserver.js')
   }
 
   public get pathLabel(): string {
