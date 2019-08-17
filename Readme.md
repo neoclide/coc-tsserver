@@ -50,7 +50,7 @@ Almost the same as VSCode.
 - Find references.
 - Signature help.
 - Rename symbols support.
-- Rename imports on file rename.
+- Rename imports on file rename, require [watchman](https://facebook.github.io/watchman/) installed in your \$PATH.
 - Search for workspace symbols.
 
 Tsserver module first resolved from your local workspace. If it's not found,
