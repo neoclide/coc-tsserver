@@ -256,10 +256,10 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     // Try to extract out the additionalTextEdits for the current file.
     // Also check if we still have to apply other workspace edits
     const additionalTextEdits: TextEdit[] = []
-    let hasReaminingCommandsOrEdits = false
+    let hasRemainingCommandsOrEdits = false
     for (const tsAction of detail.codeActions) {
       if (tsAction.commands) {
-        hasReaminingCommandsOrEdits = true
+        hasRemainingCommandsOrEdits = true
       }
       // Convert all edits in the current file using `additionalTextEdits`
       if (tsAction.changes) {
@@ -269,7 +269,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
               ...change.textChanges.map(typeConverters.TextEdit.fromCodeEdit)
             )
           } else {
-            hasReaminingCommandsOrEdits = true
+            hasRemainingCommandsOrEdits = true
           }
         }
       }
@@ -277,7 +277,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     let command = null
 
-    if (hasReaminingCommandsOrEdits) {
+    if (hasRemainingCommandsOrEdits) {
       // Create command that applies all edits not in the current file.
       command = {
         title: '',
