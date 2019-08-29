@@ -62,7 +62,6 @@ this extension.
 - `tsserver.enable`:Enable tsserver extension, default: `true`
 - `tsserver.locale`:Locale of tsserver, default: `""`
 - `tsserver.typingsCacheLocation`:Folder path for cache typings, default: `""`
-- `tsserver.orgnizeImportOnSave`:Orgnize import on buffer will save, default: `false`
 - `tsserver.formatOnType`:Run format on type special characters., default: `true`
 - `tsserver.enableJavascript`:Use tsserver for javascript files, default: `true`
 - `tsserver.tsdk`:Directory contains tsserver.js,, default: `""`
