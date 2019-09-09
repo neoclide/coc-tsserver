@@ -42,19 +42,6 @@ export class OrganizeImportsCommand implements Command {
     )
     let desc = standardLanguageDescriptions.find(o => o.modeIds.indexOf(document.languageId) !== -1)
     if (!desc) return null
-    const config = workspace.getConfiguration(`${desc.id}.preferences`)
-    let noSemicolons = config.get<boolean>('noSemicolons', false)
-
-    if (noSemicolons) {
-      let { changes } = edit
-      if (changes) {
-        for (let c of Object.keys(changes)) {
-          for (let textEdit of changes[c]) {
-            textEdit.newText = textEdit.newText.replace(/;(?=(\n|$))/g, '')
-          }
-        }
-      }
-    }
     return edit
   }
 

@@ -52,7 +52,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
   public static readonly triggerCharacters = ['.', '"', '\'', '/', '@']
   private completeOption: SuggestOptions
-  private noSemicolons = false
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
@@ -70,7 +69,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
   private setCompleteOption(languageId: string): void {
     this.completeOption = this.fileConfigurationManager.getCompleteOptions(languageId)
-    this.noSemicolons = this.fileConfigurationManager.removeSemicolons(languageId)
   }
 
   /**
@@ -290,12 +288,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
           }))
         ]
       }
-    }
-    if (additionalTextEdits.length && this.noSemicolons) {
-      // remove comma
-      additionalTextEdits.forEach(o => {
-        o.newText = o.newText.replace(/;(?=(\n|$))/g, '')
-      })
     }
     return {
       command,

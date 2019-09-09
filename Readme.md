@@ -78,7 +78,6 @@ this extension.
 - `typescript.implementationsCodeLens.enable`:Enable codeLens for implementations, default: `true`
 - `typescript.referencesCodeLens.enable`:Enable codeLens for references, default: `true`
 - `typescript.preferences.importModuleSpecifier` default: `"non-relative"`
-- `typescript.preferences.noSemicolons` default: `false`
 - `typescript.preferences.quoteStyle` default: `"single"`
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default: `true`
@@ -108,7 +107,6 @@ this extension.
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`
 - `javascript.preferences.importModuleSpecifier` default: `"non-relative"`
-- `javascript.preferences.noSemicolons` default: `false`
 - `javascript.preferences.quoteStyle` default: `"single"`
 - `javascript.validate.enable`:Enable/disable JavaScript validation., default: `true`
 - `javascript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`

@@ -7,7 +7,6 @@ import { DocumentFormattingEditProvider, DocumentRangeFormattingEditProvider } f
 import { CancellationToken, FormattingOptions, Position, Range, TextDocument, TextEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
-import { removeSemicolon } from '../utils/semicolon'
 import * as typeConverters from '../utils/typeConverters'
 import FileConfigurationManager from './fileConfigurationManager'
 
@@ -36,9 +35,6 @@ export default class TypeScriptFormattingProvider
       const response = await this.client.execute('format', args, token)
       if (response.type == 'response' && response.body) {
         let edits = response.body.map(typeConverters.TextEdit.fromCodeEdit)
-        if (this.formattingOptionsManager.removeSemicolons(document.languageId)) {
-          return removeSemicolon(document, edits)
-        }
         return edits
       }
     } catch {
