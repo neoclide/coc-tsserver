@@ -161,6 +161,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.logger.dispose()
     this._onTsServerStarted.dispose()
     this._onResendModelsRequested.dispose()
+    this.versionStatus.dispose()
   }
 
   private info(message: string, data?: any): void {
