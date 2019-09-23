@@ -196,7 +196,7 @@
           "default": false,
           "description": "Disable download of typings"
         },
-        "typescript.useBatchedBufferSync": {
+        "tsserver.useBatchedBufferSync": {
           "type": "boolean",
           "default": true,
           "description": "Use batched buffer sync support."

@@ -46,30 +46,12 @@ class BufferSynchronizer {
   ) { }
 
   public open(args: Proto.OpenRequestArgs): void {
-    if (this.supportsBatching) {
-      this.updatePending(args.file, pending => {
-        if (!pending.openFiles) {
-          pending.openFiles = []
-        }
-        pending.openFiles.push(args)
-      })
-    } else {
-      this.client.executeWithoutWaitingForResponse('open', args)
-    }
+    this.client.executeWithoutWaitingForResponse('open', args)
   }
 
   public close(filepath: string): void {
-    if (this.supportsBatching) {
-      this.updatePending(filepath, pending => {
-        if (!pending.closedFiles) {
-          pending.closedFiles = []
-        }
-        pending.closedFiles.push(filepath)
-      })
-    } else {
-      const args: Proto.FileRequestArgs = { file: filepath }
-      this.client.executeWithoutWaitingForResponse('close', args)
-    }
+    const args: Proto.FileRequestArgs = { file: filepath }
+    this.client.executeWithoutWaitingForResponse('close', args)
   }
 
   public change(filepath: string, events: TextDocumentContentChangeEvent[]): void {
@@ -116,7 +98,7 @@ class BufferSynchronizer {
       return
     }
 
-    if (this._pending.changedFiles || this._pending.closedFiles || this._pending.openFiles) {
+    if (this._pending.changedFiles) {
       this.client.executeWithoutWaitingForResponse('updateOpen', this._pending)
       this._pending = {}
       this._pendingFiles.clear()
@@ -124,7 +106,7 @@ class BufferSynchronizer {
   }
 
   private get supportsBatching(): boolean {
-    return this.client.apiVersion.gte(API.v340) && workspace.getConfiguration('typescript').get<boolean>('useBatchedBufferSync', true)
+    return this.client.apiVersion.gte(API.v340) && workspace.getConfiguration('tsserver').get<boolean>('useBatchedBufferSync', true)
   }
 
   private updatePending(filepath: string, f: (pending: Proto.UpdateOpenRequestArgs) => void): void {

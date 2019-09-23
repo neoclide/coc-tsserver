@@ -74,6 +74,7 @@ this extension.
 - `tsserver.implicitProjectConfig.checkJs`:Enable checkJs for implicit project, default: `false`
 - `tsserver.implicitProjectConfig.experimentalDecorators`:Enable experimentalDecorators for implicit project, default: `false`
 - `tsserver.disableAutomaticTypeAcquisition`:Disable download of typings, default: `false`
+- `tsserver.useBatchedBufferSync`: use batched buffer synchronize support.
 - `typescript.updateImportsOnFileMove.enable`:Enable update imports on file move., default: `true`
 - `typescript.implementationsCodeLens.enable`:Enable codeLens for implementations, default: `true`
 - `typescript.referencesCodeLens.enable`:Enable codeLens for references, default: `true`
@@ -81,7 +82,6 @@ this extension.
 - `typescript.preferences.quoteStyle` default: `"single"`
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default: `true`
-- `typescript.useBatchedBufferSync`: use batched buffer synchronize support.
 - `typescript.showUnused`: show unused variable hint, default: `true`.
 - `typescript.suggest.enabled` default: `true`
 - `typescript.suggest.paths`:Enable/disable suggest paths in import statement and require calls, default: `true`
