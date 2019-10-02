@@ -331,7 +331,7 @@ export default class LanguageProvider {
     this.client.diagnosticsManager.diagnosticsReceived(diagnosticsKind, file.toString(), diagnostics.filter(diag => {
       if (!reportUnnecessary) {
         diag.tags = undefined
-        if (diag.reportUnnecessary && diag.severity === DiagnosticSeverity.Hint) {
+        if (diag.reportUnnecessary && diag.severity === DiagnosticSeverity.Information) {
           return false
         }
       }
