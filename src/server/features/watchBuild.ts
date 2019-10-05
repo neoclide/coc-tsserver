@@ -118,17 +118,17 @@ export default class WatchProject implements Disposable {
     let res = await workspace.findUp(['node_modules'])
     let root: string
     let cmd: string
-    // let root: string
-    if (!res) {
-      if (executable('tsc')) {
-        cmd = 'tsc'
-        root = workspace.cwd
-      }
-    } else {
+    if (res) {
       let file = path.join(path.dirname(res), 'node_modules/.bin/tsc')
       if (fs.existsSync(file)) {
         cmd = './node_modules/.bin/tsc'
         root = path.dirname(res)
+      }
+    }
+    if (!cmd) {
+      if (executable('tsc')) {
+        cmd = 'tsc'
+        root = workspace.cwd
       }
     }
     if (!cmd) {
