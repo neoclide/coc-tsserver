@@ -121,7 +121,7 @@ export default class WatchProject implements Disposable {
     if (res) {
       let file = path.join(path.dirname(res), 'node_modules/.bin/tsc')
       if (fs.existsSync(file)) {
-        cmd = './node_modules/.bin/tsc'
+        cmd = file
         root = path.dirname(res)
       }
     }
