@@ -98,7 +98,7 @@ export default class TypeScriptRenameProvider implements RenameProvider {
         for (const textSpan of spanGroup.locs) {
           changes[uri].push({
             range: typeConverters.Range.fromTextSpan(textSpan),
-            newText: newName
+            newText:  (textSpan.prefixText || '') + newName + (textSpan.suffixText || '')
           })
         }
       }
