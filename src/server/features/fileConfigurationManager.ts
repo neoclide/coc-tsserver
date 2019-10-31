@@ -146,6 +146,7 @@ export default class FileConfigurationManager {
       quotePreference: config.get<'single' | 'double' | 'auto'>('preferences.quoteStyle', defaultQuote),
       allowRenameOfImportPath: true,
       allowTextChangesInNewFiles: true,
+      providePrefixAndSuffixTextForRename: true,
     }
   }
 }
