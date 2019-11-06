@@ -80,6 +80,7 @@ this extension.
 - `typescript.referencesCodeLens.enable`:Enable codeLens for references, default: `true`
 - `typescript.preferences.importModuleSpecifier` default: `"non-relative"`
 - `typescript.preferences.quoteStyle` default: `"single"`
+- `typescript.preferences.noSemicolons`:Disable semicolon warnings in TypeScript files, default: `"false"`
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default: `true`
 - `typescript.showUnused`: show unused variable hint, default: `true`.
@@ -108,6 +109,7 @@ this extension.
 - `javascript.referencesCodeLens.enable` default: `true`
 - `javascript.preferences.importModuleSpecifier` default: `"non-relative"`
 - `javascript.preferences.quoteStyle` default: `"single"`
+- `javascript.preferences.noSemicolons`:Disable semicolon warnings in JavaScript files, default: `"false"`
 - `javascript.validate.enable`:Enable/disable JavaScript validation., default: `true`
 - `javascript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
 - `javascript.suggest.names` default: `true`
