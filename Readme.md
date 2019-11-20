@@ -141,7 +141,7 @@ or `javascript` in your `coc-settings.json`.
 - [coc-vetur](https://github.com/neoclide/coc-vetur): [vue](https://github.com/vuejs/vue) extension.
 - [coc-angular](https://github.com/iamcco/coc-angular): [angular](https://github.com/angular/angular) extension.
 
-## Trouble shooting
+## Troubleshooting
 
 - Add `"tsserver.log": "verbose"` to your `coc-settings.json` (opened by command
   `:CocConfig`)
