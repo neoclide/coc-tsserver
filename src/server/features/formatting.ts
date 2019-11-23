@@ -20,12 +20,17 @@ export default class TypeScriptFormattingProvider
   ) {
   }
 
+  private enabled(document: TextDocument): boolean {
+    return this.formattingOptionsManager.formatEnabled(document)
+  }
+
   private async doFormat(
     document: TextDocument,
     options: FormattingOptions,
     args: Proto.FormatRequestArgs,
     token?: CancellationToken
   ): Promise<TextEdit[]> {
+    if (!this.enabled(document)) return []
     await this.formattingOptionsManager.ensureConfigurationOptions(
       document,
       options.insertSpaces,
@@ -49,6 +54,7 @@ export default class TypeScriptFormattingProvider
     options: FormattingOptions,
     token: CancellationToken
   ): Promise<TextEdit[]> {
+    if (!this.enabled(document)) return []
     const filepath = this.client.toPath(document.uri)
     if (!filepath) return []
     const args: Proto.FormatRequestArgs = {
@@ -66,6 +72,7 @@ export default class TypeScriptFormattingProvider
     options: FormattingOptions,
     token?: CancellationToken
   ): Promise<TextEdit[]> {
+    if (!this.enabled(document)) return []
     const filepath = this.client.toPath(document.uri)
     if (!filepath) return []
     const args: Proto.FormatRequestArgs = {
@@ -85,13 +92,10 @@ export default class TypeScriptFormattingProvider
     options: FormattingOptions,
     token: CancellationToken
   ): Promise<TextEdit[]> {
-    if (!this.client.configuration.formatOnType) {
-      return
-    }
+    if (!this.enabled(document)) return []
+    if (!this.client.configuration.formatOnType) return []
     const file = this.client.toPath(document.uri)
-    if (!file) {
-      return []
-    }
+    if (!file) return []
 
     await this.formattingOptionsManager.ensureConfigurationOptions(
       document,

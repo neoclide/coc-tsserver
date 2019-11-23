@@ -87,6 +87,7 @@ this extension.
 - `typescript.suggest.paths`:Enable/disable suggest paths in import statement and require calls, default: `true`
 - `typescript.suggest.autoImports`:Enable/disable auto import suggests., default: `true`
 - `typescript.suggest.completeFunctionCalls`:Enable snippet for method suggestion, default: `true`
+- `typescript.format.enabled`:Enable/disable format of typescript files.
 - `typescript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `typescript.format.insertSpaceAfterConstructor` default: `false`
 - `typescript.format.insertSpaceAfterSemicolonInForStatements` default: `true`
@@ -102,18 +103,19 @@ this extension.
 - `typescript.format.insertSpaceAfterTypeAssertion` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
+- `javascript.format.enabled`: Enable/disable format for javascript files.
 - `javascript.showUnused`: show unused variable hint.
 - `javascript.updateImportsOnFileMove.enable` default: `true`
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`
 - `javascript.preferences.importModuleSpecifier` default: `"non-relative"`
 - `javascript.preferences.quoteStyle` default: `"single"`
-- `javascript.validate.enable`:Enable/disable JavaScript validation., default: `true`
-- `javascript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
-- `javascript.suggest.names` default: `true`
-- `javascript.suggest.enabled` default: `true`
-- `javascript.suggest.paths`:Enable/disable suggest paths in import statement and require calls, default: `true`
-- `javascript.suggest.autoImports`:Enable/disable auto import suggests., default: `true`
+- `javascript.validate.enable`: Enable/disable JavaScript validation., default: `true`
+- `javascript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
+- `javascript.suggest.names`: default `true`
+- `javascript.suggest.enabled`: default `true`
+- `javascript.suggest.paths`: Enable/disable suggest paths in import statement and require calls, default: `true`
+- `javascript.suggest.autoImports`: Enable/disable auto import suggests., default: `true`
 - `javascript.suggest.completeFunctionCalls`:Enable snippet for method suggestion, default: `true`
 - `javascript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `javascript.format.insertSpaceAfterConstructor` default: `false`

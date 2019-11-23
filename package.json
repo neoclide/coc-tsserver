@@ -268,6 +268,11 @@
           "default": true,
           "description": "Enable snippet for method suggestion"
         },
+        "typescript.format.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable format for typescript."
+        },
         "typescript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
           "default": true
@@ -394,6 +399,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable snippet for method suggestion"
+        },
+        "javascript.format.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable format for javascript."
         },
         "javascript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
