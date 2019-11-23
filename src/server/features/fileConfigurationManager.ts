@@ -2,12 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument, CancellationToken } from 'vscode-languageserver-protocol'
-import { WorkspaceConfiguration, workspace } from 'coc.nvim'
+import { workspace, WorkspaceConfiguration } from 'coc.nvim'
+import { CancellationToken, TextDocument } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
-import * as languageIds from '../utils/languageModeIds'
 
 function objAreEqual<T>(a: T, b: T): boolean {
   let keys = Object.keys(a)
@@ -39,34 +38,36 @@ export interface SuggestOptions {
 }
 
 export default class FileConfigurationManager {
-  private cachedOption = null
+  private cachedOption: FileConfiguration = null
   private requesting = false
 
   public constructor(private readonly client: ITypeScriptServiceClient) {
   }
 
-  public async ensureConfigurationOptions(languageId: string, insertSpaces: boolean, tabSize: number): Promise<void> {
+  public async ensureConfigurationOptions(document: TextDocument, insertSpaces: boolean, tabSize: number): Promise<void> {
     let { requesting } = this
     let options: FormatOptions = {
       tabSize,
       insertSpaces
     }
-    if (requesting || (this.cachedOption && objAreEqual(this.cachedOption, options))) return
-    const currentOptions = this.getFileOptions(options, languageId)
+    const currentOptions = this.getFileOptions(options, document)
+    if (requesting || (this.cachedOption
+      && objAreEqual(this.cachedOption.formatOptions, currentOptions.formatOptions)
+      && objAreEqual(this.cachedOption.preferences, currentOptions.preferences))) return
     this.requesting = true
     const args = {
       hostInfo: 'nvim-coc',
       ...currentOptions
     } as Proto.ConfigureRequestArguments
     await this.client.execute('configure', args, CancellationToken.None)
-    this.cachedOption = options
+    this.cachedOption = currentOptions
     this.requesting = false
   }
 
   public async ensureConfigurationForDocument(document: TextDocument): Promise<void> {
     let opts = await workspace.getFormatOptions(document.uri)
     if (!this.client.bufferSyncSupport.has(document.uri)) return
-    return this.ensureConfigurationOptions(document.languageId, opts.insertSpaces, opts.tabSize)
+    return this.ensureConfigurationOptions(document, opts.insertSpaces, opts.tabSize)
   }
 
   public reset(): void {
@@ -78,8 +79,7 @@ export default class FileConfigurationManager {
   }
 
   public isTypeScriptDocument(languageId: string): boolean {
-    return languageId === languageIds.typescript || languageId === languageIds.typescriptreact ||
-      languageId === languageIds.typescripttsx || languageId === languageIds.typescriptjsx
+    return languageId.startsWith('typescript')
   }
 
   public enableJavascript(): boolean {
@@ -87,16 +87,16 @@ export default class FileConfigurationManager {
     return !!config.get<boolean>('enableJavascript')
   }
 
-  private getFileOptions(options: FormatOptions, languageId: string): FileConfiguration {
-    const lang = this.isTypeScriptDocument(languageId) ? 'typescript' : 'javascript'
+  private getFileOptions(options: FormatOptions, document: TextDocument): FileConfiguration {
+    const lang = this.isTypeScriptDocument(document.languageId) ? 'typescript' : 'javascript'
     return {
-      formatOptions: this.getFormatOptions(options, lang),
-      preferences: this.getPreferences(lang)
+      formatOptions: this.getFormatOptions(options, lang, document.uri),
+      preferences: this.getPreferences(lang, document.uri)
     }
   }
 
-  private getFormatOptions(options: FormatOptions, language: string): Proto.FormatCodeSettings {
-    const config = workspace.getConfiguration(`${language}.format`)
+  private getFormatOptions(options: FormatOptions, language: string, uri: string): Proto.FormatCodeSettings {
+    const config = workspace.getConfiguration(`${language}.format`, uri)
 
     return {
       tabSize: options.tabSize,
@@ -134,20 +134,25 @@ export default class FileConfigurationManager {
     }
   }
 
-  public getPreferences(language: string): Proto.UserPreferences {
-    if (!this.client.apiVersion.gte(API.v290)) {
+  public getPreferences(language: string, uri: string): Proto.UserPreferences {
+    if (this.client.apiVersion.lt(API.v290)) {
       return {}
     }
-    const config = workspace.getConfiguration(`${language}`)
-    const defaultQuote = this.client.apiVersion.gte(API.v333) ? 'auto' : undefined
+    const config = workspace.getConfiguration(language, uri)
     return {
       disableSuggestions: !config.get<boolean>('suggest.enabled', true),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
-      quotePreference: config.get<'single' | 'double' | 'auto'>('preferences.quoteStyle', defaultQuote),
+      quotePreference: this.getQuoteStyle(config),
       allowRenameOfImportPath: true,
       allowTextChangesInNewFiles: true,
       providePrefixAndSuffixTextForRename: true,
     }
+  }
+
+  private getQuoteStyle(config: WorkspaceConfiguration): 'auto' | 'double' | 'single' {
+    let quoteStyle = config.get<'single' | 'double' | 'auto'>('preferences.quoteStyle', 'auto')
+    if (this.client.apiVersion.gte(API.v333) || quoteStyle != 'auto') return quoteStyle
+    return 'single'
   }
 }
 

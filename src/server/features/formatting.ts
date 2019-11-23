@@ -27,7 +27,7 @@ export default class TypeScriptFormattingProvider
     token?: CancellationToken
   ): Promise<TextEdit[]> {
     await this.formattingOptionsManager.ensureConfigurationOptions(
-      document.languageId,
+      document,
       options.insertSpaces,
       options.tabSize
     )
@@ -94,7 +94,7 @@ export default class TypeScriptFormattingProvider
     }
 
     await this.formattingOptionsManager.ensureConfigurationOptions(
-      document.languageId,
+      document,
       options.insertSpaces,
       options.tabSize
     )
