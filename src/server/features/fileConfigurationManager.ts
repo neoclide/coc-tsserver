@@ -38,30 +38,29 @@ export interface SuggestOptions {
 }
 
 export default class FileConfigurationManager {
-  private cachedOption: FileConfiguration = null
-  private requesting = false
+  private cachedMap: Map<string, FileConfiguration> = new Map()
 
   public constructor(private readonly client: ITypeScriptServiceClient) {
   }
 
   public async ensureConfigurationOptions(document: TextDocument, insertSpaces: boolean, tabSize: number): Promise<void> {
-    let { requesting } = this
+    const file = this.client.toPath(document.uri)
     let options: FormatOptions = {
       tabSize,
       insertSpaces
     }
+    let cachedOption = this.cachedMap.get(document.uri)
     const currentOptions = this.getFileOptions(options, document)
-    if (requesting || (this.cachedOption
-      && objAreEqual(this.cachedOption.formatOptions, currentOptions.formatOptions)
-      && objAreEqual(this.cachedOption.preferences, currentOptions.preferences))) return
-    this.requesting = true
-    const args = {
-      hostInfo: 'nvim-coc',
+    if (cachedOption
+      && objAreEqual(cachedOption.formatOptions, currentOptions.formatOptions)
+      && objAreEqual(cachedOption.preferences, currentOptions.preferences)) return
+    this.cachedMap.set(document.uri, currentOptions)
+    const args: Proto.ConfigureRequestArguments = {
+      file,
+      hostInfo: `nvim-coc ${workspace.version}`,
       ...currentOptions
-    } as Proto.ConfigureRequestArguments
+    }
     await this.client.execute('configure', args, CancellationToken.None)
-    this.cachedOption = currentOptions
-    this.requesting = false
   }
 
   public async ensureConfigurationForDocument(document: TextDocument): Promise<void> {
@@ -71,7 +70,7 @@ export default class FileConfigurationManager {
   }
 
   public reset(): void {
-    this.cachedOption = null
+    this.cachedMap.clear()
   }
 
   public getLanguageConfiguration(languageId: string): WorkspaceConfiguration {
@@ -80,6 +79,13 @@ export default class FileConfigurationManager {
 
   public isTypeScriptDocument(languageId: string): boolean {
     return languageId.startsWith('typescript')
+  }
+
+  public formatEnabled(document: TextDocument): boolean {
+    let { languageId, uri } = document
+    let language = languageId.startsWith('typescript') ? 'typescript' : 'javascript'
+    const config = workspace.getConfiguration(`${language}.format`, uri)
+    return config.get<boolean>('enabled')
   }
 
   public enableJavascript(): boolean {
