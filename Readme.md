@@ -59,6 +59,8 @@ this extension.
 
 ## Configuration options
 
+Checkout [using the configuration file](https://github.com/neoclide/coc.nvim/wiki/Using-the-configuration-file) for guide of coc.nvim's configuration.
+
 - `tsserver.enable`:Enable tsserver extension, default: `true`
 - `tsserver.locale`:Locale of tsserver, default: `""`
 - `tsserver.typingsCacheLocation`:Folder path for cache typings, default: `""`
