@@ -333,6 +333,17 @@
           "type": "boolean",
           "default": false
         },
+        "typescript.format.semicolons": {
+          "type": "string",
+          "default": "ignore",
+          "description": "Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace.",
+          "scope": "resource",
+          "enum": [
+            "ignore",
+            "insert",
+            "remove"
+          ]
+        },
         "javascript.showUnused": {
           "type": "boolean",
           "default": true,
@@ -464,6 +475,17 @@
         "javascript.format.placeOpenBraceOnNewLineForControlBlocks": {
           "type": "boolean",
           "default": false
+        },
+        "javascript.format.semicolons": {
+          "type": "string",
+          "default": "ignore",
+          "description": "Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace.",
+          "scope": "resource",
+          "enum": [
+            "ignore",
+            "insert",
+            "remove"
+          ]
         }
       }
     },
@@ -497,6 +519,6 @@
     "which": "^2.0.1"
   },
   "dependencies": {
-    "typescript": "3.7.2"
+    "typescript": "3.7.3"
   }
 }
