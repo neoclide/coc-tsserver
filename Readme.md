@@ -140,7 +140,7 @@ or `javascript` in your `coc-settings.json`.
 
 ## Related extensions
 
-- [coc-eslint](https://github.com/neoclide/coc-eslint): enable [eslint](https://github.com/eslint/eslint) plugin for tsserver to lint typsecript and javascript files.
+- [coc-eslint](https://github.com/neoclide/coc-eslint): enable [eslint](https://github.com/eslint/eslint) plugin for tsserver to lint TypeScript and JavaScript files.
 - [coc-tslint-plugin](https://github.com/neoclide/coc-tslint-plugin): enable [tslint](https://github.com/palantir/tslint)
   plugin for tsserver ([deprecated](https://github.com/palantir/tslint/issues/4534)).
 - [coc-vetur](https://github.com/neoclide/coc-vetur): [vue](https://github.com/vuejs/vue) extension.
