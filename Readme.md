@@ -4,10 +4,6 @@ Tsserver language server extension for [coc.nvim](https://github.com/neoclide/co
 
 Most of the code is from `typescript-language-features` extension which is bundled with VSCode.
 
-**Note:** if you're using [nvm](https://github.com/creationix/nvm) or other
-node version manager, you need to configure `tsserver.npm` to your global npm
-executable path to avoid fetching types on vim start every time.
-
 **Note:** for React to work as expected, you need your JSX filetype to be
 `javascript.jsx` and your TSX filetype to be `typescript.jsx` or
 `typescript.tsx`. In coc.nvim, these filetypes are mapped to `javascriptreact`
@@ -19,6 +15,23 @@ In your vim/neovim, run command:
 
 ```
 :CocInstall coc-tsserver
+```
+
+### intructions for nvm users
+
+Disable [nvm](https://github.com/creationix/nvm) with the following command:
+```
+nvm deactivate
+```
+
+Next, find out what the global path of your installed version of npm with the following command:
+```
+which npm
+```
+
+The output of the above command should go into the `tsserver.npm` property in your `coc-settings.json` file, a partial example listed below:
+```
+"tsserver.npm": "/usr/local/bin/npm"
 ```
 
 ## Features
