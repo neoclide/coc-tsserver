@@ -15,7 +15,7 @@ import { ITypeScriptServiceClient, ServerResponse } from './typescriptService'
 import API from './utils/api'
 import { TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
-import { fork, getTempFile, IForkOptions, makeRandomHexString } from './utils/process'
+import { fork, getTempFile, getTempDirectory, IForkOptions, makeRandomHexString } from './utils/process'
 import { languageIds } from './utils/languageModeIds'
 import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
@@ -770,9 +770,9 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     if (this.apiVersion.gte(API.v222)) {
       const isRoot = process.getuid && process.getuid() == 0
       if (this._configuration.tsServerLogLevel !== TsServerLogLevel.Off && !isRoot) {
-        const logDir = os.tmpdir()
+        const logDir = getTempDirectory()
         if (logDir) {
-          this.tsServerLogFile = path.join(logDir, `coc-nvim-tsc.log`)
+          this.tsServerLogFile = path.join(logDir, `tsserver.log`)
           this.info('TSServer log file :', this.tsServerLogFile)
         } else {
           this.tsServerLogFile = null

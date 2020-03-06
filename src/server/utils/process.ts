@@ -6,7 +6,7 @@ import cp from 'child_process'
 import net from 'net'
 import os from 'os'
 import path from 'path'
-import { workspace } from 'coc.nvim'
+import fs from 'fs'
 import Logger from './logger'
 
 export interface IForkOptions {
@@ -24,6 +24,14 @@ export function makeRandomHexString(length: number): string {
   return result
 }
 
+export function getTempDirectory(): string {
+  let dir = path.join(os.tmpdir(), `coc.nvim-${process.pid}`)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir)
+  }
+  return dir
+}
+
 function generatePipeName(): string {
   return getPipeName(makeRandomHexString(40))
 }
@@ -33,14 +41,14 @@ function getPipeName(name: string): string {
   if (process.platform === 'win32') {
     return '\\\\.\\pipe\\' + fullName + '-sock'
   }
-
+  const tmpdir = getTempDirectory()
   // Mac/Unix: use socket file
-  return path.join(os.tmpdir(), fullName + '.sock')
+  return path.join(tmpdir, fullName + '.sock')
 }
 
 export function getTempFile(name: string): string {
   const fullName = 'coc-nvim-' + name
-  return path.join(os.tmpdir(), fullName + '.sock')
+  return path.join(getTempDirectory(), fullName + '.sock')
 }
 
 function generatePatchedEnv(
