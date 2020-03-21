@@ -68,16 +68,16 @@ class BufferSynchronizer {
           fileName: filepath,
           textChanges: events.map((change): Proto.CodeEdit => ({
             newText: change.text,
-            start: typeConverters.Position.toLocation(change.range.start),
-            end: typeConverters.Position.toLocation(change.range.end),
+            start: typeConverters.Position.toLocation((change as any).range.start),
+            end: typeConverters.Position.toLocation((change as any).range.end),
           })).reverse(), // Send the edits end-of-document to start-of-document order
         })
       })
     } else {
-      for (const { range, text } of events) {
+      for (const event of events) {
         const args: Proto.ChangeRequestArgs = {
-          insertString: text,
-          ...typeConverters.Range.toFormattingRequestArgs(filepath, range)
+          insertString: event.text,
+          ...typeConverters.Range.toFormattingRequestArgs(filepath, (event as any).range)
         }
         this.client.executeWithoutWaitingForResponse('change', args)
       }
