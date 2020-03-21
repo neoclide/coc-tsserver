@@ -1,7 +1,8 @@
 {
   "extends": "./node_modules/@chemzqm/tslint-config/tslint.json",
   "rules": {
-    "no-floating-promises": false
+    "no-floating-promises": false,
+    "no-invalid-template-strings": false
   },
   "linterOptions": {
     "exclude": []

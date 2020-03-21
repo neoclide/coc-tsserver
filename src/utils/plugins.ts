@@ -66,7 +66,7 @@ export class PluginManager implements Disposable {
   private readonly _onDidUpdateConfig = this._register(new Emitter<{ pluginId: string, config: {} }>())
   public readonly onDidUpdateConfig = this._onDidUpdateConfig.event
 
-  public setConfiguration(pluginId: string, config: {}) {
+  public setConfiguration(pluginId: string, config: {}): void {
     this._pluginConfigurations.set(pluginId, config)
     this._onDidUpdateConfig.fire({ pluginId, config })
   }
@@ -75,7 +75,7 @@ export class PluginManager implements Disposable {
     return this._pluginConfigurations.entries()
   }
 
-  private readPlugins() {
+  private readPlugins(): Map<string, ReadonlyArray<TypeScriptServerPlugin>> {
     const pluginMap = new Map<string, ReadonlyArray<TypeScriptServerPlugin>>()
     for (const extension of extensions.all) {
       const pack = extension.packageJSON

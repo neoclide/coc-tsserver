@@ -27,5 +27,5 @@ export const nodeModules = [
   'v8',
   'vm',
   'zlib',
-  'perf_hooks']
-
+  'perf_hooks'
+]

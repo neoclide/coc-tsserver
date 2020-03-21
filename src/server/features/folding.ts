@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from 'vscode-jsonrpc'
-import { FoldingRange, TextDocument } from 'vscode-languageserver-types'
+import { FoldingRange } from 'vscode-languageserver-types'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import { FoldingContext, FoldingRangeProvider } from 'coc.nvim/lib/provider'
 import { workspace } from 'coc.nvim'
 import Proto from '../protocol'

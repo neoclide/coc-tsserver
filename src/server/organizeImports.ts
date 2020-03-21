@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { workspace, CodeActionProvider, CodeActionProviderMetadata } from 'coc.nvim'
-import { CancellationToken, Range, TextDocument, CodeActionContext, WorkspaceEdit, CodeActionKind, CodeAction } from 'vscode-languageserver-protocol'
+import { CancellationToken, Range, CodeActionContext, WorkspaceEdit, CodeActionKind, CodeAction } from 'vscode-languageserver-protocol'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import { Command } from './commands'
 import Proto from './protocol'
 import { standardLanguageDescriptions } from './utils/languageDescription'

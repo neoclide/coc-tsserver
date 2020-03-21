@@ -41,6 +41,7 @@ export interface TypeScriptRequestTypes {
   'completions': [Proto.CompletionsRequestArgs, Proto.CompletionsResponse]
   'configure': [Proto.ConfigureRequestArguments, Proto.ConfigureResponse]
   'definition': [Proto.FileLocationRequestArgs, Proto.DefinitionResponse]
+  // tslint:disable-next-line: deprecation
   'definitionAndBoundSpan': [Proto.FileLocationRequestArgs, Proto.DefinitionInfoAndBoundSpanReponse]
   'docCommentTemplate': [Proto.FileLocationRequestArgs, Proto.DocCommandTemplateResponse]
   'documentHighlights': [Proto.DocumentHighlightsRequestArgs, Proto.DocumentHighlightsResponse]

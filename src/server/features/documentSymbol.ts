@@ -2,7 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, DocumentSymbol, Range, SymbolKind, TextDocument } from 'vscode-languageserver-protocol'
+import { CancellationToken, DocumentSymbol, Range, SymbolKind } from 'vscode-languageserver-protocol'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import { DocumentSymbolProvider } from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'

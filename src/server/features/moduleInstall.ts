@@ -1,7 +1,8 @@
 import { Uri, commands } from 'coc.nvim'
 import { Command } from 'coc.nvim/lib/commands'
 import { CodeActionProvider } from 'coc.nvim/lib/provider'
-import { CancellationToken, CodeAction, CodeActionContext, Range, TextDocument } from 'vscode-languageserver-protocol'
+import { CancellationToken, CodeAction, CodeActionContext, Range } from 'vscode-languageserver-protocol'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { installModules } from '../utils/modules'
 

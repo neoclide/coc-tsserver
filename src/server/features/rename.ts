@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Uri, RenameProvider } from 'coc.nvim'
 import path from 'path'
-import { CancellationToken, Position, Range, TextDocument, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
+import { CancellationToken, Position, Range, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
 import API from '../utils/api'
@@ -98,7 +99,7 @@ export default class TypeScriptRenameProvider implements RenameProvider {
         for (const textSpan of spanGroup.locs) {
           changes[uri].push({
             range: typeConverters.Range.fromTextSpan(textSpan),
-            newText:  (textSpan.prefixText || '') + newName + (textSpan.suffixText || '')
+            newText: (textSpan.prefixText || '') + newName + (textSpan.suffixText || '')
           })
         }
       }

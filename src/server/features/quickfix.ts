@@ -5,14 +5,13 @@
 import { commands, workspace } from 'coc.nvim'
 import { Command } from 'coc.nvim/lib/commands'
 import { CodeActionProvider } from 'coc.nvim/lib/provider'
-import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Diagnostic, Range, TextDocument } from 'vscode-languageserver-protocol'
+import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Diagnostic, Range } from 'vscode-languageserver-protocol'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { applyCodeActionCommands, getEditForCodeAction } from '../utils/codeAction'
 import * as typeConverters from '../utils/typeConverters'
-import BufferSyncSupport from './bufferSyncSupport'
-import { DiagnosticsManager } from './diagnostics'
 
 class ApplyCodeActionCommand implements Command {
   public static readonly ID = '_typescript.applyCodeActionCommand'

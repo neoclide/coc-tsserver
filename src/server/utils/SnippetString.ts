@@ -1,39 +1,39 @@
 export default class SnippetString {
 
-  static isSnippetString(thing: any): thing is SnippetString {
+  public static isSnippetString(thing: any): thing is SnippetString {
     if (thing instanceof SnippetString) {
       return true
     }
     if (!thing) {
       return false
     }
-    return typeof (<SnippetString>thing).value === 'string'
+    return typeof thing.value === 'string'
   }
 
   private static _escape(value: string): string {
     return value.replace(/\$|}|\\/g, '\\$&')
   }
 
-  private _tabstop: number = 1
+  private _tabstop = 1
 
-  value: string
+  public value: string
 
   constructor(value?: string) {
     this.value = value || ''
   }
 
-  appendText(string: string): SnippetString {
-    this.value += SnippetString._escape(string)
+  public appendText(str: string): SnippetString {
+    this.value += SnippetString._escape(str)
     return this
   }
 
-  appendTabstop(number: number = this._tabstop++): SnippetString {
+  public appendTabstop(n: number = this._tabstop++): SnippetString {
     this.value += '$'
-    this.value += number
+    this.value += n
     return this
   }
 
-  appendPlaceholder(value: string | ((snippet: SnippetString) => any), number: number = this._tabstop++): SnippetString {
+  public appendPlaceholder(value: string | ((snippet: SnippetString) => any), n: number = this._tabstop++): SnippetString {
 
     if (typeof value === 'function') {
       const nested = new SnippetString()
@@ -46,7 +46,7 @@ export default class SnippetString {
     }
 
     this.value += '${'
-    this.value += number
+    this.value += n
     this.value += ':'
     this.value += value
     this.value += '}'
@@ -54,7 +54,7 @@ export default class SnippetString {
     return this
   }
 
-  appendVariable(name: string, defaultValue?: string | ((snippet: SnippetString) => any)): SnippetString {
+  public appendVariable(name: string, defaultValue?: string | ((snippet: SnippetString) => any)): SnippetString {
 
     if (typeof defaultValue === 'function') {
       const nested = new SnippetString()

@@ -2,7 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Definition, Location, Position, TextDocument } from 'vscode-languageserver-protocol'
+import { CancellationToken, Definition, Location, Position } from 'vscode-languageserver-protocol'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import { DefinitionProvider, ImplementationProvider, TypeDefinitionProvider } from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
