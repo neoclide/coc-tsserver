@@ -134,6 +134,11 @@
           "default": false,
           "description": "Always use tsserver module from tsserver.tsdk or tsserver extension."
         },
+        "tsserver.maxTsServerMemory": {
+          "type": "number",
+          "default": 0,
+          "description": "Set the maximum amount of memory to allocate to the TypeScript server process"
+        },
         "tsserver.tsdk": {
           "type": "string",
           "default": "",
