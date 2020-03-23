@@ -88,6 +88,10 @@ export class TypeScriptServiceConfiguration {
     return this._configuration.get<boolean>('formatOnType', false)
   }
 
+  public get maxTsServerMemory(): number {
+    return this._configuration.get<number>('maxTsServerMemory', 0)
+  }
+
   public get debugPort(): number | null {
     return this._configuration.get<number>('debugPort', parseInt(process.env['TSS_DEBUG'], 10))
   }

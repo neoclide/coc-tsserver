@@ -79,6 +79,7 @@ Checkout [using the configuration file](https://github.com/neoclide/coc.nvim/wik
 - `tsserver.typingsCacheLocation`:Folder path for cache typings, default: `""`
 - `tsserver.formatOnType`:Run format on type special characters., default: `true`
 - `tsserver.enableJavascript`:Use tsserver for javascript files, default: `true`
+- `tsserver.maxTsServerMemory`:Set the maximum amount of memory to allocate to the TypeScript server process
 - `tsserver.tsdk`:Directory contains tsserver.js,, default: `""`
 - `tsserver.npm`:Executable path of npm for download typings, default: `""`
 - `tsserver.log`:Log level of tsserver, default: `"off"`

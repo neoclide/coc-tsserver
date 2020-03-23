@@ -278,8 +278,12 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.lastError = null
     const tsServerForkArgs = await this.getTsServerArgs()
     const debugPort = this._configuration.debugPort
+    const maxTsServerMemory = this._configuration.maxTsServerMemory
     const options = {
-      execArgv: debugPort ? [`--inspect=${debugPort}`] : [], // [`--debug-brk=5859`]
+      execArgv: [
+          ...(debugPort ? [`--inspect=${debugPort}`] : []), // [`--debug-brk=5859`]
+          ...(maxTsServerMemory ? [`--max-old-space-size=${maxTsServerMemory}`] : []),
+      ],
       cwd: workspace.root
     }
     this.servicePromise = this.startProcess(currentVersion, tsServerForkArgs, options, resendModels)
