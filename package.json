@@ -228,7 +228,8 @@
         },
         "typescript.preferences.importModuleSpecifier": {
           "type": "string",
-          "default": "non-relative",
+          "default": "auto",
+          "description": "Preferred path style for auto imports.",
           "enum": [
             "non-relative",
             "relative",
@@ -374,8 +375,10 @@
         },
         "javascript.preferences.importModuleSpecifier": {
           "type": "string",
-          "default": "non-relative",
+          "default": "auto",
+          "description": "Preferred path style for auto imports.",
           "enum": [
+            "auto",
             "non-relative",
             "relative"
           ]
