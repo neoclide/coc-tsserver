@@ -236,6 +236,18 @@
             "auto"
           ]
         },
+        "typescript.preferences.importModuleSpecifierEnding": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "minimal",
+            "index",
+            "js"
+          ],
+          "default": "auto",
+          "description": "Preferred path ending for auto imports.",
+          "scope": "resource"
+        },
         "typescript.preferences.quoteStyle": {
           "type": "string",
           "default": "auto",
@@ -382,6 +394,18 @@
             "non-relative",
             "relative"
           ]
+        },
+        "javascript.preferences.importModuleSpecifierEnding": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "minimal",
+            "index",
+            "js"
+          ],
+          "default": "auto",
+          "description": "Preferred path ending for auto imports.",
+          "scope": "resource"
         },
         "javascript.preferences.quoteStyle": {
           "type": "string",

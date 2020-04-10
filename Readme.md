@@ -98,6 +98,7 @@ Checkout [using the configuration file](https://github.com/neoclide/coc.nvim/wik
 - `typescript.implementationsCodeLens.enable`:Enable codeLens for implementations, default: `true`
 - `typescript.referencesCodeLens.enable`:Enable codeLens for references, default: `true`
 - `typescript.preferences.importModuleSpecifier` default: `"auto"`
+- `typescript.preferences.importModuleSpecifierEnding` default: `true`
 - `typescript.preferences.quoteStyle` default: `"single"`
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default: `true`
@@ -129,6 +130,7 @@ Checkout [using the configuration file](https://github.com/neoclide/coc.nvim/wik
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`
 - `javascript.preferences.importModuleSpecifier` default: `"auto"`
+- `javascript.preferences.importModuleSpecifierEnding` default: `true`
 - `javascript.preferences.quoteStyle` default: `"single"`
 - `javascript.validate.enable`: Enable/disable JavaScript validation., default: `true`
 - `javascript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace., default: `true`

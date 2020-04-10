@@ -148,15 +148,17 @@ export default class FileConfigurationManager {
     if (this.client.apiVersion.lt(API.v290)) {
       return {}
     }
-    const config = workspace.getConfiguration(language, uri)
-    return {
-      disableSuggestions: !config.get<boolean>('suggest.enabled', true),
-      importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
+    const config = workspace.getConfiguration(`${language}.preferences`, uri)
+    // getImportModuleSpecifierEndingPreference available on ts 2.9.0
+    const preferences: Proto.UserPreferences & { importModuleSpecifierEnding?: string } = {
       quotePreference: this.getQuoteStyle(config),
+      importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
+      importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(config),
+      allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
-      allowTextChangesInNewFiles: true,
       providePrefixAndSuffixTextForRename: true,
     }
+    return preferences
   }
 
   private getQuoteStyle(config: WorkspaceConfiguration): 'auto' | 'double' | 'single' {
@@ -177,5 +179,14 @@ function getImportModuleSpecifier(config): ModuleImportType {
       return 'non-relative'
     default:
       return 'auto'
+  }
+}
+
+function getImportModuleSpecifierEndingPreference(config: WorkspaceConfiguration): string {
+  switch (config.get<string>('importModuleSpecifierEnding')) {
+    case 'minimal': return 'minimal'
+    case 'index': return 'index'
+    case 'js': return 'js'
+    default: return 'auto'
   }
 }
