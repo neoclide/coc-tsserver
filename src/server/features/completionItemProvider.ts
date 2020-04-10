@@ -113,11 +113,12 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     const { completeOption } = this
     const doc = workspace.getDocument(uri)
 
-    const args: Proto.CompletionsRequestArgs = {
+    const args: Proto.CompletionsRequestArgs & { includeAutomaticOptionalChainCompletions?: boolean } = {
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),
       includeExternalModuleExports: completeOption.autoImports,
       includeInsertTextCompletions: true,
-      triggerCharacter: this.getTsTriggerCharacter(context)
+      triggerCharacter: this.getTsTriggerCharacter(context),
+      includeAutomaticOptionalChainCompletions: completeOption.includeAutomaticOptionalChainCompletions
     }
 
     let msg: ReadonlyArray<Proto.CompletionEntry> | undefined

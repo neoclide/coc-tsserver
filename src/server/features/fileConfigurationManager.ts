@@ -36,6 +36,7 @@ export interface SuggestOptions {
   readonly paths: boolean
   readonly completeFunctionCalls: boolean
   readonly autoImports: boolean
+  readonly includeAutomaticOptionalChainCompletions: boolean
 }
 
 export default class FileConfigurationManager {
@@ -138,7 +139,8 @@ export default class FileConfigurationManager {
       names: config.get<boolean>('names', true),
       paths: config.get<boolean>('paths', true),
       completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
-      autoImports: config.get<boolean>('autoImports', true)
+      autoImports: config.get<boolean>('autoImports', true),
+      includeAutomaticOptionalChainCompletions: config.get<boolean>('includeAutomaticOptionalChainCompletions', true)
     }
   }
 

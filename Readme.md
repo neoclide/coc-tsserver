@@ -20,16 +20,19 @@ In your vim/neovim, run command:
 ### intructions for nvm users
 
 Disable [nvm](https://github.com/creationix/nvm) with the following command:
+
 ```
 nvm deactivate
 ```
 
 Next, find out what the global path of your installed version of npm with the following command:
+
 ```
 which npm
 ```
 
 The output of the above command should go into the `tsserver.npm` property in your `coc-settings.json` file, a partial example listed below:
+
 ```
 "tsserver.npm": "/usr/local/bin/npm"
 ```
@@ -119,6 +122,7 @@ Checkout [using the configuration file](https://github.com/neoclide/coc.nvim/wik
 - `typescript.format.insertSpaceAfterTypeAssertion` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
+- `typescript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
 - `javascript.format.enabled`: Enable/disable format for javascript files.
 - `javascript.showUnused`: show unused variable hint.
 - `javascript.updateImportsOnFileMove.enable` default: `true`
@@ -148,6 +152,7 @@ Checkout [using the configuration file](https://github.com/neoclide/coc.nvim/wik
 - `javascript.format.insertSpaceAfterTypeAssertion` default: `false`
 - `javascript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `javascript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
+- `javascript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
 
 Configurations are the same as with VSCode. Try completion with `tsserver`, `typescript`
 or `javascript` in your `coc-settings.json`.
