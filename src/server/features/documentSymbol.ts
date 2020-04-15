@@ -20,7 +20,7 @@ const getSymbolKind = (kind: string): SymbolKind => {
       return SymbolKind.Enum
     case PConst.Kind.interface:
       return SymbolKind.Interface
-    case PConst.Kind.memberFunction:
+    case PConst.Kind.method:
       return SymbolKind.Method
     case PConst.Kind.memberVariable:
       return SymbolKind.Property

@@ -87,7 +87,7 @@ export default class TypeScriptReferencesCodeLensProvider extends TypeScriptBase
         }
       // fallthrough
 
-      case PConst.Kind.memberFunction:
+      case PConst.Kind.method:
       case PConst.Kind.memberVariable:
       case PConst.Kind.memberGetAccessor:
       case PConst.Kind.memberSetAccessor:

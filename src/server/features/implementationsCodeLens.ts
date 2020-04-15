@@ -87,7 +87,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
         return super.getSymbolRange(document, item)
 
       case PConst.Kind.class:
-      case PConst.Kind.memberFunction:
+      case PConst.Kind.method:
       case PConst.Kind.memberVariable:
       case PConst.Kind.memberGetAccessor:
       case PConst.Kind.memberSetAccessor:

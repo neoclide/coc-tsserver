@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Command, CompletionContext, CompletionItem, InsertTextFormat, MarkupContent, MarkupKind, Position, TextEdit, CompletionList } from 'vscode-languageserver-protocol'
+import { CancellationToken, Command, CompletionContext, Range, CompletionItem, InsertTextFormat, MarkupContent, MarkupKind, Position, TextEdit, CompletionList } from 'vscode-languageserver-protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { commands, workspace } from 'coc.nvim'
 import { CompletionItemProvider } from 'coc.nvim/lib/provider'
@@ -11,7 +11,7 @@ import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
 import API from '../utils/api'
 import { applyCodeAction } from '../utils/codeAction'
-import { convertCompletionEntry, getParameterListParts } from '../utils/completionItem'
+import { DotAccessorContext, convertCompletionEntry, getParameterListParts } from '../utils/completionItem'
 import * as Previewer from '../utils/previewer'
 import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
@@ -111,8 +111,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     }
 
     const { completeOption } = this
-    const doc = workspace.getDocument(uri)
-
     const args: Proto.CompletionsRequestArgs & { includeAutomaticOptionalChainCompletions?: boolean } = {
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),
       includeExternalModuleExports: completeOption.autoImports,
@@ -121,9 +119,14 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       includeAutomaticOptionalChainCompletions: completeOption.includeAutomaticOptionalChainCompletions
     }
 
-    let msg: ReadonlyArray<Proto.CompletionEntry> | undefined
+    let entries: ReadonlyArray<Proto.CompletionEntry> | undefined
 
+    let dotAccessorContext: DotAccessorContext | undefined
     let isNewIdentifierLocation = true
+    let isMemberCompletion = false
+    let isIncomplete = false
+    const isInValidCommitCharacterContext = this.isInValidCommitCharacterContext(document, position)
+
     if (this.client.apiVersion.gte(API.v300)) {
       try {
         const response = await this.client.interruptGetErr(() => this.client.execute('completionInfo', args, token))
@@ -131,7 +134,20 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
           return null
         }
         isNewIdentifierLocation = response.body.isNewIdentifierLocation
-        msg = response.body.entries
+        isMemberCompletion = response.body.isMemberCompletion
+        if (isMemberCompletion) {
+          const dotMatch = preText.slice(0, position.character).match(/\??\.\s*$/) || undefined
+          if (dotMatch) {
+            const range = Range.create({
+              line: position.line,
+              character: position.character - dotMatch.length
+            }, position)
+            const text = document.getText(range)
+            dotAccessorContext = { range, text }
+          }
+        }
+        isIncomplete = (response as any).metadata && (response as any).metadata.isIncomplete
+        entries = response.body.entries
       } catch (e) {
         if (e.message == 'No content available.') {
           return null
@@ -143,11 +159,11 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       if (response.type !== 'response' || !response.body) {
         return null
       }
-      msg = response.body
+      entries = response.body
     }
 
     const completionItems: CompletionItem[] = []
-    for (const element of msg) {
+    for (const element of entries) {
       if (shouldExcludeCompletionEntry(element, completeOption)) {
         continue
       }
@@ -155,21 +171,17 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         element,
         uri,
         position,
-        completeOption.completeFunctionCalls,
-        isNewIdentifierLocation
+        {
+          isNewIdentifierLocation,
+          isMemberCompletion,
+          enableCallCompletions: completeOption.completeFunctionCalls,
+          isInValidCommitCharacterContext,
+          dotAccessorContext,
+        }
       )
       completionItems.push(item)
     }
-    let startcol: number | null = null
-    if (triggerCharacter == '@' && !doc.isWord('@')) {
-      startcol = option.col - 1
-    }
-    let res: any = {
-      startcol,
-      isIncomplete: false,
-      items: completionItems
-    }
-    return res
+    return { isIncomplete, items: completionItems }
   }
 
   private getTsTriggerCharacter(context: CompletionContext): Proto.CompletionsTriggerCharacter | undefined {
@@ -229,10 +241,9 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       return item
     }
     const detail = details[0]
-    item.detail = detail.displayParts.length
-      ? Previewer.plain(detail.displayParts)
-      : undefined
-
+    if (!item.detail && detail.displayParts.length) {
+      item.detail = Previewer.plain(detail.displayParts)
+    }
     item.documentation = this.getDocumentation(detail)
     const { command, additionalTextEdits } = this.getCodeActions(detail, filepath)
     if (command) item.command = command
@@ -243,6 +254,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         this.createSnippetOfFunctionCall(item, detail)
       }
     }
+
     return item
   }
 
@@ -389,6 +401,24 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     } catch (e) {
       return true
     }
+  }
+
+  private isInValidCommitCharacterContext(
+    document: TextDocument,
+    position: Position
+  ): boolean {
+    if (this.client.apiVersion.lt(API.v320)) {
+      // Workaround for https://github.com/Microsoft/TypeScript/issues/27742
+      // Only enable dot completions when previous character not a dot preceded by whitespace.
+      // Prevents incorrectly completing while typing spread operators.
+      if (position.character > 1) {
+        const preText = document.getText(Range.create(
+          position.line, 0,
+          position.line, position.character))
+        return preText.match(/(\s|^)\.$/ig) === null
+      }
+    }
+    return true
   }
 }
 

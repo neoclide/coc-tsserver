@@ -2,56 +2,57 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { workspace } from 'coc.nvim'
 import { Range, CompletionItem, CompletionItemKind, InsertTextFormat, Position, TextEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
-
-interface CommitCharactersSettings {
-  readonly isNewIdentifierLocation: boolean
-  readonly isInValidCommitCharacterContext: boolean
-  readonly useCodeSnippetsOnMethodSuggest: boolean
-}
 
 interface ParamterListParts {
   readonly parts: ReadonlyArray<Proto.SymbolDisplayPart>
   readonly hasOptionalParameters: boolean
 }
 
+export interface DotAccessorContext {
+  readonly range: Range
+  readonly text: string
+}
+
+export interface CompletionContext {
+  readonly isNewIdentifierLocation: boolean
+  readonly isMemberCompletion: boolean
+  readonly isInValidCommitCharacterContext: boolean
+  readonly enableCallCompletions: boolean
+  readonly dotAccessorContext?: DotAccessorContext
+}
+
 export function convertCompletionEntry(
   tsEntry: Proto.CompletionEntry,
   uri: string,
   position: Position,
-  useCodeSnippetsOnMethodSuggest: boolean,
-  isNewIdentifierLocation: boolean
+  context: CompletionContext,
 ): CompletionItem {
   let label = tsEntry.name
   let sortText = tsEntry.sortText
+  let preselect = false
+  let detail: string
   if (tsEntry.isRecommended) {
-    // Make sure isRecommended property always comes first
-    // https://github.com/Microsoft/vscode/issues/40325
-    sortText = '\0' + sortText
-  } else if (tsEntry.source) {
-    // De-prioritze auto-imports
-    // https://github.com/Microsoft/vscode/issues/40311
+    preselect = true
+  }
+  if (tsEntry.source) {
+    // De-prioritze auto-imports https://github.com/Microsoft/vscode/issues/40311
     sortText = '\uffff' + sortText
   } else {
     sortText = tsEntry.sortText
   }
   let kind = convertKind(tsEntry.kind)
   let insertTextFormat = (
-    useCodeSnippetsOnMethodSuggest &&
+    context.enableCallCompletions &&
     (kind === CompletionItemKind.Function ||
       kind === CompletionItemKind.Method)
   ) ? InsertTextFormat.Snippet : InsertTextFormat.PlainText
 
   let insertText = tsEntry.insertText
-  let document = workspace.getDocument(uri)
-  let preText = document.getline(position.line).slice(0, position.character)
-  const isInValidCommitCharacterContext = preText.match(/(^|[a-z_$\(\)\[\]\{\}]|[^.]\.)\s*$/ig) !== null
+  let commitCharacters = getCommitCharacters(tsEntry, context)
 
-  let commitCharacters = getCommitCharacters(tsEntry, { isNewIdentifierLocation, isInValidCommitCharacterContext, useCodeSnippetsOnMethodSuggest })
-  let optional = tsEntry.kindModifiers && tsEntry.kindModifiers.match(/\boptional\b/)
   let textEdit: TextEdit | null = null
   if (tsEntry.replacementSpan) {
     let { start, end } = tsEntry.replacementSpan
@@ -62,17 +63,41 @@ export function convertCompletionEntry(
       }
     }
   }
+  if (tsEntry.kindModifiers) {
+    const kindModifiers = new Set(tsEntry.kindModifiers.split(/,|\s+/g))
+    if (kindModifiers.has(PConst.KindModifiers.optional)) {
+      label += '?'
+    }
+
+    if (kindModifiers.has(PConst.KindModifiers.color)) {
+      kind = CompletionItemKind.Color
+    }
+
+    if (tsEntry.kind === PConst.Kind.script) {
+      for (const extModifier of PConst.KindModifiers.fileExtensionKindModifiers) {
+        if (kindModifiers.has(extModifier)) {
+          if (tsEntry.name.toLowerCase().endsWith(extModifier)) {
+            detail = tsEntry.name
+          } else {
+            detail = tsEntry.name + extModifier
+          }
+          break
+        }
+      }
+    }
+  }
   return {
     label,
     insertText,
     textEdit,
     kind,
+    preselect,
     insertTextFormat,
     sortText,
     commitCharacters,
+    detail,
     data: {
       uri,
-      optional,
       position,
       source: tsEntry.source || ''
     }
@@ -97,7 +122,7 @@ function convertKind(kind: string): CompletionItemKind {
       return CompletionItemKind.Field
     case PConst.Kind.function:
       return CompletionItemKind.Function
-    case PConst.Kind.memberFunction:
+    case PConst.Kind.method:
     case PConst.Kind.constructSignature:
     case PConst.Kind.callSignature:
     case PConst.Kind.indexSignature:
@@ -121,8 +146,8 @@ function convertKind(kind: string): CompletionItemKind {
   return CompletionItemKind.Variable
 }
 
-function getCommitCharacters(tsEntry: Proto.CompletionEntry, settings: CommitCharactersSettings): string[] | undefined {
-  if (settings.isNewIdentifierLocation || !settings.isInValidCommitCharacterContext) {
+function getCommitCharacters(tsEntry: Proto.CompletionEntry, context: CompletionContext): string[] | undefined {
+  if (context.isNewIdentifierLocation || !context.isInValidCommitCharacterContext) {
     return undefined
   }
   const commitCharacters: string[] = []
@@ -145,10 +170,11 @@ function getCommitCharacters(tsEntry: Proto.CompletionEntry, settings: CommitCha
     case PConst.Kind.memberVariable:
     case PConst.Kind.class:
     case PConst.Kind.function:
-    case PConst.Kind.memberFunction:
+    case PConst.Kind.method:
     case PConst.Kind.keyword:
+    case PConst.Kind.parameter:
       commitCharacters.push('.', ',', ';')
-      if (settings.useCodeSnippetsOnMethodSuggest) {
+      if (context.enableCallCompletions) {
         commitCharacters.push('(')
       }
       break
