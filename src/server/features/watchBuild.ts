@@ -120,7 +120,6 @@ export default class WatchProject implements Disposable {
       workspace.showMessage(`Local & global tsc not found`, 'error')
       return
     }
-    let cmd: string
     let find = await workspace.findUp(['tsconfig.json'])
     if (!find) {
       workspace.showMessage('tsconfig.json not found!', 'error')
@@ -128,7 +127,7 @@ export default class WatchProject implements Disposable {
     }
     let root = path.dirname(find)
     return {
-      cmd,
+      cmd: tscPath,
       args: ['-p', 'tsconfig.json', '--watch', 'true', '--pretty', 'false'],
       cwd: root
     }
