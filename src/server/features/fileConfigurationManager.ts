@@ -65,7 +65,6 @@ export default class FileConfigurationManager {
   }
 
   public async ensureConfigurationForDocument(document: TextDocument): Promise<void> {
-    if (!this.client.bufferSyncSupport.has(document.uri)) return
     let opts = await workspace.getFormatOptions(document.uri)
     return this.ensureConfigurationOptions(document, opts.insertSpaces, opts.tabSize)
   }

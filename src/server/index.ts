@@ -3,14 +3,7 @@ import { Disposable, DocumentSelector, Emitter, Event } from 'vscode-languageser
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import { LanguageDescription, standardLanguageDescriptions } from './utils/languageDescription'
 import { PluginManager } from '../utils/plugins'
-
-function wait(ms: number): Promise<any> {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve()
-    }, ms)
-  })
-}
+import { TextDocument } from 'vscode-languageserver-textdocument'
 
 export default class TsserverService implements IServiceProvider {
   public id = 'tsserver'
@@ -35,10 +28,22 @@ export default class TsserverService implements IServiceProvider {
     this.selector = this.descriptions.reduce((arr, c) => {
       return arr.concat(c.modeIds)
     }, [])
+    workspace.onDidOpenTextDocument(doc => {
+      this.ensureConfigurationForDocument(doc)
+    }, null, this.disposables)
   }
 
   public get config(): WorkspaceConfiguration {
     return workspace.getConfiguration('tsserver')
+  }
+
+  public ensureConfigurationForDocument(document: TextDocument): void {
+    let uri = Uri.parse(document.uri)
+    let language = this.clientHost.findLanguage(uri)
+    if (!language) return
+    language.fileConfigurationManager.ensureConfigurationForDocument(document).catch(_e => {
+      // noop
+    })
   }
 
   public start(): Promise<void> {
@@ -56,7 +61,7 @@ export default class TsserverService implements IServiceProvider {
           }
         })
         this._onDidServiceReady.fire(void 0)
-        this.ensureConfiguration() // tslint:disable-line
+        this.ensureConfiguration()
         if (!started) {
           started = true
           resolve()
@@ -65,13 +70,11 @@ export default class TsserverService implements IServiceProvider {
     })
   }
 
-  private async ensureConfiguration(): Promise<void> {
+  private ensureConfiguration(): void {
     if (!this.clientHost) return
-    let document = await workspace.document
-    let uri = Uri.parse(document.uri)
-    let language = this.clientHost.findLanguage(uri)
-    if (!language) return
-    await language.fileConfigurationManager.ensureConfigurationForDocument(document.textDocument)
+    for (let doc of workspace.documents) {
+      this.ensureConfigurationForDocument(doc.textDocument)
+    }
   }
 
   public dispose(): void {

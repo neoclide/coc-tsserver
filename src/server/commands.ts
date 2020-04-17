@@ -7,6 +7,7 @@ import { TextEdit, Range } from 'vscode-languageserver-types'
 import { installModules } from './utils/modules'
 import { nodeModules } from './utils/helper'
 import { PluginManager } from '../utils/plugins'
+import { languageIds } from './utils/languageModeIds'
 
 export interface Command {
   readonly id: string | string[]
@@ -47,15 +48,17 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 
   public async execute(): Promise<void> {
     let doc = await workspace.document
+    let { filetype } = doc
+    if (languageIds.indexOf(filetype) == -1) {
+      workspace.showMessage(`Could not determine TypeScript or JavaScript project. Unsupported file type: ${filetype}`, 'warning')
+      return
+    }
+    // doc.filetype
     await goToProjectConfig(this.client, doc.uri)
   }
 }
 
 async function goToProjectConfig(clientHost: TypeScriptServiceClientHost, uri: string): Promise<void> {
-  if (!clientHost.handles(uri)) {
-    workspace.showMessage('Could not determine TypeScript or JavaScript project. Unsupported file type', 'warning')
-    return
-  }
   const client = clientHost.serviceClient
   const file = client.toPath(uri)
   let res
@@ -96,8 +99,9 @@ export class AutoFixCommand implements Command {
 
   public async execute(): Promise<void> {
     let document = await workspace.document
-    if (!this.client.handles(document.uri)) {
-      workspace.showMessage('Document is not handled by tsserver.', 'warning')
+    let { uri } = document
+    if (!this.client.handles(uri)) {
+      workspace.showMessage(`Document ${uri} is not handled by tsserver.`, 'warning')
       return
     }
     let file = this.client.serviceClient.toPath(document.uri)

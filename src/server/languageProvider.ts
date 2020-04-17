@@ -49,23 +49,10 @@ export default class LanguageProvider {
 
     workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
     this.configurationChanged()
-
-    events.on('BufEnter', bufnr => {
-      let doc = workspace.getDocument(bufnr)
-      if (!doc || client.state !== ServiceStat.Running) return
-      if (description.modeIds.indexOf(doc.filetype) == -1) return
-      this.fileConfigurationManager.ensureConfigurationForDocument(doc.textDocument) // tslint:disable-line
-    }, this, this.disposables)
-
     let initialized = false
 
     client.onTsServerStarted(async () => { // tslint:disable-line
       if (!initialized) {
-        for (let doc of workspace.documents) {
-          if (description.modeIds.indexOf(doc.filetype) !== -1) {
-            this.fileConfigurationManager.ensureConfigurationForDocument(doc.textDocument) // tslint:disable-line
-          }
-        }
         initialized = true
         this.registerProviders(client, typingsStatus)
       } else {
