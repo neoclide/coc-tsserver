@@ -61,16 +61,21 @@ export default class TypeScriptServiceClientHost implements Disposable {
       if (body) {
         let { configFile, diagnostics } = body
         let uri = Uri.file(configFile)
-        let language = this.findLanguage(uri)
-        if (!language) return
         if (diagnostics.length == 0) {
           this.client.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), [])
         } else {
-          let range = Range.create(Position.create(0, 0), Position.create(0, 1))
-          let { text, code, category } = diagnostics[0]
-          let severity = category == 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
-          let diagnostic = Diagnostic.create(range, text, severity, code)
-          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), [diagnostic])
+          let diagnosticList = diagnostics.map(o => {
+            let { text, code, category, start, end } = o
+            let range: Range
+            if (!start || !end) {
+              range = Range.create(Position.create(0, 0), Position.create(0, 1))
+            } else {
+              range = Range.create(start.line - 1, start.offset - 1, end.line - 1, end.offset - 1)
+            }
+            let severity = category == 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
+            return Diagnostic.create(range, text, severity, code)
+          })
+          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), diagnosticList)
         }
       }
     }, null, this.disposables)
