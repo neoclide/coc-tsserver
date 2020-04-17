@@ -80,6 +80,8 @@ export class TypeScriptVersion {
   }
 }
 
+const MODULE_FOLDERS = ['node_modules/typescript/lib', '.vscode/pnpify/typescript/lib']
+
 export class TypeScriptVersionProvider {
 
   public constructor(private configuration: TypeScriptServiceConfiguration) { }
@@ -106,10 +108,12 @@ export class TypeScriptVersionProvider {
   public getLocalVersion(): TypeScriptVersion | undefined {
     let folders = workspace.workspaceFolders.map(f => Uri.parse(f.uri).fsPath)
     for (let p of folders) {
-      if (fs.existsSync(path.join(p, 'node_modules/typescript/lib'))) {
-        let lib = path.join(p, 'node_modules/typescript/lib')
-        let version = new TypeScriptVersion(lib)
-        if (version.isValid) return version
+      for (let folder of MODULE_FOLDERS) {
+        let libFolder = path.join(p, folder)
+        if (fs.existsSync(libFolder)) {
+          let version = new TypeScriptVersion(libFolder)
+          if (version.isValid) return version
+        }
       }
     }
     return null

@@ -17,6 +17,20 @@ In your vim/neovim, run command:
 :CocInstall coc-tsserver
 ```
 
+For yarn2 user what to use local typescript module:
+
+- Add PnPify to your dependencies:
+
+  ```
+  yarn add @yarnpkg/pnpify
+  ```
+
+- Run the following command, which will generate a new directory called .vscode/pnpify
+
+  ```
+  yarn pnpify --sdk
+  ```
+
 ### intructions for nvm users
 
 Disable [nvm](https://github.com/creationix/nvm) with the following command:
