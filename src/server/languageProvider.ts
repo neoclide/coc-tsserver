@@ -269,8 +269,9 @@ export default class LanguageProvider {
     }
 
     if (this.description.id == 'typescript') {
+      // this.client.apiVersion
       this.disposables.push(
-        new WatchBuild(commands)
+        new WatchBuild(commands, this.client)
       )
     }
 

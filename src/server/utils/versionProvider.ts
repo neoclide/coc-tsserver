@@ -20,6 +20,10 @@ export class TypeScriptVersion {
     this._api = null
   }
 
+  public get tscPath(): string {
+    return path.resolve(this.path, '../bin/tsc')
+  }
+
   public get tsServerPath(): string {
     return path.resolve(this.path, 'tsserver.js')
   }

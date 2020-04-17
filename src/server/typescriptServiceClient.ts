@@ -95,6 +95,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     Proto.TypesInstallerInitializationFailedEventBody
   >()
   private _apiVersion: API
+  private _tscPath: string
   private readonly disposables: Disposable[] = []
   private isRestarting = false
 
@@ -235,6 +236,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     return this._apiVersion
   }
 
+  public get tscPath(): string {
+    return this._tscPath
+  }
+
   private service(): Thenable<ForkedTsServerProcess> {
     if (this.servicePromise) {
       return this.servicePromise
@@ -260,7 +265,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   private async startService(resendModels = false): Promise<ForkedTsServerProcess> {
     const { ignoreLocalTsserver } = this.configuration
-    let currentVersion
+    let currentVersion: TypeScriptVersion
     if (!ignoreLocalTsserver) currentVersion = this.versionProvider.getLocalVersion()
     if (!currentVersion || !fs.existsSync(currentVersion.tsServerPath)) {
       currentVersion = this.versionProvider.getDefaultVersion()
@@ -274,6 +279,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       return
     }
     this._apiVersion = currentVersion.version
+    this._tscPath = currentVersion.tscPath
     this.versionStatus.onDidChangeTypeScriptVersion(currentVersion)
     this.lastError = null
     const tsServerForkArgs = await this.getTsServerArgs()
@@ -281,8 +287,8 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     const maxTsServerMemory = this._configuration.maxTsServerMemory
     const options = {
       execArgv: [
-          ...(debugPort ? [`--inspect=${debugPort}`] : []), // [`--debug-brk=5859`]
-          ...(maxTsServerMemory ? [`--max-old-space-size=${maxTsServerMemory}`] : []),
+        ...(debugPort ? [`--inspect=${debugPort}`] : []), // [`--debug-brk=5859`]
+        ...(maxTsServerMemory ? [`--max-old-space-size=${maxTsServerMemory}`] : []),
       ],
       cwd: workspace.root
     }

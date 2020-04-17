@@ -1,10 +1,9 @@
-import { Uri, disposeAll, StatusBarItem, TaskOptions, workspace } from 'coc.nvim'
+import { disposeAll, StatusBarItem, TaskOptions, Uri, workspace } from 'coc.nvim'
 import { CommandManager } from 'coc.nvim/lib/commands'
 import Task from 'coc.nvim/lib/model/task'
-import fs from 'fs'
 import path from 'path'
 import { Disposable, Location } from 'vscode-languageserver-protocol'
-import which from 'which'
+import TypeScriptServiceClient from '../typescriptServiceClient'
 
 const countRegex = /Found\s+(\d+)\s+error/
 const errorRegex = /^(.+)\((\d+),(\d+)\):\s(\w+)\sTS(\d+):\s*(.+)$/
@@ -31,7 +30,8 @@ export default class WatchProject implements Disposable {
   private options: TaskOptions
 
   public constructor(
-    commandManager: CommandManager
+    commandManager: CommandManager,
+    private client: TypeScriptServiceClient
   ) {
     this.statusItem = workspace.createStatusBarItem(1, { progress: true })
     let task = this.task = workspace.createTask('TSC')
@@ -115,36 +115,21 @@ export default class WatchProject implements Disposable {
   }
 
   public async getOptions(): Promise<TaskOptions> {
-    let res = await workspace.findUp(['node_modules'])
-    let root: string
-    let cmd: string
-    if (res) {
-      let file = path.join(path.dirname(res), 'node_modules/.bin/tsc')
-      if (fs.existsSync(file)) {
-        cmd = file
-        root = path.dirname(res)
-      }
-    }
-    if (!cmd) {
-      if (executable('tsc')) {
-        cmd = 'tsc'
-        root = workspace.cwd
-      }
-    }
-    if (!cmd) {
+    let { tscPath } = this.client
+    if (!tscPath) {
       workspace.showMessage(`Local & global tsc not found`, 'error')
       return
     }
+    let cmd: string
     let find = await workspace.findUp(['tsconfig.json'])
     if (!find) {
       workspace.showMessage('tsconfig.json not found!', 'error')
       return
     }
-    let configRoot = path.dirname(find)
-    let configPath = path.relative(root, path.join(configRoot, 'tsconfig.json'))
+    let root = path.dirname(find)
     return {
       cmd,
-      args: ['-p', configPath, '--watch', 'true', '--pretty', 'false'],
+      args: ['-p', 'tsconfig.json', '--watch', 'true', '--pretty', 'false'],
       cwd: root
     }
   }
@@ -152,13 +137,4 @@ export default class WatchProject implements Disposable {
   public dispose(): void {
     disposeAll(this.disposables)
   }
-}
-
-function executable(command: string): boolean {
-  try {
-    which.sync(command)
-  } catch (e) {
-    return false
-  }
-  return true
 }
