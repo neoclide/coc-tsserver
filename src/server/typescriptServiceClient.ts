@@ -16,7 +16,6 @@ import API from './utils/api'
 import { TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
 import { fork, getTempFile, getTempDirectory, IForkOptions, makeRandomHexString } from './utils/process'
-import { languageIds } from './utils/languageModeIds'
 import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
 import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionProvider'
@@ -385,18 +384,27 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   }
 
   private serviceStarted(resendModels: boolean): void {
-    let document = workspace.getDocument(workspace.bufnr)
-    if (document && languageIds.indexOf(document.filetype) !== -1) {
-      this.fileConfigurationManager.ensureConfigurationForDocument(document.textDocument) // tslint:disable-line
-    } else {
-      const configureOptions: Proto.ConfigureRequestArguments = {
-        hostInfo: 'nvim-coc'
-      }
-      this.execute('configure', configureOptions, CancellationToken.None) // tslint:disable-line
+    const watchOptions = this.apiVersion.gte(API.v380)
+      ? this.configuration.watchOptions
+      : undefined
+    const configureOptions: Proto.ConfigureRequestArguments = {
+      hostInfo: 'coc-nvim',
+      preferences: {
+        providePrefixAndSuffixTextForRename: true,
+        allowRenameOfImportPath: true,
+      },
+      watchOptions
     }
+    this.executeWithoutWaitingForResponse('configure', configureOptions) // tslint:disable-line
     this.setCompilerOptionsForInferredProjects(this._configuration)
     if (resendModels) {
       this._onResendModelsRequested.fire(void 0)
+      this.diagnosticsManager.reInitialize()
+      this.bufferSyncSupport.reinitialize()
+    }
+    // Reconfigure any plugins
+    for (const [config, pluginName] of this.pluginManager.configurations()) {
+      this.configurePlugin(config, pluginName)
     }
   }
 

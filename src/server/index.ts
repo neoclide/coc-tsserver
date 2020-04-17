@@ -68,8 +68,6 @@ export default class TsserverService implements IServiceProvider {
   private async ensureConfiguration(): Promise<void> {
     if (!this.clientHost) return
     let document = await workspace.document
-    await wait(100)
-
     let uri = Uri.parse(document.uri)
     let language = this.clientHost.findLanguage(uri)
     if (!language) return

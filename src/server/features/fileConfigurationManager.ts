@@ -59,15 +59,14 @@ export default class FileConfigurationManager {
     this.cachedMap.set(document.uri, currentOptions)
     const args: Proto.ConfigureRequestArguments = {
       file,
-      hostInfo: `nvim-coc ${workspace.version}`,
       ...currentOptions
     }
     await this.client.execute('configure', args, CancellationToken.None)
   }
 
   public async ensureConfigurationForDocument(document: TextDocument): Promise<void> {
-    let opts = await workspace.getFormatOptions(document.uri)
     if (!this.client.bufferSyncSupport.has(document.uri)) return
+    let opts = await workspace.getFormatOptions(document.uri)
     return this.ensureConfigurationOptions(document, opts.insertSpaces, opts.tabSize)
   }
 

@@ -64,6 +64,11 @@ export class TypeScriptServiceConfiguration {
     return TsServerLogLevel.fromString(this._configuration.get<string | null>('log', null))
   }
 
+  // public readonly watchOptions: protocol.WatchOptions | undefined;
+  public get watchOptions(): protocol.WatchOptions | undefined {
+    return this._configuration.get<protocol.WatchOptions>('watchOptions')
+  }
+
   public get typingsCacheLocation(): string {
     return this._configuration.get<string>('typingsCacheLocation', '')
   }

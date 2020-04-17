@@ -51,7 +51,7 @@ class ApplyCompletionCodeActionCommand implements CommandItem {
 
 export default class TypeScriptCompletionItemProvider implements CompletionItemProvider {
 
-  public static readonly triggerCharacters = ['.', '"', '\'', '/', '@']
+  public static readonly triggerCharacters = ['.', '"', '\'', '`', '/', '@', '<', '#']
   private completeOption: SuggestOptions
 
   constructor(
@@ -185,14 +185,23 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   }
 
   private getTsTriggerCharacter(context: CompletionContext): Proto.CompletionsTriggerCharacter | undefined {
-    // Workaround for https://github.com/Microsoft/TypeScript/issues/27321
-    if (context.triggerCharacter === '@'
-      && this.client.apiVersion.gte(API.v310) && this.client.apiVersion.lt(API.v320)
-    ) {
-      return undefined
-    }
+    // return context.triggerCharacter as Proto.CompletionsTriggerCharacter
+    switch (context.triggerCharacter) {
+      case '@': // Workaround for https://github.com/Microsoft/TypeScript/issues/27321
+        return this.client.apiVersion.gte(API.v310) && this.client.apiVersion.lt(API.v320) ? undefined : '@'
 
-    return context.triggerCharacter as Proto.CompletionsTriggerCharacter
+      case '#': // Workaround for https://github.com/microsoft/TypeScript/issues/36367
+        return this.client.apiVersion.lt(API.v381) ? undefined : '#'
+
+      case '.':
+      case '"':
+      case '\'':
+      case '`':
+      case '/':
+      case '<':
+        return context.triggerCharacter
+    }
+    return undefined
   }
 
   /**

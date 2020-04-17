@@ -139,6 +139,47 @@
           "default": 0,
           "description": "Set the maximum amount of memory to allocate to the TypeScript server process"
         },
+        "tsserver.watchOptions": {
+          "type": "object",
+          "description": "Configure which watching strategies should be used to keep track of files and directories. Requires using TypeScript 3.8+ in the workspace.",
+          "properties": {
+            "watchFile": {
+              "type": "string",
+              "description": "Strategy for how individual files are watched.",
+              "enum": [
+                "fixedPollingInterval",
+                "priorityPollingInterval",
+                "dynamicPriorityPolling",
+                "useFsEvents",
+                "useFsEventsOnParentDirectory"
+              ],
+              "default": "useFsEvents"
+            },
+            "watchDirectory": {
+              "type": "string",
+              "description": "Strategy for how entire directory trees are watched under systems that lack recursive file-watching functionality.",
+              "enum": [
+                "fixedPollingInterval",
+                "dynamicPriorityPolling",
+                "useFsEvents"
+              ],
+              "default": "useFsEvents"
+            },
+            "fallbackPolling": {
+              "type": "string",
+              "description": "When using file system events, this option specifies the polling strategy that gets used when the system runs out of native file watchers and/or doesn’t support native file watchers.",
+              "enum": [
+                "fixedPollingInterval",
+                "priorityPollingInterval",
+                "dynamicPriorityPolling"
+              ]
+            },
+            "synchronousWatchDirectory": {
+              "type": "boolean",
+              "description": "Disable deferred watching on directories. Deferred watching is useful when lots of file changes might occur at once (e.g. a change in node_modules from running npm install), but you might want to disable it with this flag for some less-common setups."
+            }
+          }
+        },
         "tsserver.tsdk": {
           "type": "string",
           "default": "",

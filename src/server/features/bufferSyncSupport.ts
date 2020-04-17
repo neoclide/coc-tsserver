@@ -120,6 +120,11 @@ class BufferSynchronizer {
       f(this._pending)
     }
   }
+
+  public reset(): void {
+    this._pending = {}
+    this._pendingFiles.clear()
+  }
 }
 
 export default class BufferSyncSupport {
@@ -179,7 +184,7 @@ export default class BufferSyncSupport {
     disposeAll(this.disposables)
   }
 
-  private onDidOpenTextDocument(document: TextDocument): void {
+  public onDidOpenTextDocument(document: TextDocument): void {
     if (!this.modeIds.has(document.languageId)) return
     let { uri } = document
     let filepath = this.client.toPath(uri)
@@ -338,6 +343,15 @@ export default class BufferSyncSupport {
       return this._validateJavaScript
     }
     return this._validateTypeScript
+  }
+
+  public reinitialize(): void {
+    this.pendingDiagnostics.clear()
+    this.pendingGetErr?.cancel()
+    this.synchronizer.reset()
+    for (let doc of workspace.documents) {
+      this.onDidOpenTextDocument(doc.textDocument)
+    }
   }
 }
 
