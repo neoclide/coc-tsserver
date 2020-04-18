@@ -160,7 +160,7 @@ export default class FileConfigurationManager {
   }
 
   private getQuoteStyle(config: WorkspaceConfiguration): 'auto' | 'double' | 'single' {
-    let quoteStyle = config.get<'single' | 'double' | 'auto'>('preferences.quoteStyle', 'auto')
+    let quoteStyle = config.get<'single' | 'double' | 'auto'>('quoteStyle', 'auto')
     if (this.client.apiVersion.gte(API.v333) || quoteStyle != 'auto') return quoteStyle
     return 'single'
   }
@@ -169,7 +169,7 @@ export default class FileConfigurationManager {
 type ModuleImportType = 'relative' | 'non-relative' | 'auto'
 
 function getImportModuleSpecifier(config): ModuleImportType {
-  let val = config.get('preferences.importModuleSpecifier')
+  let val = config.get('importModuleSpecifier')
   switch (val) {
     case 'relative':
       return 'relative'
