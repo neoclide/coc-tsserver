@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "publisher": "chemzqm",
   "engines": {
-    "coc": "^0.0.69"
+    "coc": "^0.0.78"
   },
   "repository": {
     "type": "git",

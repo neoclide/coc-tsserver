@@ -49,28 +49,28 @@ export default class UpdateImportsOnFileRenameHandler {
     }
     const targetFile = newResource.fsPath
     const oldFile = oldResource.fsPath
-    await workspace.openResource(newResource.toString())
-    // Make sure TS knows about file
-    await wait(100)
-
-    let document = workspace.getDocument(newResource.toString())
+    const newUri = newResource.toString()
+    let document = workspace.getDocument(newUri)
+    if (document) {
+      await workspace.nvim.command(`silent ${document.bufnr}bwipeout!`)
+      await wait(30)
+    }
+    document = await workspace.loadFile(newUri)
     if (!document) return
-
+    await wait(50)
     const edits = await this.getEditsForFileRename(
       document.textDocument,
       oldFile,
       targetFile,
     )
     if (!edits) return
-
     if (await this.promptUser(newResource)) {
       await workspace.applyEdit(edits)
     }
   }
 
   private async promptUser(newResource: Uri): Promise<boolean> {
-    const res = await workspace.nvim.call('coc#util#prompt_confirm', [`Update imports for moved file: ${newResource.fsPath} ?`])
-    return res == 1
+    return await workspace.showPrompt(`Update imports for moved file: ${newResource.fsPath}?`)
   }
 
   private async getEditsForFileRename(document: TextDocument, oldFile: string, newFile: string): Promise<WorkspaceEdit> {
