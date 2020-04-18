@@ -9,6 +9,7 @@ import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'
 import FileConfigurationManager from './fileConfigurationManager'
+import { Mutex } from '../utils/mutex'
 
 function wait(ms: number): Promise<any> {
   return new Promise(resolve => {
@@ -29,10 +30,16 @@ export default class UpdateImportsOnFileRenameHandler {
     let glob = languageId == 'typescript' ? '**/*.{ts,tsx}' : '**/*.{js,jsx}'
     const watcher = workspace.createFileSystemWatcher(glob)
     this.disposables.push(watcher)
-    watcher.onDidRename(e => {
-      this.doRename(e.oldUri, e.newUri).catch(e => {
-        client.logger.error(e.message)
-      })
+    let mutex = new Mutex()
+    watcher.onDidRename(async e => {
+      let release = await mutex.acquire()
+      try {
+        await this.doRename(e.oldUri, e.newUri)
+        release()
+      } catch (e) {
+        this.client.logger.error('Error on rename:', e)
+        release()
+      }
     }, null, this.disposables)
   }
 
@@ -50,6 +57,10 @@ export default class UpdateImportsOnFileRenameHandler {
     const targetFile = newResource.fsPath
     const oldFile = oldResource.fsPath
     const newUri = newResource.toString()
+    let oldDocument = workspace.getDocument(oldResource.toString())
+    if (oldDocument) {
+      await workspace.nvim.command(`silent ${oldDocument.bufnr}bwipeout!`)
+    }
     let document = workspace.getDocument(newUri)
     if (document) {
       await workspace.nvim.command(`silent ${document.bufnr}bwipeout!`)
