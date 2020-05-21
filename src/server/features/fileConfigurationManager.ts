@@ -180,7 +180,7 @@ function getImportModuleSpecifier(config): ModuleImportType {
   }
 }
 
-function getImportModuleSpecifierEndingPreference(config: WorkspaceConfiguration): string {
+function getImportModuleSpecifierEndingPreference(config: WorkspaceConfiguration): any {
   switch (config.get<string>('importModuleSpecifierEnding')) {
     case 'minimal': return 'minimal'
     case 'index': return 'index'
