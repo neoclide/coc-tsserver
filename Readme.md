@@ -9,6 +9,8 @@ Most of the code is from `typescript-language-features` extension which is bundl
 `typescript.tsx`. In coc.nvim, these filetypes are mapped to `javascriptreact`
 and `typescriptreact` because that's what tsserver uses.
 
+**Note** for javascript project, make sure you have [jsconfig.json](https://code.visualstudio.com/docs/languages/jsconfig)
+
 ## Install
 
 In your vim/neovim, run command:
