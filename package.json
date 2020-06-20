@@ -409,6 +409,15 @@
           "description": "Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled.",
           "scope": "resource"
         },
+        "typescript.workspaceSymbols.scope": {
+          "type": "string",
+          "enum": [
+            "allOpenProjects",
+            "currentProject"
+          ],
+          "default": "allOpenProjects",
+          "scope": "window"
+        },
         "javascript.showUnused": {
           "type": "boolean",
           "default": true,

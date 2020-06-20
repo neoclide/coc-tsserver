@@ -2,12 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Range, SymbolInformation, SymbolKind } from 'vscode-languageserver-protocol'
-import { WorkspaceSymbolProvider } from 'coc.nvim/lib/provider'
-import { workspace } from 'coc.nvim'
+import {CancellationToken, Range, SymbolInformation, SymbolKind} from 'vscode-languageserver-protocol'
+import {WorkspaceSymbolProvider} from 'coc.nvim/lib/provider'
+import {workspace} from 'coc.nvim'
 import * as Proto from '../protocol'
-import { ITypeScriptServiceClient } from '../typescriptService'
+import {ITypeScriptServiceClient} from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'
+import API from '../utils/api'
 
 function getSymbolKind(item: Proto.NavtoItem): SymbolKind {
   switch (item.kind) {
@@ -32,21 +33,28 @@ export default class TypeScriptWorkspaceSymbolProvider implements WorkspaceSymbo
   public constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly languageIds: string[]
-  ) { }
+  ) {}
 
   public async provideWorkspaceSymbols(
     search: string,
     token: CancellationToken
   ): Promise<SymbolInformation[]> {
-    const uri = this.getUri()
-    if (!uri) return []
 
-    const filepath = this.client.toPath(uri)
-    if (!filepath) return []
+    let filepath: string | undefined
+    if (this.searchAllOpenProjects) {
+      filepath = undefined
+    } else {
+      let uri = this.getUri()
+      filepath = uri ? this.client.toPath(uri) : undefined
+      if (!filepath && this.client.apiVersion.lt(API.v390)) {
+        return []
+      }
+    }
 
     const args: Proto.NavtoRequestArgs = {
       file: filepath,
-      searchValue: search
+      searchValue: search,
+      maxResultCount: 256,
     }
 
     const response = await this.client.execute('navto', args, token)
@@ -92,5 +100,10 @@ export default class TypeScriptWorkspaceSymbolProvider implements WorkspaceSymbo
       }
     }
     return undefined
+  }
+
+  private get searchAllOpenProjects(): boolean {
+    return this.client.apiVersion.gte(API.v390)
+      && workspace.getConfiguration('typescript').get('workspaceSymbols.scope', 'allOpenProjects') === 'allOpenProjects'
   }
 }
