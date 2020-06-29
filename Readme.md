@@ -2,14 +2,18 @@
 
 Tsserver language server extension for [coc.nvim](https://github.com/neoclide/coc.nvim).
 
-Most of the code is from `typescript-language-features` extension which is bundled with VSCode.
+Tsserver is part of [TypeScript](https://github.com/microsoft/TypeScript) which
+provide rich features for javascript and typescript.
+
+This extension is a fork of `typescript-language-features` extension which is bundled with VSCode.
 
 **Note:** for React to work as expected, you need your JSX filetype to be
 `javascript.jsx` and your TSX filetype to be `typescript.jsx` or
 `typescript.tsx`. In coc.nvim, these filetypes are mapped to `javascriptreact`
 and `typescriptreact` because that's what tsserver uses.
 
-**Note** for javascript project, make sure you have [jsconfig.json](https://code.visualstudio.com/docs/languages/jsconfig)
+**Note** for javascript project, configure [jsconfig.json](https://code.visualstudio.com/docs/languages/jsconfig)
+to make tsserver understand your code.
 
 ## Install
 
@@ -19,18 +23,16 @@ In your vim/neovim, run command:
 :CocInstall coc-tsserver
 ```
 
-For yarn2 user what to use local typescript module:
+For yarn2 ( >= v2.0.0-rc.36) user want to use local typescript module:
 
-- Add PnPify to your dependencies:
-
-  ```
-  yarn add @yarnpkg/pnpify
-  ```
-
-- Run the following command, which will generate a new directory called .vscode/pnpify
+- Run command `yarn dlx @yarnpkg/pnpify --sdk vim`, which will generate `.vim/coc-settings.json`, with content:
 
   ```
-  yarn pnpify --sdk
+  {
+    "tsserver.tsdk": ".yarn/sdks/typescript/lib",
+    "eslint.packageManager": "yarn",
+    "eslint.nodePath": ".yarn/sdks"
+  }
   ```
 
 ### intructions for nvm users
