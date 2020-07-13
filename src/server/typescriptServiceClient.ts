@@ -809,7 +809,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
     if (this.apiVersion.gte(API.v230)) {
       const pluginNames = this.pluginManager.plugins.map(x => x.name)
-      const pluginRoot = this._configuration.tsServerPluginRoot
+      const pluginRoot = this._configuration.pluginRoot
       const pluginPaths = pluginRoot ? [pluginRoot] : []
 
       if (pluginNames.length) {
