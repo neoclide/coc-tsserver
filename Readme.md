@@ -66,7 +66,6 @@ Almost the same as VSCode.
   - `tsserver.openTsServerLog`
   - `tsserver.goToProjectConfig`
   - `tsserver.restart`
-  - `tsserver.format`
   - `tsserver.organizeImports`
   - `tsserver.watchBuild`
 - Code completion support.
