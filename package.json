@@ -211,13 +211,13 @@
           ],
           "description": "Trace level of tsserver"
         },
-        "tsserver.pluginRoot": {
-          "type": "string",
+        "tsserver.pluginPaths": {
+          "type": "array",
           "default": [],
           "items": {
             "type": "string"
           },
-          "description": "Folder contains tsserver plugins"
+          "description": "Folders contains tsserver plugins"
         },
         "tsserver.debugPort": {
           "type": "number",

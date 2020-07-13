@@ -281,7 +281,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this._tscPath = currentVersion.tscPath
     this.versionStatus.onDidChangeTypeScriptVersion(currentVersion)
     this.lastError = null
-    const tsServerForkArgs = await this.getTsServerArgs()
+    const tsServerForkArgs = await this.getTsServerArgs(currentVersion)
     const debugPort = this._configuration.debugPort
     const maxTsServerMemory = this._configuration.maxTsServerMemory
     const options = {
@@ -766,7 +766,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
   }
 
-  private async getTsServerArgs(): Promise<string[]> {
+  private async getTsServerArgs(currentVersion: TypeScriptVersion): Promise<string[]> {
     const args: string[] = []
     args.push('--allowLocalPluginLoads')
 
@@ -809,13 +809,24 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
     if (this.apiVersion.gte(API.v230)) {
       const pluginNames = this.pluginManager.plugins.map(x => x.name)
-      const pluginRoot = this._configuration.tsServerPluginRoot
-      const pluginPaths = pluginRoot ? [pluginRoot] : []
+      let pluginPaths = this._configuration.tsServerPluginPaths
+      pluginPaths = pluginPaths.reduce((p, c) => {
+        if (path.isAbsolute(c)) {
+          p.push(c)
+        } else {
+          let roots = workspace.workspaceFolders.map(o => Uri.parse(o.uri).fsPath)
+          p.push(...roots.map(r => path.join(r, c)))
+        }
+        return p
+      }, [])
 
       if (pluginNames.length) {
+        const isUsingBundledTypeScriptVersion = currentVersion.path == this.versionProvider.bundledVersion.path
         args.push('--globalPlugins', pluginNames.join(','))
         for (const plugin of this.pluginManager.plugins) {
-          pluginPaths.push(plugin.path)
+          if (isUsingBundledTypeScriptVersion || plugin.enableForWorkspaceTypeScriptVersions) {
+            pluginPaths.push(plugin.path)
+          }
         }
       }
 

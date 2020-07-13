@@ -73,8 +73,8 @@ export class TypeScriptServiceConfiguration {
     return this._configuration.get<string>('typingsCacheLocation', '')
   }
 
-  public get tsServerPluginRoot(): string | null {
-    return this._configuration.get<string | null>('tsServerPluginRoot', null)
+  public get tsServerPluginPaths(): string[] {
+    return this._configuration.get<string[]>('pluginPaths', [])
   }
 
   public get checkJs(): boolean {

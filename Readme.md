@@ -104,7 +104,7 @@ Checkout [using the configuration file](https://github.com/neoclide/coc.nvim/wik
 - `tsserver.npm`:Executable path of npm for download typings, default: `""`
 - `tsserver.log`:Log level of tsserver, default: `"off"`
 - `tsserver.trace.server`:Trace level of tsserver, default: `"off"`
-- `tsserver.pluginRoot`:Folder contains tsserver plugins, default: `[]`
+- `tsserver.pluginPaths`:Folders contains tsserver plugins, default: `[]`
 - `tsserver.debugPort`:Debug port number of tsserver
 - `tsserver.watchOptions`:Configure which watching strategies should be used to keep track of files and directories. Requires using TypeScript 3.8+ in the workspace, default: undefined.
 - `tsserver.reportStyleChecksAsWarnings` default: `true`
