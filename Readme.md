@@ -181,6 +181,8 @@ or `javascript` in your `coc-settings.json`.
 
 - [coc-eslint](https://github.com/neoclide/coc-eslint): enable [eslint](https://github.com/eslint/eslint) plugin for tsserver to lint TypeScript and JavaScript files.
 - [coc-tslint-plugin](https://github.com/neoclide/coc-tslint-plugin): enable [tslint](https://github.com/palantir/tslint)
+- [coc-styled-components](https://github.com/fannheyward/coc-styled-components/): Styled component for coc.nvim as a tsserver plugin.
+  [coc-react-refactor](https://github.com/fannheyward/coc-react-refactor): React refactor extension for coc.nvim, forked from vscode-react-refactor.
   plugin for tsserver ([deprecated](https://github.com/palantir/tslint/issues/4534)).
 - [coc-vetur](https://github.com/neoclide/coc-vetur): [vue](https://github.com/vuejs/vue) extension.
 - [coc-angular](https://github.com/iamcco/coc-angular): [angular](https://github.com/angular/angular) extension.
