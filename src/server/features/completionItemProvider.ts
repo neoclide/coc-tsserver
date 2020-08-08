@@ -218,7 +218,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   ): Promise<CompletionItem> {
     if (item == null) return undefined
 
-    let { uri, position, source } = item.data
+    let { uri, position, source, name } = item.data
     const filepath = this.client.toPath(uri)
     if (!filepath) return undefined
     let document = workspace.getDocument(uri)
@@ -228,11 +228,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         filepath,
         position
       ),
-      entryNames: [
-        source
-          ? { name: item.label, source }
-          : item.label
-      ]
+      entryNames: [source ? { name, source } : name]
     }
 
     let response: ServerResponse.Response<Proto.CompletionDetailsResponse>
@@ -241,7 +237,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     } catch {
       return item
     }
-    if (response.type !== 'response' || !response.body) {
+    if (response.type !== 'response' || !response.body || !response.body.length) {
       return item
     }
 

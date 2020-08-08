@@ -100,6 +100,7 @@ export function convertCompletionEntry(
     data: {
       uri,
       position,
+      name: tsEntry.name,
       source: tsEntry.source || ''
     }
   }
