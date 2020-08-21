@@ -154,7 +154,7 @@ export default class FileConfigurationManager {
       importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(config),
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
-      providePrefixAndSuffixTextForRename: true,
+      providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
     }
     return preferences
   }

@@ -298,6 +298,12 @@
             "double"
           ]
         },
+        "typescript.preferences.useAliasesForRenames": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace.",
+          "scope": "resource"
+        },
         "typescript.suggestionActions.enabled": {
           "type": "boolean",
           "default": true,
@@ -465,6 +471,12 @@
             "single",
             "double"
           ]
+        },
+        "javascript.preferences.useAliasesForRenames": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace.",
+          "scope": "resource"
         },
         "javascript.validate.enable": {
           "type": "boolean",
