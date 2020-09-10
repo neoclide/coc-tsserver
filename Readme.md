@@ -13,7 +13,8 @@ bundled with VSCode.
 `javascript.jsx` or `javascriptreact` and your TSX filetype to be
 `typescript.jsx` or `typescript.tsx` or `typescriptreact`. In coc.nvim, these
 filetypes are mapped to `javascriptreact` and `typescriptreact` because that's
-what tsserver uses.
+what tsserver uses. For filetype like `typescript.javascript`, you need
+configure `g:coc_filetype_map` variable in vimrc.
 
 **Note** for javascript project, configure
 [jsconfig.json](https://code.visualstudio.com/docs/languages/jsconfig) to make
