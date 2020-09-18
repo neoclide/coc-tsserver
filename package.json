@@ -110,9 +110,12 @@
           "description": "Enable tsserver extension"
         },
         "tsserver.locale": {
-          "type": "string",
-          "default": "",
-          "description": "Locale of tsserver"
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Sets the locale used to report JavaScript and TypeScript errors. Default of `null` uses english."
         },
         "tsserver.typingsCacheLocation": {
           "type": "string",
