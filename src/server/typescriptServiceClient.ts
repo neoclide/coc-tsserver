@@ -835,6 +835,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       }
     }
 
+    if (this._configuration.locale) {
+      args.push('--locale', this._configuration.locale)
+    }
+
     if (this._configuration.typingsCacheLocation) {
       args.push('--globalTypingsCacheLocation', `"${this._configuration.typingsCacheLocation}"`)
     }
