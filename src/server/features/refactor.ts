@@ -12,6 +12,12 @@ import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'
 import FormattingOptionsManager from './fileConfigurationManager'
 
+namespace Experimental {
+  export interface RefactorActionInfo extends Proto.RefactorActionInfo {
+    readonly notApplicableReason?: string
+  }
+}
+
 class ApplyRefactoringCommand implements Command {
   public static readonly ID = '_typescript.applyRefactoring'
   public readonly id = ApplyRefactoringCommand.ID
@@ -142,7 +148,8 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
       response.body,
       document,
       file,
-      range
+      range,
+      context.only && context.only.some(v => v.includes(CodeActionKind.Refactor))
     )
   }
 
@@ -150,10 +157,13 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
     body: Proto.ApplicableRefactorInfo[],
     document: TextDocument,
     file: string,
-    rangeOrSelection: Range
+    rangeOrSelection: Range,
+    setPrefrred: boolean
   ): CodeAction[] {
     const actions: CodeAction[] = []
     for (const info of body) {
+      // ignore not refactor that not applicable
+      if ((info as Experimental.RefactorActionInfo).notApplicableReason) continue
       if (!info.inlineable) {
         const codeAction: CodeAction = {
           title: info.description,
@@ -167,15 +177,11 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
         actions.push(codeAction)
       } else {
         for (const action of info.actions) {
-          actions.push(
-            this.refactorActionToCodeAction(
-              action,
-              document,
-              file,
-              info,
-              rangeOrSelection
-            )
-          )
+          let codeAction = this.refactorActionToCodeAction(action, document, file, info, rangeOrSelection)
+          if (setPrefrred) {
+            codeAction.isPreferred = TypeScriptRefactorProvider.isPreferred(action, info.actions)
+          }
+          actions.push(codeAction)
         }
       }
     }
@@ -204,7 +210,7 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
   private shouldTrigger(context: CodeActionContext): boolean {
     if (
       context.only &&
-      context.only.indexOf(CodeActionKind.Refactor) == -1
+      context.only.every(o => !o.includes(CodeActionKind.Refactor))
     ) {
       return false
     }
@@ -220,5 +226,35 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
       return TypeScriptRefactorProvider.moveKind
     }
     return CodeActionKind.Refactor
+  }
+
+  private static isPreferred(
+    action: Proto.RefactorActionInfo,
+    allActions: readonly Proto.RefactorActionInfo[],
+  ): boolean {
+    let kind = TypeScriptRefactorProvider.getKind(action)
+    if (TypeScriptRefactorProvider.extractConstantKind == kind) {
+      // Only mark the action with the lowest scope as preferred
+      const getScope = (name: string) => {
+        const scope = name.match(/scope_(\d)/)?.[1]
+        return scope ? +scope : undefined
+      }
+      const scope = getScope(action.name)
+      if (typeof scope !== 'number') {
+        return false
+      }
+
+      return allActions
+        .filter(otherAtion => otherAtion !== action && otherAtion.name.startsWith('constant_'))
+        .every(otherAction => {
+          const otherScope = getScope(otherAction.name)
+          return typeof otherScope === 'number' ? scope < otherScope : true
+        })
+    }
+    let { name } = action
+    if (name.startsWith('Extract to type alias') || name.startsWith('Extract to interface')) {
+      return true
+    }
+    return false
   }
 }

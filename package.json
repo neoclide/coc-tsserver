@@ -629,6 +629,6 @@
     "which": "^2.0.2"
   },
   "dependencies": {
-    "typescript": "3.9.7"
+    "typescript": "4.0.3"
   }
 }
