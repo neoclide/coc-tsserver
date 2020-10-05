@@ -157,11 +157,13 @@ export default class LanguageProvider {
         new DocumentSymbolProvider(client))
     )
 
-    this.disposables.push(
-      languages.registerWorkspaceSymbolProvider(
-        languageIds,
-        new WorkspaceSymbolProvider(client, languageIds))
-    )
+    if (this.description.id == 'typescript') {
+      this.disposables.push(
+        languages.registerWorkspaceSymbolProvider(
+          languageIds,
+          new WorkspaceSymbolProvider(client, languageIds))
+      )
+    }
 
     this.disposables.push(
       languages.registerRenameProvider(
