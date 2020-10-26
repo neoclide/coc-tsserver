@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/@chemzqm/tslint-config/tslint.json",
+  "extends": "./node_modules/@sourcegraph/tslint-config/tslint.json",
   "rules": {
     "no-floating-promises": false,
     "no-invalid-template-strings": false

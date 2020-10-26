@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/@chemzqm/tsconfig/tsconfig.json",
+  "extends": "./node_modules/@sourcegraph/tsconfig/tsconfig.json",
   "compilerOptions": {
     "declaration": false,
     "outDir": "lib",
