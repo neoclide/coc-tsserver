@@ -20,6 +20,17 @@ configure `g:coc_filetype_map` variable in vimrc.
 [jsconfig.json](https://code.visualstudio.com/docs/languages/jsconfig) to make
 tsserver understand your code.
 
+**Note:** for rename import on file rename, you have to install
+[watchman](https://facebook.github.io/watchman/) in your \$PATH.
+
+**Note:** for [nvm](https://github.com/creationix/nvm) users, you need configure
+`tsserver.npm` to your global npm path or configure
+`"tsserver.disableAutomaticTypeAcquisition": false` to disable automatic typings
+installation.
+
+**Note:** tsserver could be quite slow to initialize on big project, exclude
+unneunnecessary files in your jsconfig.json/tsconfig.json.
+
 ## Install
 
 In your vim/neovim, run command:
@@ -38,22 +49,6 @@ For yarn2 ( >= v2.0.0-rc.36) user want to use local typescript module:
     "eslint.nodePath": ".yarn/sdks"
   } ```
   ````
-
-### intructions for nvm users
-
-Disable [nvm](https://github.com/creationix/nvm) with the following command:
-
-`nvm deactivate`
-
-Next, find out what the global path of your installed version of npm with the
-following command:
-
-`which npm`
-
-The output of the above command should go into the `tsserver.npm` property in
-your `coc-settings.json` file, a partial example listed below:
-
-`"tsserver.npm": "/usr/local/bin/npm"`
 
 ## Features
 
