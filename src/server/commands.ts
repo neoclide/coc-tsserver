@@ -164,7 +164,7 @@ export class AutoFixCommand implements Command {
         }
       }
     }
-    if (edits.length) await document.applyEdits(workspace.nvim, edits)
+    if (edits.length) await document.applyEdits(edits)
     if (command) commands.executeCommand(command)
   }
 }

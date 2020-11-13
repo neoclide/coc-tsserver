@@ -105,7 +105,7 @@ export class TypeScriptVersionProvider {
 
   public get globalVersion(): TypeScriptVersion | undefined {
     let { globalTsdk } = this.configuration
-    if (globalTsdk) return new TypeScriptVersion(globalTsdk)
+    if (globalTsdk) return new TypeScriptVersion(workspace.expand(globalTsdk))
     return undefined
   }
 
