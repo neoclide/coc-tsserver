@@ -11,7 +11,7 @@ import * as typeConverters from '../utils/typeConverters'
 import FileConfigurationManager from './fileConfigurationManager'
 import { Mutex } from '../utils/mutex'
 
-function wait(ms: number): Promise<any> {
+function wait(ms: number): Promise<void> {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve()
