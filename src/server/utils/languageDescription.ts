@@ -33,7 +33,7 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     id: 'javascript',
     diagnosticSource: 'ts',
     diagnosticOwner: 'typescript',
-    modeIds: [languageModeIds.javascript, languageModeIds.javascriptreact],
+    modeIds: [languageModeIds.javascript, languageModeIds.javascriptreact, languageModeIds.javascriptjsx],
     diagnosticLanguage: DiagnosticLanguage.JavaScript,
     configFile: 'jsconfig.json'
   }
