@@ -96,7 +96,7 @@ export class AtaProgressReporter {
         clearTimeout(handle)
         resolve()
       })
-    })
+    }) as Promise<void>
     this.statusItem.text = 'Fetching data for better TypeScript IntelliSense'
     this.statusItem.show()
   }
