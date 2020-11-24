@@ -103,7 +103,7 @@ export class TypeScriptServiceConfiguration {
 
   public get npmLocation(): string | null {
     let path = this._configuration.get<string>('npm', '')
-    if (path) return path
+    if (path) return workspace.expand(path)
     try {
       path = which.sync('npm')
     } catch (e) {

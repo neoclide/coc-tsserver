@@ -3,29 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import cp from 'child_process'
+import { disposeAll, ServiceStat, Uri, workspace } from 'coc.nvim'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { CancellationToken, Disposable, Emitter, Event } from 'vscode-languageserver-protocol'
-import which from 'which'
-import { Uri, ServiceStat, workspace, disposeAll } from 'coc.nvim'
+import { PluginManager } from '../utils/plugins'
+import { CallbackMap } from './callbackMap'
+import BufferSyncSupport from './features/bufferSyncSupport'
+import { DiagnosticKind, DiagnosticsManager } from './features/diagnostics'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import * as Proto from './protocol'
+import { RequestItem, RequestQueue, RequestQueueingType } from './requestQueue'
 import { ITypeScriptServiceClient, ServerResponse } from './typescriptService'
 import API from './utils/api'
 import { TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
-import { fork, getTempFile, getTempDirectory, IForkOptions, makeRandomHexString } from './utils/process'
+import { fork, getTempDirectory, getTempFile, IForkOptions, makeRandomHexString } from './utils/process'
 import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
 import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionProvider'
 import VersionStatus from './utils/versionStatus'
-import { PluginManager } from '../utils/plugins'
 import { ICallback, Reader } from './utils/wireProtocol'
-import { CallbackMap } from './callbackMap'
-import { RequestItem, RequestQueue, RequestQueueingType } from './requestQueue'
-import BufferSyncSupport from './features/bufferSyncSupport'
-import { DiagnosticKind, DiagnosticsManager } from './features/diagnostics'
 
 class ForkedTsServerProcess {
   constructor(private childProcess: cp.ChildProcess) { }
@@ -844,12 +843,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
 
     if (this.apiVersion.gte(API.v234)) {
-      if (this._configuration.npmLocation) {
-        args.push('--npmLocation', `"${this._configuration.npmLocation}"`)
-      } else {
-        try {
-          args.push('--npmLocation', `"${which.sync('npm')}"`)
-        } catch (e) { } // tslint:disable-line
+      let { npmLocation } = this._configuration
+      if (npmLocation) {
+        this.logger.info(`using npm from ${npmLocation}`)
+        args.push('--npmLocation', `"${npmLocation}"`)
       }
     }
 
