@@ -19,7 +19,7 @@
   "scripts": {
     "clean": "rimraf lib",
     "build": "webpack",
-    "prepare": "npx npm-run-all clean build"
+    "prepare": "yarn clean && yarn build"
   },
   "activationEvents": [
     "onLanguage:javascript",
