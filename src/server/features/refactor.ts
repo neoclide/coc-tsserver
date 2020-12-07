@@ -127,7 +127,7 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
     }
     const file = this.client.toPath(document.uri)
     if (!file) return undefined
-    await this.formattingOptionsManager.ensureConfigurationForDocument(document)
+    await this.formattingOptionsManager.ensureConfigurationForDocument(document, token)
     const args: Proto.GetApplicableRefactorsRequestArgs = typeConverters.Range.toFileRangeRequestArgs(
       file,
       range

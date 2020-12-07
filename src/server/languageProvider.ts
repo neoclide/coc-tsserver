@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { commands, DiagnosticKind, disposeAll, languages, Uri, workspace } from 'coc.nvim'
-import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable } from 'vscode-languageserver-protocol'
+import path from 'path'
+import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable, TextDocument } from 'vscode-languageserver-protocol'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
 import CompletionItemProvider from './features/completionItemProvider'
 import DefinitionProvider from './features/definitionProvider'
@@ -37,16 +38,14 @@ import TypingsStatus from './utils/typingsStatus'
 const suggestionSetting = 'suggestionActions.enabled'
 
 export default class LanguageProvider {
-  public readonly fileConfigurationManager: FileConfigurationManager // tslint:disable-line
   private readonly disposables: Disposable[] = []
 
   constructor(
     public client: TypeScriptServiceClient,
+    private readonly fileConfigurationManager: FileConfigurationManager,
     private description: LanguageDescription,
-    typingsStatus: TypingsStatus
+    private typingsStatus: TypingsStatus
   ) {
-    this.fileConfigurationManager = new FileConfigurationManager(client)
-
     workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
     this.configurationChanged()
     let initialized = false
@@ -167,7 +166,7 @@ export default class LanguageProvider {
     this.disposables.push(
       languages.registerRenameProvider(
         languageIds,
-        new RenameProvider(client))
+        new RenameProvider(client, this.fileConfigurationManager))
     )
     let formatProvider = new FormattingProvider(client, this.fileConfigurationManager)
     this.disposables.push(
@@ -224,7 +223,7 @@ export default class LanguageProvider {
     this.disposables.push(
       languages.registerCodeActionProvider(
         languageIds,
-        new QuickfixProvider(client),
+        new QuickfixProvider(client, this.fileConfigurationManager),
         'tsserver',
         [CodeActionKind.QuickFix]))
 
@@ -276,23 +275,12 @@ export default class LanguageProvider {
     // }
   }
 
-  public handles(resource: Uri): boolean {
-    let { modeIds, configFile } = this.description
-    if (resource.toString().endsWith(configFile)) {
+  public handles(resource: string, doc: TextDocument): boolean {
+    if (doc && this.description.modeIds.indexOf(doc.languageId) >= 0) {
       return true
     }
-    let doc = workspace.getDocument(resource.toString())
-    if (doc && modeIds.indexOf(doc.filetype) !== -1) {
-      return true
-    }
-    let str = resource.toString()
-    if (this.id === 'typescript' && /\.ts(x)?$/.test(str)) {
-      return true
-    }
-    if (this.id === 'javascript' && /\.js(x)?$/.test(str)) {
-      return true
-    }
-    return false
+    const base = path.basename(Uri.parse(resource).fsPath)
+    return !!base && (!!this.description.configFilePattern && this.description.configFilePattern.test(base))
   }
 
   private get id(): string { // tslint:disable-line
@@ -312,9 +300,6 @@ export default class LanguageProvider {
     file: Uri,
     diagnostics: (Diagnostic & { reportUnnecessary: any })[]
   ): void {
-    if (!this.client.bufferSyncSupport.shouldValidate(file.toString())) {
-      return
-    }
     const config = workspace.getConfiguration(this.id, file.toString())
     const reportUnnecessary = config.get<boolean>('showUnused', true)
     this.client.diagnosticsManager.diagnosticsReceived(diagnosticsKind, file.toString(), diagnostics.filter(diag => {

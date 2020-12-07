@@ -12,6 +12,7 @@ export interface TypeScriptServerPlugin {
   readonly name: string
   readonly enableForWorkspaceTypeScriptVersions: boolean
   readonly languages: ReadonlyArray<string>
+  readonly configNamespace?: string
 }
 
 namespace TypeScriptServerPlugin {

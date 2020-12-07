@@ -84,6 +84,8 @@ export class DiagnosticsManager {
   ): void {
     const collection = this._diagnostics.get(kind)
     if (!collection) return
+    let doc = workspace.getDocument(uri)
+    if (doc) uri = doc.uri
 
     if (diagnostics.length === 0) {
       const existing = collection.get(uri)

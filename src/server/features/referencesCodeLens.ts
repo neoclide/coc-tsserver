@@ -21,7 +21,9 @@ export default class TypeScriptReferencesCodeLensProvider extends TypeScriptBase
       codeLens.range.start
     )
     return this.client
-      .execute('references', args, token, true)
+      .execute('references', args, token, {
+        lowPriority: true
+      })
       .then(response => {
         if (!response || response.type != 'response' || !response.body) {
           throw codeLens

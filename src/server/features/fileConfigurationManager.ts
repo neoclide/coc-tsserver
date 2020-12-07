@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { workspace, WorkspaceConfiguration } from 'coc.nvim'
-import { CancellationToken } from 'vscode-languageserver-protocol'
+import { workspace, WorkspaceConfiguration, disposeAll } from 'coc.nvim'
+import { CancellationToken, Disposable } from 'vscode-languageserver-protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -41,11 +41,20 @@ export interface SuggestOptions {
 
 export default class FileConfigurationManager {
   private cachedMap: Map<string, FileConfiguration> = new Map()
+  private disposables: Disposable[] = []
 
   public constructor(private readonly client: ITypeScriptServiceClient) {
+    workspace.onDidCloseTextDocument(textDocument => {
+      // When a document gets closed delete the cached formatting options.
+      // This is necessary since the tsserver now closed a project when its
+      // last file in it closes which drops the stored formatting options
+      // as well.
+      this.cachedMap.delete(textDocument.uri)
+    }, undefined, this.disposables)
+
   }
 
-  public async ensureConfigurationOptions(document: TextDocument, insertSpaces: boolean, tabSize: number): Promise<void> {
+  public async ensureConfigurationOptions(document: TextDocument, insertSpaces: boolean, tabSize: number, token: CancellationToken): Promise<void> {
     const file = this.client.toPath(document.uri)
     let options: FormatOptions = {
       tabSize,
@@ -62,11 +71,19 @@ export default class FileConfigurationManager {
       ...currentOptions
     }
     await this.client.execute('configure', args, CancellationToken.None)
+    try {
+      const response = await this.client.execute('configure', args, token)
+      if (response.type !== 'response') {
+        this.cachedMap.delete(document.uri)
+      }
+    } catch (_e) {
+      this.cachedMap.delete(document.uri)
+    }
   }
 
-  public async ensureConfigurationForDocument(document: TextDocument): Promise<void> {
+  public async ensureConfigurationForDocument(document: TextDocument, token: CancellationToken): Promise<void> {
     let opts = await workspace.getFormatOptions(document.uri)
-    return this.ensureConfigurationOptions(document, opts.insertSpaces, opts.tabSize)
+    return this.ensureConfigurationOptions(document, opts.insertSpaces, opts.tabSize, token)
   }
 
   public reset(): void {
@@ -163,6 +180,10 @@ export default class FileConfigurationManager {
     let quoteStyle = config.get<'single' | 'double' | 'auto'>('quoteStyle', 'auto')
     if (this.client.apiVersion.gte(API.v333) || quoteStyle != 'auto') return quoteStyle
     return 'single'
+  }
+
+  public dispose(): void {
+    disposeAll(this.disposables)
   }
 }
 

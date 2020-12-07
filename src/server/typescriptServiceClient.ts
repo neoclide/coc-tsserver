@@ -7,7 +7,7 @@ import { disposeAll, ServiceStat, Uri, workspace } from 'coc.nvim'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { CancellationToken, Disposable, Emitter, Event } from 'vscode-languageserver-protocol'
+import { CancellationToken, CancellationTokenSource, Disposable, Emitter, Event } from 'vscode-languageserver-protocol'
 import { PluginManager } from '../utils/plugins'
 import { CallbackMap } from './callbackMap'
 import BufferSyncSupport from './features/bufferSyncSupport'
@@ -15,7 +15,7 @@ import { DiagnosticKind, DiagnosticsManager } from './features/diagnostics'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import * as Proto from './protocol'
 import { RequestItem, RequestQueue, RequestQueueingType } from './requestQueue'
-import { ITypeScriptServiceClient, ServerResponse } from './typescriptService'
+import { ExecConfig, ITypeScriptServiceClient, ServerResponse } from './typescriptService'
 import API from './utils/api'
 import { TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
@@ -26,8 +26,15 @@ import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionPro
 import VersionStatus from './utils/versionStatus'
 import { ICallback, Reader } from './utils/wireProtocol'
 
+interface ToCancelOnResourceChanged {
+  readonly resource: string
+  cancel(): void
+}
+
 class ForkedTsServerProcess {
   constructor(private childProcess: cp.ChildProcess) { }
+
+  public readonly toCancelOnResourceChange = new Set<ToCancelOnResourceChanged>()
 
   public onError(cb: (err: Error) => void): void {
     this.childProcess.on('error', cb)
@@ -75,6 +82,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private _configuration: TypeScriptServiceConfiguration
   private versionProvider: TypeScriptVersionProvider
   private tsServerLogFile: string | null = null
+  private tsServerProcess: ForkedTsServerProcess | undefined
   private servicePromise: Thenable<ForkedTsServerProcess> | null
   private lastError: Error | null
   private lastStart: number
@@ -97,7 +105,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private readonly disposables: Disposable[] = []
   private isRestarting = false
 
-  constructor(private pluginManager: PluginManager) {
+  constructor(
+    public readonly pluginManager: PluginManager,
+    public readonly modeIds: string[]
+  ) {
     this.pathSeparator = path.sep
     this.lastStart = Date.now()
     this.servicePromise = null
@@ -117,15 +128,19 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       this.restartTsServer()
     }, null, this.disposables)
 
-    this.bufferSyncSupport = new BufferSyncSupport(this)
+    this.bufferSyncSupport = new BufferSyncSupport(this, modeIds)
     this.onTsServerStarted(() => {
       this.bufferSyncSupport.listen()
     })
 
     this.diagnosticsManager = new DiagnosticsManager()
     this.bufferSyncSupport.onDelete(resource => {
+      this.cancelInflightRequestsForResource(resource)
       this.diagnosticsManager.delete(resource)
     }, null, this.disposables)
+    this.bufferSyncSupport.onWillChange(resource => {
+      this.cancelInflightRequestsForResource(resource)
+    })
   }
 
   private _onDiagnosticsReceived = new Emitter<TsDiagnostics>()
@@ -313,6 +328,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
             this.state = ServiceStat.Running
             this.info('Started TSServer', JSON.stringify(currentVersion, null, 2))
             const handle = new ForkedTsServerProcess(childProcess)
+            this.tsServerProcess = handle
             this.lastStart = Date.now()
 
             handle.onError((err: Error) => {
@@ -383,6 +399,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   }
 
   private serviceStarted(resendModels: boolean): void {
+    this.bufferSyncSupport.reset()
     const watchOptions = this.apiVersion.gte(API.v380)
       ? this.configuration.watchOptions
       : undefined
@@ -398,6 +415,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.setCompilerOptionsForInferredProjects(this._configuration)
     if (resendModels) {
       this._onResendModelsRequested.fire(void 0)
+      this.fileConfigurationManager.reset()
       this.diagnosticsManager.reInitialize()
       this.bufferSyncSupport.reinitialize()
     }
@@ -459,6 +477,16 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public toPath(uri: string): string {
     return this.normalizePath(Uri.parse(uri))
+  }
+
+  public toOpenedFilePath(uri: string, options: { suppressAlertOnFailure?: boolean } = {}): string | undefined {
+    if (!this.bufferSyncSupport.ensureHasBuffer(uri)) {
+      if (!options.suppressAlertOnFailure) {
+        console.error(`Unexpected resource ${uri}`)
+      }
+      return undefined
+    }
+    return this.toPath(uri)
   }
 
   public toResource(filepath: string): string {
@@ -525,13 +553,52 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   public execute(
     command: string, args: any,
     token: CancellationToken,
-    lowPriority?: boolean): Promise<ServerResponse.Response<Proto.Response>> {
-    return this.executeImpl(command, args, {
-      isAsync: false,
-      token,
-      expectsResult: true,
-      lowPriority
-    })
+    config?: ExecConfig
+  ): Promise<ServerResponse.Response<Proto.Response>> {
+    let execution: Promise<ServerResponse.Response<Proto.Response>>
+
+    if (config?.cancelOnResourceChange) {
+      const source = new CancellationTokenSource()
+      token.onCancellationRequested(() => source.cancel())
+      const inFlight: ToCancelOnResourceChanged = {
+        resource: config.cancelOnResourceChange,
+        cancel: () => source.cancel(),
+      }
+      this.tsServerProcess?.toCancelOnResourceChange.add(inFlight)
+
+      execution = this.executeImpl(command, args, {
+        isAsync: false,
+        token: source.token,
+        expectsResult: true,
+        ...config,
+      }).finally(() => {
+        this.tsServerProcess?.toCancelOnResourceChange.delete(inFlight)
+        source.dispose()
+      })
+    } else {
+      execution = this.executeImpl(command, args, {
+        isAsync: false,
+        token,
+        expectsResult: true,
+        ...config,
+      })
+    }
+
+    if (config?.nonRecoverable) {
+      execution.catch(err => this.fatalError(command, err))
+    }
+    return execution
+  }
+
+  private fatalError(command: string, error: any): void {
+    console.error(`A non-recoverable error occured while executing tsserver command: ${command}`)
+
+    if (this.state === ServiceStat.Running) {
+      this.info('Killing TS Server by fatal error:', error)
+      this.service().then(service => {
+        service.kill()
+      })
+    }
   }
 
   public executeAsync(
@@ -860,21 +927,20 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     return args
   }
 
-  public getProjectRootPath(uri: string): string | null {
+  public getProjectRootPath(uri: string): string | undefined {
     let root = workspace.cwd
     let u = Uri.parse(uri)
-    if (u.scheme == 'file') {
-      let folder = workspace.getWorkspaceFolder(uri)
-      if (folder) {
-        root = Uri.parse(folder.uri).fsPath
-      } else {
-        let filepath = Uri.parse(uri).fsPath
-        if (!filepath.startsWith(root)) {
-          root = path.dirname(filepath)
-        }
+    if (u.scheme !== 'file') return undefined
+    let folder = workspace.getWorkspaceFolder(uri)
+    if (folder) {
+      root = Uri.parse(folder.uri).fsPath
+    } else {
+      let filepath = Uri.parse(uri).fsPath
+      if (!filepath.startsWith(root)) {
+        root = path.dirname(filepath)
       }
     }
-    if (root == os.homedir()) return null
+    if (root == os.homedir()) return undefined
     return root
   }
 
@@ -890,6 +956,17 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public interruptGetErr<R>(f: () => R): R {
     return this.bufferSyncSupport.interuptGetErr(f)
+  }
+
+  private cancelInflightRequestsForResource(resource: string): void {
+    if (this.state !== ServiceStat.Running || !this.tsServerProcess) {
+      return
+    }
+    for (const request of this.tsServerProcess.toCancelOnResourceChange) {
+      if (request.resource.toString() === resource.toString()) {
+        request.cancel()
+      }
+    }
   }
 }
 

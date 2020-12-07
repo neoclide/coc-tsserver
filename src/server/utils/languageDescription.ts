@@ -12,6 +12,7 @@ export interface LanguageDescription {
   readonly configFile?: string
   readonly isExternal?: boolean
   readonly diagnosticOwner: string
+  readonly configFilePattern?: RegExp
 }
 
 export const enum DiagnosticLanguage {
@@ -27,7 +28,8 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     modeIds: [languageModeIds.typescript, languageModeIds.typescriptreact,
     languageModeIds.typescripttsx, languageModeIds.typescriptjsx],
     diagnosticLanguage: DiagnosticLanguage.TypeScript,
-    configFile: 'tsconfig.json'
+    configFile: 'tsconfig.json',
+    configFilePattern: /^tsconfig(\..*)?\.json$/gi
   },
   {
     id: 'javascript',
@@ -35,6 +37,7 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     diagnosticOwner: 'typescript',
     modeIds: [languageModeIds.javascript, languageModeIds.javascriptreact, languageModeIds.javascriptjsx],
     diagnosticLanguage: DiagnosticLanguage.JavaScript,
-    configFile: 'jsconfig.json'
+    configFile: 'jsconfig.json',
+    configFilePattern: /^jsconfig(\..*)?\.json$/gi
   }
 ]

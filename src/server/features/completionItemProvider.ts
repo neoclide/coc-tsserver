@@ -110,6 +110,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       return null
     }
 
+    await this.client.interruptGetErr(() => this.fileConfigurationManager.ensureConfigurationForDocument(document, token))
     const { completeOption } = this
     const args: Proto.CompletionsRequestArgs & { includeAutomaticOptionalChainCompletions?: boolean } = {
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),

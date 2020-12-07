@@ -12,6 +12,7 @@ import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { applyCodeActionCommands, getEditForCodeAction } from '../utils/codeAction'
 import * as typeConverters from '../utils/typeConverters'
+import FileConfigurationManager from './fileConfigurationManager'
 
 class ApplyCodeActionCommand implements Command {
   public static readonly ID = '_typescript.applyCodeActionCommand'
@@ -19,6 +20,7 @@ class ApplyCodeActionCommand implements Command {
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
+    private readonly formattingConfigurationManager: FileConfigurationManager
   ) { }
 
   public async execute(action: Proto.CodeFixAction): Promise<boolean> {
@@ -32,15 +34,18 @@ class ApplyFixAllCodeAction implements Command {
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
+    private readonly formattingConfigurationManager: FileConfigurationManager
   ) { }
 
   public async execute(
+    document: TextDocument,
     file: string,
     tsAction: Proto.CodeFixAction
   ): Promise<void> {
     if (!tsAction.fixId) {
       return
     }
+    await this.formattingConfigurationManager.ensureConfigurationForDocument(document, CancellationToken.None)
 
     const args: Proto.GetCombinedCodeFixRequestArgs = {
       scope: {
@@ -141,12 +146,13 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
+    private readonly formattingConfigurationManager: FileConfigurationManager
   ) {
     commands.register(
-      new ApplyCodeActionCommand(client)
+      new ApplyCodeActionCommand(client, formattingConfigurationManager)
     )
     commands.register(
-      new ApplyFixAllCodeAction(client)
+      new ApplyFixAllCodeAction(client, formattingConfigurationManager)
     )
 
     this.supportedCodeActionProvider = new SupportedCodeActionProvider(client)
@@ -158,14 +164,11 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
     context: CodeActionContext,
     token: CancellationToken
   ): Promise<CodeAction[]> {
-    if (!this.client.apiVersion.gte(API.v213)) {
-      return []
-    }
-
     const file = this.client.toPath(document.uri)
     if (!file) {
       return []
     }
+    await this.formattingConfigurationManager.ensureConfigurationForDocument(document, token)
 
     const fixableDiagnostics = await this.supportedCodeActionProvider.getFixableDiagnosticsForContext(
       context
@@ -283,7 +286,7 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
     action.diagnostics = [diagnostic]
     action.command = {
       command: ApplyFixAllCodeAction.ID,
-      arguments: [file, tsAction],
+      arguments: [document, file, tsAction],
       title: ''
     }
     return action

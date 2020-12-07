@@ -35,7 +35,8 @@ export default class TypeScriptFormattingProvider
     await this.formattingOptionsManager.ensureConfigurationOptions(
       document,
       options.insertSpaces,
-      options.tabSize
+      options.tabSize,
+      token
     )
     try {
       const response = await this.client.execute('format', args, token)
@@ -101,7 +102,8 @@ export default class TypeScriptFormattingProvider
     await this.formattingOptionsManager.ensureConfigurationOptions(
       document,
       options.insertSpaces,
-      options.tabSize
+      options.tabSize,
+      token
     )
     const doc = workspace.getDocument(document.uri)
 

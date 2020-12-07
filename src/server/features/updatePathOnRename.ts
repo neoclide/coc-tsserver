@@ -85,7 +85,7 @@ export default class UpdateImportsOnFileRenameHandler {
   }
 
   private async getEditsForFileRename(document: TextDocument, oldFile: string, newFile: string): Promise<WorkspaceEdit> {
-    await this.fileConfigurationManager.ensureConfigurationForDocument(document)
+    await this.fileConfigurationManager.ensureConfigurationForDocument(document, CancellationToken.None)
     const response = await this.client.interruptGetErr(() => {
       const args: Proto.GetEditsForFileRenameRequestArgs = {
         oldFilePath: oldFile,

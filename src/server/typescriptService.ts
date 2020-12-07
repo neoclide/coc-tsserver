@@ -10,6 +10,7 @@ import { TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
 import BufferSyncSupport from './features/bufferSyncSupport'
 import { DiagnosticsManager } from './features/diagnostics'
+import { PluginManager } from '../utils/plugins'
 
 export namespace ServerResponse {
 
@@ -33,10 +34,23 @@ export interface TypeScriptServerPlugin {
   readonly languages: string[]
 }
 
+export enum ExectuionTarget {
+  Semantic,
+  Syntax
+}
+
+export type ExecConfig = {
+  readonly lowPriority?: boolean
+  readonly nonRecoverable?: boolean
+  readonly cancelOnResourceChange?: string
+  readonly executionTarget?: ExectuionTarget
+}
+
 export interface TypeScriptRequestTypes {
   'applyCodeActionCommand': [Proto.ApplyCodeActionCommandRequestArgs, Proto.ApplyCodeActionCommandResponse]
   'completionEntryDetails': [Proto.CompletionDetailsRequestArgs, Proto.CompletionDetailsResponse]
   'completionInfo': [Proto.CompletionsRequestArgs, Proto.CompletionInfoResponse]
+  'updateOpen': [Proto.UpdateOpenRequestArgs, Proto.Response]
   // tslint:disable-next-line: deprecation
   'completions': [Proto.CompletionsRequestArgs, Proto.CompletionsResponse]
   'configure': [Proto.ConfigureRequestArguments, Proto.ConfigureResponse]
@@ -79,6 +93,7 @@ export interface ITypeScriptServiceClient {
   readonly logger: Logger
   readonly bufferSyncSupport: BufferSyncSupport
   readonly diagnosticsManager: DiagnosticsManager
+  readonly pluginManager: PluginManager
 
   getProjectRootPath(uri: string): string | null
   normalizePath(resource: Uri): string | null
@@ -90,7 +105,7 @@ export interface ITypeScriptServiceClient {
     command: K,
     args: TypeScriptRequestTypes[K][0],
     token: CancellationToken,
-    lowPriority?: boolean
+    config?: ExecConfig
   ): Promise<ServerResponse.Response<TypeScriptRequestTypes[K][1]>>
 
   executeWithoutWaitingForResponse(command: 'open', args: Proto.OpenRequestArgs): void
@@ -107,4 +122,12 @@ export interface ITypeScriptServiceClient {
    * Cancel on going geterr requests and re-queue them after `f` has been evaluated.
    */
   interruptGetErr<R>(f: () => R): R
+  /**
+ * Tries to ensure that a vscode document is open on the TS server.
+ *
+ * @return The normalized path or `undefined` if the document is not open on the server.
+ */
+  toOpenedFilePath(uri: string, options?: {
+    suppressAlertOnFailure?: boolean
+  }): string | undefined
 }

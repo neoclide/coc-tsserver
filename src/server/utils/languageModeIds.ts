@@ -13,3 +13,23 @@ export const javascriptjsx = 'javascript.jsx'
 export const jsxTags = 'jsx-tags'
 
 export const languageIds = [typescript, typescriptreact, javascript, javascriptreact, javascriptjsx, typescripttsx, jsxTags]
+
+export function mode2ScriptKind(
+  mode: string
+): 'TS' | 'TSX' | 'JS' | 'JSX' | undefined {
+  switch (mode) {
+    case typescript:
+      return 'TS'
+    case typescripttsx:
+      return 'TSX'
+    case typescriptjsx:
+      return 'TSX'
+    case typescriptreact:
+      return 'TSX'
+    case javascript:
+      return 'JS'
+    case javascriptreact:
+      return 'JSX'
+  }
+  return undefined
+}

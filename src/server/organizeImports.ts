@@ -8,7 +8,6 @@ import { TextDocument } from 'vscode-languageserver-textdocument'
 import { Command } from './commands'
 import Proto from './protocol'
 import { standardLanguageDescriptions } from './utils/languageDescription'
-import { languageIds } from './utils/languageModeIds'
 import * as typeconverts from './utils/typeConverters'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import TypeScriptServiceClient from './typescriptServiceClient'
@@ -49,7 +48,8 @@ export class OrganizeImportsCommand implements Command {
   public async execute(document?: TextDocument): Promise<void> {
     if (!document) {
       let doc = await workspace.document
-      if (languageIds.indexOf(doc.filetype) == -1) return
+      if (!doc.attached) return
+      if (this.client.modeIds.indexOf(doc.textDocument.languageId) == -1) return
       document = doc.textDocument
     }
     let edit = await this.getTextEdits(document)
@@ -71,17 +71,18 @@ export class OrganizeImportsCodeActionProvider implements CodeActionProvider {
     providedCodeActionKinds: [CodeActionKind.SourceOrganizeImports]
   }
 
-  public provideCodeActions(
+  public async provideCodeActions(
     document: TextDocument,
     _range: Range,
     context: CodeActionContext,
-    _token: CancellationToken
-  ): CodeAction[] {
-    if (languageIds.indexOf(document.languageId) == -1) return
+    token: CancellationToken
+  ): Promise<CodeAction[]> {
+    if (this.client.modeIds.indexOf(document.languageId) == -1) return
 
     if (!context.only || !context.only.includes(CodeActionKind.SourceOrganizeImports)) {
       return []
     }
+    await this.fileConfigManager.ensureConfigurationForDocument(document, token)
 
     const action = CodeAction.create('Organize Imports', {
       title: '',

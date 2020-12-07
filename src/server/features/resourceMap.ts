@@ -13,8 +13,18 @@ export class ResourceMap<T> {
   private readonly _map = new Map<string, T>()
 
   constructor(
-    private readonly _normalizePath?: (resource: string) => string | null
+    protected readonly _normalizePath?: (resource: string) => string | null
   ) { }
+
+  public get size() {
+    return this._map.size
+  }
+
+  public get entries(): { resource: string, value: T }[] {
+    return Array.from(this._map.keys()).map(key => {
+      return { resource: key, value: this._map[key] }
+    })
+  }
 
   public has(resource: string): boolean {
     const file = this.toKey(resource)
@@ -46,6 +56,10 @@ export class ResourceMap<T> {
 
   public get keys(): Iterable<string> {
     return this._map.keys()
+  }
+
+  public clear(): void {
+    this._map.clear()
   }
 
   private toKey(resource: string): string | null {

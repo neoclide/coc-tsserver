@@ -7,11 +7,13 @@ import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position, Cancellati
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
 import * as PConst from './protocol.const'
+import FileConfigurationManager from './features/fileConfigurationManager'
 import TypeScriptServiceClient from './typescriptServiceClient'
 import { LanguageDescription } from './utils/languageDescription'
 import * as typeConverters from './utils/typeConverters'
 import TypingsStatus, { AtaProgressReporter } from './utils/typingsStatus'
 import { PluginManager } from '../utils/plugins'
+import { flatten } from '../utils/arrays'
 
 // Style check diagnostics that can be reported as warnings
 const styleCheckDiagnostics = [
@@ -30,6 +32,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
   private readonly languages: LanguageProvider[] = []
   private readonly languagePerId = new Map<string, LanguageProvider>()
   private readonly disposables: Disposable[] = []
+  private readonly fileConfigurationManager: FileConfigurationManager
   private reportStyleCheckAsWarnings = true
 
   constructor(descriptions: LanguageDescription[], pluginManager: PluginManager) {
@@ -50,10 +53,13 @@ export default class TypeScriptServiceClientHost implements Disposable {
     packageFileWatcher.onDidCreate(this.reloadProjects, this, this.disposables)
     packageFileWatcher.onDidChange(handleProjectChange, this, this.disposables)
 
-    this.client = new TypeScriptServiceClient(pluginManager)
+    const allModeIds = this.getAllModeIds(descriptions, pluginManager)
+    this.client = new TypeScriptServiceClient(pluginManager, allModeIds)
     this.disposables.push(this.client)
     this.client.onDiagnosticsReceived(({ kind, resource, diagnostics }) => {
-      this.diagnosticsReceived(kind, resource, diagnostics)
+      this.diagnosticsReceived(kind, resource, diagnostics).catch(e => {
+        console.error(e)
+      })
     }, null, this.disposables)
 
     this.client.onConfigDiagnosticsReceived(diag => {
@@ -79,12 +85,13 @@ export default class TypeScriptServiceClientHost implements Disposable {
         }
       }
     }, null, this.disposables)
-
     this.typingsStatus = new TypingsStatus(this.client)
     this.ataProgressReporter = new AtaProgressReporter(this.client)
+    this.fileConfigurationManager = new FileConfigurationManager(this.client)
     for (const description of descriptions) { // tslint:disable-line
       const manager = new LanguageProvider(
         this.client,
+        this.fileConfigurationManager,
         description,
         this.typingsStatus
       )
@@ -103,14 +110,13 @@ export default class TypeScriptServiceClientHost implements Disposable {
 
   public dispose(): void {
     disposeAll(this.disposables)
+    this.fileConfigurationManager.dispose()
     this.typingsStatus.dispose()
     this.ataProgressReporter.dispose()
   }
 
   public reset(): void {
-    for (let lang of this.languages) {
-      lang.fileConfigurationManager.reset()
-    }
+    this.fileConfigurationManager.reset()
   }
 
   public get serviceClient(): TypeScriptServiceClient {
@@ -132,16 +138,22 @@ export default class TypeScriptServiceClientHost implements Disposable {
     this.reportStyleCheckAsWarnings = config.get('reportStyleChecksAsWarnings', true)
   }
 
-  public findLanguage(resource: Uri): LanguageProvider | null {
+  public async findLanguage(uri: string): Promise<LanguageProvider> {
     try {
-      return this.languages.find(language => language.handles(resource))
+      let doc = await workspace.loadFile(uri)
+      if (!doc) return undefined
+      return this.languages.find(language => language.handles(uri, doc.textDocument))
     } catch {
-      return null
+      return undefined
     }
   }
 
-  public handles(uri: string): boolean {
-    return this.findLanguage(Uri.parse(uri)) != null
+  public async handles(uri: string): Promise<boolean> {
+    const provider = await this.findLanguage(uri)
+    if (provider) {
+      return true
+    }
+    return this.client.bufferSyncSupport.handles(uri)
   }
 
   private triggerAllDiagnostics(): void {
@@ -150,12 +162,12 @@ export default class TypeScriptServiceClientHost implements Disposable {
     }
   }
 
-  private diagnosticsReceived(
+  private async diagnosticsReceived(
     kind: DiagnosticKind,
     resource: Uri,
     diagnostics: Proto.Diagnostic[]
-  ): void {
-    const language = this.findLanguage(resource)
+  ): Promise<void> {
+    const language = await this.findLanguage(resource.toString())
     if (language) {
       language.diagnosticsReceived(
         kind,
@@ -221,5 +233,13 @@ export default class TypeScriptServiceClientHost implements Disposable {
 
   private isStyleCheckDiagnostic(code: number | undefined): boolean {
     return code ? styleCheckDiagnostics.indexOf(code) !== -1 : false
+  }
+
+  private getAllModeIds(descriptions: LanguageDescription[], pluginManager: PluginManager) {
+    const allModeIds = flatten([
+      ...descriptions.map(x => x.modeIds),
+      ...pluginManager.plugins.map(x => x.languages)
+    ])
+    return allModeIds
   }
 }

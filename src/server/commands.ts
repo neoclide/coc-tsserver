@@ -7,7 +7,6 @@ import { TextEdit, Range } from 'vscode-languageserver-types'
 import { installModules } from './utils/modules'
 import { nodeModules } from './utils/helper'
 import { PluginManager } from '../utils/plugins'
-import { languageIds } from './utils/languageModeIds'
 
 export interface Command {
   readonly id: string | string[]
@@ -48,12 +47,11 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 
   public async execute(): Promise<void> {
     let doc = await workspace.document
-    let { filetype } = doc
-    if (languageIds.indexOf(filetype) == -1) {
-      workspace.showMessage(`Could not determine TypeScript or JavaScript project. Unsupported file type: ${filetype}`, 'warning')
+    let { languageId } = doc.textDocument
+    if (this.client.serviceClient.modeIds.indexOf(languageId) == -1) {
+      workspace.showMessage(`Could not determine TypeScript or JavaScript project. Unsupported file type: ${languageId}`, 'warning')
       return
     }
-    // doc.filetype
     await goToProjectConfig(this.client, doc.uri)
   }
 }
@@ -100,7 +98,8 @@ export class AutoFixCommand implements Command {
   public async execute(): Promise<void> {
     let document = await workspace.document
     let { uri } = document
-    if (!this.client.handles(uri)) {
+    let handles = await this.client.handles(uri)
+    if (!handles) {
       workspace.showMessage(`Document ${uri} is not handled by tsserver.`, 'warning')
       return
     }
