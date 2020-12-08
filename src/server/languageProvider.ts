@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { commands, DiagnosticKind, disposeAll, languages, Uri, workspace } from 'coc.nvim'
+import { DiagnosticKind, disposeAll, languages, Uri, workspace } from 'coc.nvim'
 import path from 'path'
 import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable, TextDocument } from 'vscode-languageserver-protocol'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
@@ -27,8 +27,6 @@ import RenameProvider from './features/rename'
 import SignatureHelpProvider from './features/signatureHelp'
 import SmartSelection from './features/smartSelect'
 import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
-import WatchBuild from './features/watchBuild'
-import WorkspaceSymbolProvider from './features/workspaceSymbols'
 import { OrganizeImportsCodeActionProvider } from './organizeImports'
 import TypeScriptServiceClient from './typescriptServiceClient'
 import API from './utils/api'
@@ -48,16 +46,14 @@ export default class LanguageProvider {
   ) {
     workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
     this.configurationChanged()
-    let initialized = false
 
+    let initialized = false
     client.onTsServerStarted(async () => { // tslint:disable-line
       if (!initialized) {
         initialized = true
         this.registerProviders(client, typingsStatus)
-      } else {
-        this.client.diagnosticsManager.reInitialize()
       }
-    })
+    }, null, this.disposables)
   }
 
   private configurationChanged(): void {
@@ -69,201 +65,89 @@ export default class LanguageProvider {
     disposeAll(this.disposables)
   }
 
+  private _register(disposable: Disposable): void {
+    this.disposables.push(disposable)
+  }
+
   private registerProviders(
     client: TypeScriptServiceClient,
     typingsStatus: TypingsStatus
   ): void {
     let languageIds = this.description.modeIds
-
-    this.disposables.push(
-      languages.registerCompletionItemProvider(
-        `tsserver-${this.description.id}`,
-        'TSC',
-        languageIds,
-        new CompletionItemProvider(
-          client,
-          typingsStatus,
-          this.fileConfigurationManager,
-          this.description.id
-        ),
+    let clientId = `tsserver-${this.description.id}`
+    this._register(
+      languages.registerCompletionItemProvider(clientId, 'TSC', languageIds,
+        new CompletionItemProvider(client, typingsStatus, this.fileConfigurationManager, this.description.id),
         CompletionItemProvider.triggerCharacters
       )
     )
-
     if (this.client.apiVersion.gte(API.v230)) {
-      this.disposables.push(
-        languages.registerCompletionItemProvider(
-          `${this.description.id}-directive`,
-          'TSC',
-          languageIds,
-          new DirectiveCommentCompletionProvider(
-            client,
-          ),
-          ['@']
-        )
-      )
+      this._register(languages.registerCompletionItemProvider(
+        `${this.description.id}-directive`,
+        'TSC', languageIds, new DirectiveCommentCompletionProvider(client,), ['@']
+      ))
     }
+
     let definitionProvider = new DefinitionProvider(client)
-
-    this.disposables.push(
-      languages.registerDefinitionProvider(
-        languageIds,
-        definitionProvider
-      )
-    )
-
-    this.disposables.push(
-      languages.registerTypeDefinitionProvider(
-        languageIds,
-        definitionProvider
-      )
-    )
-
-    this.disposables.push(
-      languages.registerImplementationProvider(
-        languageIds,
-        definitionProvider
-      )
-    )
-
-    this.disposables.push(
-      languages.registerReferencesProvider(
-        languageIds,
-        new ReferenceProvider(client)
-      )
-    )
-
-    this.disposables.push(
-      languages.registerHoverProvider(
-        languageIds,
-        new HoverProvider(client))
-    )
-
-    this.disposables.push(
-      languages.registerDocumentHighlightProvider(languageIds, new DocumentHighlight(this.client))
-    )
-
-    this.disposables.push(
-      languages.registerSignatureHelpProvider(
-        languageIds,
-        new SignatureHelpProvider(client),
-        ['(', ',', '<', ')'])
-    )
-
-    this.disposables.push(
-      languages.registerDocumentSymbolProvider(
-        languageIds,
-        new DocumentSymbolProvider(client))
-    )
-
-    if (this.description.id == 'typescript') {
-      this.disposables.push(
-        languages.registerWorkspaceSymbolProvider(
-          new WorkspaceSymbolProvider(client, languageIds))
-      )
-    }
-
-    this.disposables.push(
-      languages.registerRenameProvider(
-        languageIds,
-        new RenameProvider(client, this.fileConfigurationManager))
-    )
+    this._register(languages.registerDefinitionProvider(languageIds, definitionProvider))
+    this._register(languages.registerTypeDefinitionProvider(languageIds, definitionProvider))
+    this._register(languages.registerImplementationProvider(languageIds, definitionProvider))
+    this._register(languages.registerReferencesProvider(languageIds, new ReferenceProvider(client)))
+    this._register(languages.registerHoverProvider(languageIds, new HoverProvider(client)))
+    this._register(languages.registerDocumentHighlightProvider(languageIds, new DocumentHighlight(this.client)))
+    this._register(languages.registerSignatureHelpProvider(languageIds, new SignatureHelpProvider(client), ['(', ',', '<', ')']))
+    this._register(languages.registerDocumentSymbolProvider(languageIds, new DocumentSymbolProvider(client)))
+    this._register(languages.registerRenameProvider(languageIds, new RenameProvider(client, this.fileConfigurationManager)))
     let formatProvider = new FormattingProvider(client, this.fileConfigurationManager)
-    this.disposables.push(
-      languages.registerDocumentFormatProvider(languageIds, formatProvider)
-    )
-    this.disposables.push(
-      languages.registerDocumentRangeFormatProvider(languageIds, formatProvider)
-    )
-    this.disposables.push(
-      languages.registerOnTypeFormattingEditProvider(languageIds, formatProvider, [';', '}', '\n', String.fromCharCode(27)])
-    )
-
-    // this.disposables.push(
-    //   new ProjectError(client, commandManager)
-    // )
-
-    if (this.client.apiVersion.gte(API.v280)) {
-      this.disposables.push(
-        languages.registerFoldingRangeProvider(languageIds, new Folding(this.client))
-      )
-      this.disposables.push(
-        languages.registerCodeActionProvider(languageIds,
-          new OrganizeImportsCodeActionProvider(this.client, this.fileConfigurationManager),
-          `tsserver-${this.description.id}`, [CodeActionKind.SourceOrganizeImports])
-      )
-    }
+    this._register(languages.registerDocumentFormatProvider(languageIds, formatProvider))
+    this._register(languages.registerDocumentRangeFormatProvider(languageIds, formatProvider))
+    this._register(languages.registerOnTypeFormattingEditProvider(languageIds, formatProvider, [';', '}', '\n', String.fromCharCode(27)]))
+    this._register(languages.registerCodeActionProvider(languageIds, new InstallModuleProvider(client), 'tsserver'))
 
     let { fileConfigurationManager } = this
     let conf = fileConfigurationManager.getLanguageConfiguration(this.id)
-
-    if (this.client.apiVersion.gte(API.v290)
-      && conf.get<boolean>('updateImportsOnFileMove.enable')) {
-      this.disposables.push(
-        new UpdateImportsOnFileRenameHandler(client, this.fileConfigurationManager, this.id)
-      )
+    if (['javascript', 'typescript'].includes(this.id)) {
+      if (this.client.apiVersion.gte(API.v290) && conf.get<boolean>('updateImportsOnFileMove.enable')) {
+        this._register(new UpdateImportsOnFileRenameHandler(client, this.fileConfigurationManager, this.id))
+      }
     }
 
+    if (this.client.apiVersion.gte(API.v280)) {
+      this._register(languages.registerFoldingRangeProvider(languageIds, new Folding(this.client)))
+      this._register(
+        languages.registerCodeActionProvider(languageIds,
+          new OrganizeImportsCodeActionProvider(this.client, this.fileConfigurationManager),
+          'tsserver', [CodeActionKind.SourceOrganizeImports])
+      )
+    }
     if (this.client.apiVersion.gte(API.v240)) {
-      this.disposables.push(
+      this._register(
         languages.registerCodeActionProvider(
           languageIds,
           new RefactorProvider(client, this.fileConfigurationManager),
           'tsserver',
           [CodeActionKind.Refactor]))
     }
-
-    this.disposables.push(
+    this._register(
       languages.registerCodeActionProvider(
-        languageIds,
-        new InstallModuleProvider(client),
-        'tsserver')
-    )
-
-    this.disposables.push(
+        languageIds, new QuickfixProvider(client, this.fileConfigurationManager),
+        'tsserver', [CodeActionKind.QuickFix]))
+    this._register(
       languages.registerCodeActionProvider(
-        languageIds,
-        new QuickfixProvider(client, this.fileConfigurationManager),
-        'tsserver',
-        [CodeActionKind.QuickFix]))
-
-    this.disposables.push(
-      languages.registerCodeActionProvider(
-        languageIds,
-        new ImportfixProvider(this.client.bufferSyncSupport),
-        'tsserver',
-        [CodeActionKind.QuickFix]))
+        languageIds, new ImportfixProvider(this.client.bufferSyncSupport),
+        'tsserver', [CodeActionKind.QuickFix]))
     let cachedResponse = new CachedNavTreeResponse()
-    if (this.client.apiVersion.gte(API.v206)
-      && conf.get<boolean>('referencesCodeLens.enable')) {
-      this.disposables.push(
-        languages.registerCodeLensProvider(
-          languageIds,
-          new ReferencesCodeLensProvider(client, cachedResponse)))
+    if (this.client.apiVersion.gte(API.v206) && conf.get<boolean>('referencesCodeLens.enable')) {
+      this._register(languages.registerCodeLensProvider(languageIds, new ReferencesCodeLensProvider(client, cachedResponse)))
     }
-
-    if (this.client.apiVersion.gte(API.v220)
-      && conf.get<boolean>('implementationsCodeLens.enable')) {
-      this.disposables.push(
-        languages.registerCodeLensProvider(
-          languageIds,
-          new ImplementationsCodeLensProvider(client, cachedResponse)))
+    if (this.client.apiVersion.gte(API.v220) && conf.get<boolean>('implementationsCodeLens.enable')) {
+      this._register(languages.registerCodeLensProvider(languageIds, new ImplementationsCodeLensProvider(client, cachedResponse)))
     }
     if (this.client.apiVersion.gte(API.v350)) {
-      this.disposables.push(
-        languages.registerSelectionRangeProvider(languageIds, new SmartSelection(this.client))
-      )
+      this._register(languages.registerSelectionRangeProvider(languageIds, new SmartSelection(this.client)))
     }
-
-    if (this.description.id == 'typescript') {
-      // this.client.apiVersion
-      this.disposables.push(
-        new WatchBuild(commands, this.client)
-      )
-    }
-
     // if (this.client.apiVersion.gte(API.v300)) {
-    //   this.disposables.push(
+    //   this._register(
     //     languages.registerCompletionItemProvider(
     //       `tsserver-${this.description.id}-tag`,
     //       'TSC',

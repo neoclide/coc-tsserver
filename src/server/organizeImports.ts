@@ -11,17 +11,17 @@ import { standardLanguageDescriptions } from './utils/languageDescription'
 import * as typeconverts from './utils/typeConverters'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import TypeScriptServiceClient from './typescriptServiceClient'
+import TsserverService from '../server'
 
 export class OrganizeImportsCommand implements Command {
   public readonly id: string = 'tsserver.organizeImports'
 
   constructor(
-    private readonly client: TypeScriptServiceClient
+    private readonly service: TsserverService
   ) {
   }
 
-  private async getTextEdits(document: TextDocument): Promise<WorkspaceEdit | null> {
-    let client = this.client
+  private async getTextEdits(client: TypeScriptServiceClient, document: TextDocument): Promise<WorkspaceEdit | null> {
     let file = client.toPath(document.uri)
     const args: Proto.OrganizeImportsRequestArgs = {
       scope: {
@@ -31,7 +31,7 @@ export class OrganizeImportsCommand implements Command {
         }
       }
     }
-    const response = await this.client.interruptGetErr(() => this.client.execute('organizeImports', args, CancellationToken.None))
+    const response = await client.interruptGetErr(() => client.execute('organizeImports', args, CancellationToken.None))
     if (!response || response.type != 'response' || !response.success) {
       return
     }
@@ -46,13 +46,18 @@ export class OrganizeImportsCommand implements Command {
   }
 
   public async execute(document?: TextDocument): Promise<void> {
+    let client = await this.service.getClientHost()
     if (!document) {
       let doc = await workspace.document
-      if (!doc.attached) return
-      if (this.client.modeIds.indexOf(doc.textDocument.languageId) == -1) return
+      if (!doc.attached) {
+        throw new Error(`Document not attached.`)
+      }
+      if (client.serviceClient.modeIds.indexOf(doc.filetype) == -1) {
+        throw new Error(`filetype "${doc.filetype}" not supported by tsserver.`)
+      }
       document = doc.textDocument
     }
-    let edit = await this.getTextEdits(document)
+    let edit = await this.getTextEdits(client.serviceClient, document)
     if (edit) await workspace.applyEdit(edit)
     return
   }

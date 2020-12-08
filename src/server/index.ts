@@ -33,6 +33,24 @@ export default class TsserverService implements IServiceProvider {
     return workspace.getConfiguration('tsserver')
   }
 
+  /**
+   * Get running client host.
+   */
+  public getClientHost(): Promise<TypeScriptServiceClientHost> {
+    if (this.state == ServiceStat.Running) return Promise.resolve(this.clientHost)
+    this.start()
+    return new Promise((resolve, reject) => {
+      let timer = setTimeout(() => {
+        reject(new Error(`Server not started after 5s`))
+      }, 5000)
+      let disposable = this.onServiceReady(() => {
+        clearTimeout(timer)
+        disposable.dispose()
+        resolve(this.clientHost)
+      })
+    })
+  }
+
   public start(): Promise<void> {
     if (this.clientHost) return
     this.state = ServiceStat.Starting

@@ -1,6 +1,7 @@
 import { exec } from 'child_process'
+import { workspace, Uri } from 'coc.nvim'
+import fs from 'fs'
 import path from 'path'
-import { Uri, workspace } from 'coc.nvim'
 
 export function runCommand(cmd: string, cwd: string, timeout?: number): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -72,9 +73,10 @@ export function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
 
 export async function installModules(uri: string, names: string[]): Promise<void> {
   names = distinct(names)
-  let root = await getRoot()
-  if (!root) {
-    workspace.showMessage(`package.json not found from cwd: ${workspace.cwd}`, 'error')
+  let workspaceFolder = workspace.getWorkspaceFolder(uri)
+  let root = workspaceFolder ? Uri.parse(workspaceFolder.uri).fsPath : undefined
+  if (!root || !fs.existsSync(path.join(root, 'package.json'))) {
+    workspace.showMessage(`package.json not found from workspaceFolder: ${root}`, 'error')
     return
   }
   let arr = names.concat(names.map(s => `@types/${s}`))
@@ -93,11 +95,10 @@ export async function installModules(uri: string, names: string[]): Promise<void
   let deps = exists.filter(s => devs.indexOf(s) == -1)
   statusItem.text = `Installing ${exists.join(' ')}`
   try {
-    await Promise.all([deps, devs].map((names, i) => {
-      let cmd = manager == 'npm' ? `npm i ${names.join(' ')}` : `yarn add ${names.join(' ')} --ignore-scripts --no-default-rc`
-      if (i == 1) cmd = cmd + ' --dev'
-      return runCommand(cmd, root)
-    }))
+    let cmd = manager == 'npm' ? `npm i ${deps.join(' ')}` : `yarn add ${deps.join(' ')}`
+    await runCommand(cmd, root)
+    cmd = manager == 'npm' ? `npm i ${deps.join(' ')} --save-dev` : `yarn add ${deps.join(' ')} --save-dev`
+    await runCommand(cmd, root)
   } catch (e) {
     statusItem.dispose()
     workspace.showMessage(`Install error ${e.message}`, 'error')

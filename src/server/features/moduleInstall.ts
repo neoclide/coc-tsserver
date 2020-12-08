@@ -1,7 +1,7 @@
 import { Uri, commands } from 'coc.nvim'
 import { Command } from 'coc.nvim/lib/commands'
 import { CodeActionProvider } from 'coc.nvim/lib/provider'
-import { CancellationToken, CodeAction, CodeActionContext, Range } from 'vscode-languageserver-protocol'
+import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range } from 'vscode-languageserver-protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { installModules } from '../utils/modules'
@@ -35,7 +35,7 @@ export default class InstallModuleProvider implements CodeActionProvider {
     let { diagnostics } = context
     let diags = diagnostics.filter(s => s.code == 2307)
     let names = diags.map(o => {
-      let ms = o.message.match(/module\s'(.+)'\./)
+      let ms = o.message.match(/module\s'(.+)'/)
       return ms ? ms[1] : null
     })
     names = names.filter(s => s != null)
@@ -48,7 +48,7 @@ export default class InstallModuleProvider implements CodeActionProvider {
         command: InstallModuleCommand.ID,
         arguments: [document.uri, name]
       }
-      let codeAction = CodeAction.create(title, command)
+      let codeAction = CodeAction.create(title, command, CodeActionKind.QuickFix)
       actions.push(codeAction)
     }
     return actions

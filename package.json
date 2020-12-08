@@ -30,6 +30,8 @@
     "onLanguage:typescript.jsx",
     "onLanguage:typescriptreact",
     "onLanguage:jsx-tags",
+    "onLanguage:jsonc",
+    "onCommand:_typescript.configurePlugin",
     "onCommand:typescript.reloadProjects",
     "onCommand:javascript.reloadProjects",
     "onCommand:javascript.goToProjectConfig",

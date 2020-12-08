@@ -1,6 +1,4 @@
-import { disposeAll, StatusBarItem, TaskOptions, Uri, workspace } from 'coc.nvim'
-import { CommandManager } from 'coc.nvim/lib/commands'
-import Task from 'coc.nvim/lib/model/task'
+import { disposeAll, commands, StatusBarItem, TaskOptions, Uri, workspace } from 'coc.nvim'
 import path from 'path'
 import { Disposable, Location } from 'vscode-languageserver-protocol'
 import TypeScriptServiceClient from '../typescriptServiceClient'
@@ -26,16 +24,15 @@ export default class WatchProject implements Disposable {
   public static readonly id: string = 'tsserver.watchBuild'
   public static readonly startTexts: string[] = ['Starting compilation in watch mode', 'Starting incremental compilation']
   private statusItem: StatusBarItem
-  private task: Task
+  private task: any
   private options: TaskOptions
 
   public constructor(
-    commandManager: CommandManager,
     private client: TypeScriptServiceClient
   ) {
     this.statusItem = workspace.createStatusBarItem(1, { progress: true })
     let task = this.task = workspace.createTask('TSC')
-    this.disposables.push(commandManager.registerCommand(WatchProject.id, async () => {
+    this.disposables.push(commands.registerCommand(WatchProject.id, async () => {
       let opts = this.options = await this.getOptions()
       await this.start(opts)
     }))
