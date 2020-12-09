@@ -480,7 +480,10 @@ export default class BufferSyncSupport {
   }
 
   public getErr(resources: Uri[]): any {
-    const handledResources = resources.filter(resource => this.handles(resource.toString()))
+    const handledResources = resources.filter(resource => {
+      let syncedBuffer = this.syncedBuffers.get(resource.toString())
+      return syncedBuffer && this.shouldValidate(syncedBuffer)
+    })
     if (!handledResources.length) {
       return
     }
@@ -525,15 +528,20 @@ export default class BufferSyncSupport {
       this.pendingGetErr.cancel()
       for (const uri of this.pendingGetErr.uris) {
         let resource = uri.toString()
-        if (this.syncedBuffers.get(resource)) {
+        let syncedBuffer = this.syncedBuffers.get(resource)
+        if (syncedBuffer && this.shouldValidate(syncedBuffer)) {
           orderedFileSet.set(resource, undefined)
+        } else {
+          orderedFileSet.delete(resource)
         }
       }
       this.pendingGetErr = undefined
     }
     // Add all open TS buffers to the geterr request. They might be visible
     for (const buffer of this.syncedBuffers.values) {
-      orderedFileSet.set(buffer.resource, undefined)
+      if (this.shouldValidate(buffer)) {
+        orderedFileSet.set(buffer.resource, undefined)
+      }
     }
     if (orderedFileSet.size) {
       let uris = Array.from(orderedFileSet.uris).map(uri => Uri.parse(uri))
@@ -554,7 +562,7 @@ export default class BufferSyncSupport {
     this._validateTypeScript = tsConfig.get<boolean>('validate.enable', true)
   }
 
-  private shouldValidate(buffer: SyncedBuffer) {
+  private shouldValidate(buffer: SyncedBuffer): boolean {
     switch (buffer.kind) {
       case BufferKind.JavaScript:
         return this._validateJavaScript
