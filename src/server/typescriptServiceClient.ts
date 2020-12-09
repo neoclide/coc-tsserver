@@ -8,6 +8,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { CancellationToken, CancellationTokenSource, Disposable, Emitter, Event } from 'vscode-languageserver-protocol'
+import * as fileSchemes from '../utils/fileSchemess'
 import { PluginManager } from '../utils/plugins'
 import { CallbackMap } from './callbackMap'
 import BufferSyncSupport from './features/bufferSyncSupport'
@@ -506,22 +507,22 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     return Uri.file(filepath).toString()
   }
 
-  public normalizePath(resource: Uri): string | null {
-    if (this._apiVersion.gte(API.v213)) {
-      if (resource.scheme == 'untitled') {
-        const dirName = path.dirname(resource.path)
-        const fileName = this.inMemoryResourcePrefix + path.basename(resource.path)
-        return resource
-          .with({ path: path.posix.join(dirName, fileName) })
-          .toString(true)
+  public normalizePath(resource: Uri): string | undefined {
+    if (fileSchemes.disabledSchemes.has(resource.scheme)) {
+      return undefined
+    }
+    switch (resource.scheme) {
+      case fileSchemes.file: {
+        let result = resource.fsPath
+        if (!result) return undefined
+        result = path.normalize(result)
+        // Both \ and / must be escaped in regular expressions
+        return result.replace(new RegExp('\\' + this.pathSeparator, 'g'), '/')
+      }
+      default: {
+        return this.inMemoryResourcePrefix + resource.toString(true)
       }
     }
-
-    const result = resource.fsPath
-    if (!result) return null
-
-    // Both \ and / must be escaped in regular expressions
-    return result.replace(new RegExp('\\' + this.pathSeparator, 'g'), '/')
   }
 
   private get inMemoryResourcePrefix(): string {

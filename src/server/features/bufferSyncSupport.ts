@@ -135,7 +135,7 @@ class PendingDiagnostics extends ResourceMap<number> {
   public getOrderedFileSet(): ResourceMap<void> {
     const orderedResources = Array.from(this.entries)
       .sort((a, b) => a.value - b.value)
-      .map(entry => entry.resource)
+      .map(entry => entry.uri)
 
     const map = new ResourceMap<void>(this._normalizePath)
     for (const resource of orderedResources) {
@@ -270,24 +270,25 @@ class GetErrRequest {
 
   public static executeGetErrRequest(
     client: ITypeScriptServiceClient,
-    files: string[],
+    uris: Uri[],
     onDone: () => void
   ): GetErrRequest {
     const token = new CancellationTokenSource()
-    return new GetErrRequest(client, files, token, onDone)
+    return new GetErrRequest(client, uris, token, onDone)
   }
 
   private _done = false
 
   private constructor(
     client: ITypeScriptServiceClient,
-    public readonly files: string[],
+    public readonly uris: Uri[],
     private readonly _token: CancellationTokenSource,
     onDone: () => void
   ) {
+    let files = uris.map(uri => client.normalizePath(uri))
     const args: Proto.GeterrRequestArgs = {
       delay: 0,
-      files: this.files
+      files
     }
     const done = () => {
       if (this._done) {
@@ -522,8 +523,8 @@ export default class BufferSyncSupport {
     const orderedFileSet = this.pendingDiagnostics.getOrderedFileSet()
     if (this.pendingGetErr) {
       this.pendingGetErr.cancel()
-      for (const file of this.pendingGetErr.files) {
-        let resource = Uri.file(file).toString()
+      for (const uri of this.pendingGetErr.uris) {
+        let resource = uri.toString()
         if (this.syncedBuffers.get(resource)) {
           orderedFileSet.set(resource, undefined)
         }
@@ -535,8 +536,8 @@ export default class BufferSyncSupport {
       orderedFileSet.set(buffer.resource, undefined)
     }
     if (orderedFileSet.size) {
-      let files = Array.from(orderedFileSet.keys).map(uri => this.client.normalizePath(Uri.parse(uri)))
-      const getErr = this.pendingGetErr = GetErrRequest.executeGetErrRequest(this.client, files, () => {
+      let uris = Array.from(orderedFileSet.uris).map(uri => Uri.parse(uri))
+      const getErr = this.pendingGetErr = GetErrRequest.executeGetErrRequest(this.client, uris, () => {
         if (this.pendingGetErr === getErr) {
           this.pendingGetErr = undefined
         }
