@@ -31,6 +31,13 @@ installation.
 **Note:** tsserver could be quite slow to initialize on big project, exclude
 unneunnecessary files in your jsconfig.json/tsconfig.json.
 
+## Supporting
+
+If you like my extension, consider supporting me on Patreon or PayPal:
+
+<a href="https://www.patreon.com/chemzqm"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Patreon donate button" /> </a>
+<a href="https://www.paypal.com/paypalme/chezqm"><img src="https://werwolv.net/assets/paypal_banner.png" alt="PayPal donate button" /> </a>
+
 ## Install
 
 In your vim/neovim, run command:
