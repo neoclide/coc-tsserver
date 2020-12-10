@@ -158,6 +158,8 @@ for guide of coc.nvim's configuration.
 - `typescript.format.insertSpaceBeforeFunctionParenthesis` default: `false`
 - `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets`
   default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces`
+  default: `false`
 - `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`
   default: `false`
 - `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis`
@@ -201,6 +203,8 @@ for guide of coc.nvim's configuration.
   default: `true`
 - `javascript.format.insertSpaceBeforeFunctionParenthesis` default: `false`
 - `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets`
+  default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces`
   default: `false`
 - `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`
   default: `false`
