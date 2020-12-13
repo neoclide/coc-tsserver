@@ -131,7 +131,7 @@ for guide of coc.nvim's configuration.
 - `typescript.referencesCodeLens.enable`:Enable codeLens for references,
   default: `true`
 - `typescript.preferences.importModuleSpecifier` default: `"auto"`
-- `typescript.preferences.importModuleSpecifierEnding` default: `true`
+- `typescript.preferences.importModuleSpecifierEnding` default: `"auto"`
 - `typescript.preferences.quoteStyle` default: `"single"`
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics
   for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in
@@ -178,7 +178,7 @@ for guide of coc.nvim's configuration.
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`
 - `javascript.preferences.importModuleSpecifier` default: `"auto"`
-- `javascript.preferences.importModuleSpecifierEnding` default: `true`
+- `javascript.preferences.importModuleSpecifierEnding` default: `"auto"`
 - `javascript.preferences.quoteStyle` default: `"single"`
 - `javascript.validate.enable`: Enable/disable JavaScript validation., default:
   `true`
