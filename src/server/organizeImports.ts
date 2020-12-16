@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { workspace, CodeActionProvider, CodeActionProviderMetadata } from 'coc.nvim'
-import { CancellationToken, Range, CodeActionContext, WorkspaceEdit, CodeActionKind, CodeAction } from 'vscode-languageserver-protocol'
+import { CancellationToken, Range, CodeActionContext, WorkspaceEdit, CodeActionKind, CodeAction, TextEdit } from 'vscode-languageserver-protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { Command } from './commands'
 import Proto from './protocol'
-import { standardLanguageDescriptions } from './utils/languageDescription'
 import * as typeconverts from './utils/typeConverters'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import TypeScriptServiceClient from './typescriptServiceClient'
@@ -21,7 +20,7 @@ export class OrganizeImportsCommand implements Command {
   ) {
   }
 
-  private async getTextEdits(client: TypeScriptServiceClient, document: TextDocument): Promise<WorkspaceEdit | null> {
+  private async _execute(client: TypeScriptServiceClient, document: TextDocument): Promise<WorkspaceEdit | TextEdit[] | null> {
     let file = client.toPath(document.uri)
     const args: Proto.OrganizeImportsRequestArgs = {
       scope: {
@@ -40,9 +39,15 @@ export class OrganizeImportsCommand implements Command {
       client,
       response.body
     )
-    let desc = standardLanguageDescriptions.find(o => o.modeIds.indexOf(document.languageId) !== -1)
-    if (!desc) return null
-    return edit
+    let keys = Object.keys(edit.changes)
+    if (keys.length == 1) {
+      let doc = workspace.getDocument(keys[0])
+      if (doc) {
+        await doc.applyEdits(edit.changes[keys[0]])
+        return
+      }
+    }
+    if (edit) await workspace.applyEdit(edit)
   }
 
   public async execute(document?: TextDocument): Promise<void> {
@@ -57,9 +62,7 @@ export class OrganizeImportsCommand implements Command {
       }
       document = doc.textDocument
     }
-    let edit = await this.getTextEdits(client.serviceClient, document)
-    if (edit) await workspace.applyEdit(edit)
-    return
+    await this._execute(client.serviceClient, document)
   }
 }
 

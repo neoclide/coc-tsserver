@@ -15,11 +15,11 @@
     "strictPropertyInitialization": false,
     "declaration": false,
     "outDir": "lib",
-    "target": "es2015",
+    "target": "es2017",
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitThis": true,
-    "lib": ["es2018"],
+    "lib": ["ES2018", "ES2019"],
     "plugins": []
   },
   "include": ["src"],
