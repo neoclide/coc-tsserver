@@ -6,7 +6,7 @@
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { Range, Position, CancellationToken } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
+import { TextDocument } from 'coc.nvim'
 import * as typeConverters from '../utils/typeConverters'
 import { SelectionRangeProvider } from 'coc.nvim'
 

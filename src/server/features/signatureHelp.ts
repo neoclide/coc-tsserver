@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { TextDocument } from 'coc.nvim'
+import { SignatureHelpProvider } from 'coc.nvim'
 import { CancellationToken, Position, SignatureHelp, SignatureInformation } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { SignatureHelpProvider } from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as Previewer from '../utils/previewer'
@@ -13,7 +13,7 @@ import * as typeConverters from '../utils/typeConverters'
 export default class TypeScriptSignatureHelpProvider implements SignatureHelpProvider {
   public static readonly triggerCharacters = ['(', ',', '<']
 
-  public constructor(private readonly client: ITypeScriptServiceClient) { }
+  public constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public async provideSignatureHelp(
     document: TextDocument,

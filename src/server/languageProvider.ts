@@ -2,12 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DiagnosticKind, disposeAll, languages, Uri, workspace } from 'coc.nvim'
+import { disposeAll, languages, Uri, workspace } from 'coc.nvim'
 import path from 'path'
 import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable, TextDocument } from 'vscode-languageserver-protocol'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
 import CompletionItemProvider from './features/completionItemProvider'
 import DefinitionProvider from './features/definitionProvider'
+import { DiagnosticKind } from './features/diagnostics'
 import DirectiveCommentCompletionProvider from './features/directiveCommentCompletions'
 import DocumentHighlight from './features/documentHighlight'
 import DocumentSymbolProvider from './features/documentSymbol'

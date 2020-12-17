@@ -2,15 +2,15 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { TextDocument } from 'coc.nvim'
+import { DefinitionProvider, ImplementationProvider, TypeDefinitionProvider } from 'coc.nvim'
 import { CancellationToken, Definition, Location, Position } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { DefinitionProvider, ImplementationProvider, TypeDefinitionProvider } from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'
 
 export default class TypeScriptDefinitionProvider implements DefinitionProvider, TypeDefinitionProvider, ImplementationProvider {
-  constructor(private client: ITypeScriptServiceClient) { }
+  constructor(private client: ITypeScriptServiceClient) {}
 
   protected async getSymbolLocations(
     definitionType: 'definition' | 'implementation' | 'typeDefinition',

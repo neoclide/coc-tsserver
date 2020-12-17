@@ -2,11 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { commands, workspace } from 'coc.nvim'
-import { Command } from 'coc.nvim/lib/commands'
-import { CodeActionProvider } from 'coc.nvim/lib/provider'
+import { CodeActionProvider, TextDocument, workspace } from 'coc.nvim'
 import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Diagnostic, Range } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
+import { Command, registCommand } from '../commands'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
@@ -21,7 +19,7 @@ class ApplyCodeActionCommand implements Command {
   constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly formattingConfigurationManager: FileConfigurationManager
-  ) { }
+  ) {}
 
   public async execute(action: Proto.CodeFixAction): Promise<boolean> {
     return applyCodeActionCommands(this.client, action)
@@ -35,7 +33,7 @@ class ApplyFixAllCodeAction implements Command {
   constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly formattingConfigurationManager: FileConfigurationManager
-  ) { }
+  ) {}
 
   public async execute(
     document: TextDocument,
@@ -100,7 +98,7 @@ class DiagnosticsSet {
 
   private constructor(
     private readonly _values: Map<string, Diagnostic>
-  ) { }
+  ) {}
 
   public get values(): Iterable<Diagnostic> {
     return this._values.values()
@@ -110,7 +108,7 @@ class DiagnosticsSet {
 class SupportedCodeActionProvider {
   private _supportedCodeActions?: Thenable<Set<number>>
 
-  public constructor(private readonly client: ITypeScriptServiceClient) { }
+  public constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public async getFixableDiagnosticsForContext(
     context: CodeActionContext
@@ -148,13 +146,8 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
     private readonly client: ITypeScriptServiceClient,
     private readonly formattingConfigurationManager: FileConfigurationManager
   ) {
-    commands.register(
-      new ApplyCodeActionCommand(client, formattingConfigurationManager)
-    )
-    commands.register(
-      new ApplyFixAllCodeAction(client, formattingConfigurationManager)
-    )
-
+    registCommand(new ApplyCodeActionCommand(client, formattingConfigurationManager))
+    registCommand(new ApplyFixAllCodeAction(client, formattingConfigurationManager))
     this.supportedCodeActionProvider = new SupportedCodeActionProvider(client)
   }
 

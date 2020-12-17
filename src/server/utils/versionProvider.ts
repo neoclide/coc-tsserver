@@ -1,10 +1,10 @@
+import { Uri, window, workspace } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import fs from 'fs'
 import path from 'path'
-import { workspace, Uri } from 'coc.nvim'
 import API from './api'
 import { TypeScriptServiceConfiguration } from './configuration'
 declare var __webpack_require__: any
@@ -88,7 +88,7 @@ const MODULE_FOLDERS = ['node_modules/typescript/lib', '.vscode/pnpify/typescrip
 
 export class TypeScriptVersionProvider {
 
-  public constructor(private configuration: TypeScriptServiceConfiguration) { }
+  public constructor(private configuration: TypeScriptServiceConfiguration) {}
 
   public updateConfiguration(
     configuration: TypeScriptServiceConfiguration
@@ -131,7 +131,7 @@ export class TypeScriptVersionProvider {
         '')
       return bundledVersion
     } catch (e) {
-      workspace.showMessage('Bundled typescript module not found', 'error')
+      window.showMessage('Bundled typescript module not found', 'error')
       return null
     }
   }

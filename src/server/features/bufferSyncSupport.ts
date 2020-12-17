@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Uri, disposeAll, workspace } from 'coc.nvim'
 import { CancellationTokenSource, CancellationToken, Emitter, Event, DidChangeTextDocumentParams, Disposable, TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
+import { TextDocument } from 'coc.nvim'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'

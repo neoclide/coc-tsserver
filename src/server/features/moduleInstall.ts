@@ -1,27 +1,14 @@
-import { Uri, commands } from 'coc.nvim'
-import { Command } from 'coc.nvim/lib/commands'
-import { CodeActionProvider } from 'coc.nvim/lib/provider'
+import { CodeActionProvider, commands, TextDocument, Uri } from 'coc.nvim'
 import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { installModules } from '../utils/modules'
-
-class InstallModuleCommand implements Command {
-  public static readonly ID = '_tsserver.installModule'
-  public readonly id = InstallModuleCommand.ID
-
-  public async execute(
-    uri: string,
-    name: string
-  ): Promise<void> {
-    await installModules(uri, [name])
-  }
-}
 
 export default class InstallModuleProvider implements CodeActionProvider {
 
   constructor(private readonly client: ITypeScriptServiceClient) {
-    commands.register(new InstallModuleCommand(), true)
+    commands.registerCommand('_tsserver.installModule', async (uri: string, name: string) => {
+      await installModules(uri, [name])
+    })
   }
 
   public async provideCodeActions(
@@ -45,7 +32,7 @@ export default class InstallModuleProvider implements CodeActionProvider {
       let title = `install ${name}`
       let command = {
         title: `install ${name}`,
-        command: InstallModuleCommand.ID,
+        command: '_tsserver.installModule',
         arguments: [document.uri, name]
       }
       let codeAction = CodeAction.create(title, command, CodeActionKind.QuickFix)

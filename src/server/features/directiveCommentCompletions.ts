@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { CancellationToken, CompletionContext, CompletionItem, CompletionItemKind, CompletionList, Position, Range } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
+import { TextDocument } from 'coc.nvim'
 import { workspace } from 'coc.nvim'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'

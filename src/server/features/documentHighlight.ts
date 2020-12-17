@@ -2,16 +2,16 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { TextDocument } from 'coc.nvim'
+import { DocumentHighlightProvider } from 'coc.nvim'
 import { CancellationToken, DocumentHighlight, DocumentHighlightKind, Position } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { DocumentHighlightProvider } from 'coc.nvim/lib/provider'
+import { flatten } from '../../utils/arrays'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'
-import { flatten } from '../../utils/arrays'
 
 export default class TypeScriptDocumentHighlightProvider implements DocumentHighlightProvider {
-  public constructor(private readonly client: ITypeScriptServiceClient) { }
+  public constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public async provideDocumentHighlights(
     resource: TextDocument,

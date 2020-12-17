@@ -1,4 +1,4 @@
-import { disposeAll, commands, StatusBarItem, TaskOptions, Uri, workspace } from 'coc.nvim'
+import { commands, disposeAll, StatusBarItem, TaskOptions, Uri, window, workspace } from 'coc.nvim'
 import path from 'path'
 import { Disposable, Location } from 'vscode-languageserver-protocol'
 import TypeScriptServiceClient from '../typescriptServiceClient'
@@ -30,7 +30,7 @@ export default class WatchProject implements Disposable {
   public constructor(
     private client: TypeScriptServiceClient
   ) {
-    this.statusItem = workspace.createStatusBarItem(1, { progress: true })
+    this.statusItem = window.createStatusBarItem(1, { progress: true })
     let task = this.task = workspace.createTask('TSC')
     this.disposables.push(commands.registerCommand(WatchProject.id, async () => {
       let opts = this.options = await this.getOptions()
@@ -38,7 +38,7 @@ export default class WatchProject implements Disposable {
     }))
     task.onExit(code => {
       if (code != 0) {
-        workspace.showMessage(`TSC exit with code ${code}`, 'warning')
+        window.showMessage(`TSC exit with code ${code}`, 'warning')
       }
       this.onStop()
     })
@@ -48,7 +48,7 @@ export default class WatchProject implements Disposable {
       }
     })
     task.onStderr(lines => {
-      workspace.showMessage(`TSC error: ` + lines.join('\n'), 'error')
+      window.showMessage(`TSC error: ` + lines.join('\n'), 'error')
     })
     this.disposables.push(Disposable.create(() => {
       task.dispose()
@@ -114,12 +114,12 @@ export default class WatchProject implements Disposable {
   public async getOptions(): Promise<TaskOptions> {
     let { tscPath } = this.client
     if (!tscPath) {
-      workspace.showMessage(`Local & global tsc not found`, 'error')
+      window.showMessage(`Local & global tsc not found`, 'error')
       return
     }
     let find = await workspace.findUp(['tsconfig.json'])
     if (!find) {
-      workspace.showMessage('tsconfig.json not found!', 'error')
+      window.showMessage('tsconfig.json not found!', 'error')
       return
     }
     let root = path.dirname(find)

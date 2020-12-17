@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { TextDocument } from 'coc.nvim'
+import { DocumentSymbolProvider } from 'coc.nvim'
 import { CancellationToken, DocumentSymbol, Range, SymbolKind } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { DocumentSymbolProvider } from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -46,7 +46,7 @@ const getSymbolKind = (kind: string): SymbolKind => {
 }
 
 export default class TypeScriptDocumentSymbolProvider implements DocumentSymbolProvider {
-  public constructor(private readonly client: ITypeScriptServiceClient) { }
+  public constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public async provideDocumentSymbols(
     resource: TextDocument,

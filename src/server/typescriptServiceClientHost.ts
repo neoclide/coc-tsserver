@@ -2,21 +2,21 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Uri, DiagnosticKind, disposeAll, workspace, languages } from 'coc.nvim'
-import { Range, Diagnostic, DiagnosticSeverity, Disposable, Position, CancellationToken, DiagnosticRelatedInformation } from 'vscode-languageserver-protocol'
+import { disposeAll, languages, TextDocument, Uri, workspace } from 'coc.nvim'
+import { CancellationToken, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Disposable, Position, Range } from 'vscode-languageserver-protocol'
+import { flatten } from '../utils/arrays'
+import { PluginManager } from '../utils/plugins'
+import { DiagnosticKind } from './features/diagnostics'
+import FileConfigurationManager from './features/fileConfigurationManager'
+import WatchBuild from './features/watchBuild'
+import WorkspaceSymbolProvider from './features/workspaceSymbols'
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
 import * as PConst from './protocol.const'
-import FileConfigurationManager from './features/fileConfigurationManager'
 import TypeScriptServiceClient from './typescriptServiceClient'
 import { DiagnosticLanguage, LanguageDescription } from './utils/languageDescription'
 import * as typeConverters from './utils/typeConverters'
 import TypingsStatus, { AtaProgressReporter } from './utils/typingsStatus'
-import { PluginManager } from '../utils/plugins'
-import { flatten } from '../utils/arrays'
-import WatchBuild from './features/watchBuild'
-import WorkspaceSymbolProvider from './features/workspaceSymbols'
-import { TextDocument } from 'vscode-languageserver-textdocument'
 
 // Style check diagnostics that can be reported as warnings
 const styleCheckDiagnostics = [

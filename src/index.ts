@@ -24,20 +24,20 @@ export async function activate(context: ExtensionContext): Promise<API> {
   registCommand(new OpenTsServerLogCommand(service))
   registCommand(new TypeScriptGoToProjectConfigCommand(service))
   registCommand(new OrganizeImportsCommand(service))
+  registCommand({
+    id: 'tsserver.restart',
+    execute: (): void => {
+      // tslint:disable-next-line:no-floating-promises
+      service.stop().then(() => {
+        setTimeout(() => {
+          service.restart()
+        }, 100)
+      })
+    }
+  })
 
   service.start().then(() => {
     subscriptions.push(services.regist(service))
-    registCommand(commands.register({
-      id: 'tsserver.restart',
-      execute: (): void => {
-        // tslint:disable-next-line:no-floating-promises
-        service.stop().then(() => {
-          setTimeout(() => {
-            service.restart()
-          }, 100)
-        })
-      }
-    }))
   }, e => {
     logger.error(`Error on service start:`, e)
   })

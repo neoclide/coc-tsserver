@@ -1,5 +1,5 @@
 import { exec } from 'child_process'
-import { workspace, Uri } from 'coc.nvim'
+import { Uri, window, workspace } from 'coc.nvim'
 import fs from 'fs'
 import path from 'path'
 
@@ -26,12 +26,6 @@ async function getManager(): Promise<string> {
   let res = await workspace.findUp(['yarn.lock', 'package-lock.json'])
   if (!res) return 'yarn'
   return res.endsWith('yarn.lock') ? 'yarn' : 'npm'
-}
-
-async function getRoot(): Promise<string | null> {
-  let res = await workspace.findUp(['package.json'])
-  if (!res) return null
-  return path.dirname(res)
 }
 
 export async function moduleExists(name: string): Promise<boolean> {
@@ -76,11 +70,11 @@ export async function installModules(uri: string, names: string[]): Promise<void
   let workspaceFolder = workspace.getWorkspaceFolder(uri)
   let root = workspaceFolder ? Uri.parse(workspaceFolder.uri).fsPath : undefined
   if (!root || !fs.existsSync(path.join(root, 'package.json'))) {
-    workspace.showMessage(`package.json not found from workspaceFolder: ${root}`, 'error')
+    window.showMessage(`package.json not found from workspaceFolder: ${root}`, 'error')
     return
   }
   let arr = names.concat(names.map(s => `@types/${s}`))
-  let statusItem = workspace.createStatusBarItem(99, { progress: true })
+  let statusItem = window.createStatusBarItem(99, { progress: true })
   statusItem.text = `Checking module ${arr.join(' ')}`
   statusItem.show()
   let exists = await Promise.all(arr.map(name => {
@@ -101,9 +95,9 @@ export async function installModules(uri: string, names: string[]): Promise<void
     await runCommand(cmd, root)
   } catch (e) {
     statusItem.dispose()
-    workspace.showMessage(`Install error ${e.message}`, 'error')
+    window.showMessage(`Install error ${e.message}`, 'error')
     return
   }
   statusItem.dispose()
-  workspace.showMessage(`Installed: ${exists.join(' ')}`, 'more')
+  window.showMessage(`Installed: ${exists.join(' ')}`, 'more')
 }

@@ -2,10 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { workspace } from 'coc.nvim'
-import { DocumentFormattingEditProvider, DocumentRangeFormattingEditProvider } from 'coc.nvim/lib/provider'
+import { TextDocument, workspace } from 'coc.nvim'
+import { DocumentFormattingEditProvider, DocumentRangeFormattingEditProvider } from 'coc.nvim'
 import { CancellationToken, FormattingOptions, Position, Range, TextEdit } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'

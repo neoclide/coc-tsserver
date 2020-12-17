@@ -1,9 +1,4 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
-import { OutputChannel, workspace } from 'coc.nvim'
+import { OutputChannel, window } from 'coc.nvim'
 import * as is from './is'
 
 export default class Logger {
@@ -14,7 +9,7 @@ export default class Logger {
     if (this._channel) {
       return this._channel
     }
-    this._channel = workspace.createOutputChannel('tsserver')
+    this._channel = window.createOutputChannel('tsserver')
     return this._channel
   }
 

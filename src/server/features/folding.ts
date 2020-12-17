@@ -3,17 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { TextDocument, workspace } from 'coc.nvim'
+import { FoldingContext, FoldingRangeProvider } from 'coc.nvim'
 import { CancellationToken } from 'vscode-jsonrpc'
 import { FoldingRange } from 'vscode-languageserver-types'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { FoldingContext, FoldingRangeProvider } from 'coc.nvim/lib/provider'
-import { workspace } from 'coc.nvim'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'
 
 export default class TypeScriptFoldingProvider implements FoldingRangeProvider {
-  public constructor(private readonly client: ITypeScriptServiceClient) { }
+  public constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public async provideFoldingRanges(
     document: TextDocument,

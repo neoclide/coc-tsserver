@@ -5,7 +5,7 @@
 import { Uri, RenameProvider } from 'coc.nvim'
 import path from 'path'
 import { CancellationToken, Position, Range, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
+import { TextDocument } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
 import API from '../utils/api'

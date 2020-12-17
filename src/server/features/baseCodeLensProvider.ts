@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { TextDocument } from 'coc.nvim'
+import { CodeLensProvider } from 'coc.nvim'
 import { CancellationToken, CodeLens, Emitter, Event, Range } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { CodeLensProvider } from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { escapeRegExp } from '../utils/regexp'
@@ -47,7 +47,7 @@ export abstract class TypeScriptBaseCodeLensProvider implements CodeLensProvider
   public constructor(
     protected client: ITypeScriptServiceClient,
     private cachedResponse: CachedNavTreeResponse
-  ) { }
+  ) {}
 
   public get onDidChangeCodeLenses(): Event<void> {
     return this.onDidChangeCodeLensesEmitter.event

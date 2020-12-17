@@ -1,10 +1,10 @@
+import { StatusBarItem, window } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Disposable } from 'vscode-languageserver-protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
-import { workspace, StatusBarItem } from 'coc.nvim'
 
 const typingsInstallTimeout = 30 * 1000
 
@@ -67,7 +67,7 @@ export class AtaProgressReporter {
   private statusItem: StatusBarItem
 
   constructor(client: ITypeScriptServiceClient) {
-    this.statusItem = workspace.createStatusBarItem(10, { progress: true })
+    this.statusItem = window.createStatusBarItem(10, { progress: true })
     const disposables: Disposable[] = []
     disposables.push(client.onDidBeginInstallTypings(e => this._onBegin(e.eventId)))
     disposables.push(client.onDidEndInstallTypings(e => this._onEndOrTimeout(e.eventId)))
@@ -113,7 +113,7 @@ export class AtaProgressReporter {
   private onTypesInstallerInitializationFailed() { // tslint:disable-line
     this.statusItem.hide()
     if (!this._invalid) {
-      workspace.showMessage('Could not install typings files for JavaScript language features. Please ensure that NPM is installed', 'error')
+      window.showMessage('Could not install typings files for JavaScript language features. Please ensure that NPM is installed', 'error')
     }
     this._invalid = true
   }

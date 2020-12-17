@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { TextDocument } from 'coc.nvim'
+import { CompletionItemProvider } from 'coc.nvim'
 import { CancellationToken, CompletionContext, CompletionItem, Position } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { CompletionItemProvider } from 'coc.nvim/lib/provider'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as typeConverters from '../utils/typeConverters'
@@ -12,7 +12,7 @@ import * as typeConverters from '../utils/typeConverters'
 export default class TypeScriptTagCompletion implements CompletionItemProvider {
   constructor(
     private readonly client: ITypeScriptServiceClient
-  ) { }
+  ) {}
 
   public async provideCompletionItems(
     document: TextDocument,

@@ -1,13 +1,12 @@
-import { Uri as URI, diagnosticManager, workspace, commands, ServiceStat } from 'coc.nvim'
-import { CancellationToken, Diagnostic } from 'vscode-languageserver-protocol'
+import { commands, diagnosticManager, CancellationToken, Diagnostic, Disposable, ServiceStat, Uri as URI, window, workspace } from 'coc.nvim'
+import { Range, TextEdit } from 'vscode-languageserver-types'
+import TsserverService from '../server'
+import { PluginManager } from '../utils/plugins'
 import * as Proto from './protocol'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
-import * as typeConverters from './utils/typeConverters'
-import { TextEdit, Range } from 'vscode-languageserver-types'
-import { installModules } from './utils/modules'
 import { nodeModules } from './utils/helper'
-import { PluginManager } from '../utils/plugins'
-import TsserverService from '../server'
+import { installModules } from './utils/modules'
+import * as typeConverters from './utils/typeConverters'
 
 export interface Command {
   readonly id: string | string[]
@@ -19,12 +18,12 @@ export class ReloadProjectsCommand implements Command {
 
   public constructor(
     private readonly service: TsserverService
-  ) { }
+  ) {}
 
   public async execute(): Promise<void> {
     let client = await this.service.getClientHost()
     client.reloadProjects()
-    workspace.showMessage('projects reloaded')
+    window.showMessage('projects reloaded')
   }
 }
 
@@ -33,7 +32,7 @@ export class OpenTsServerLogCommand implements Command {
 
   public constructor(
     private readonly service: TsserverService
-  ) { }
+  ) {}
 
   public async execute(): Promise<void> {
     let client = await this.service.getClientHost()
@@ -46,7 +45,7 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 
   public constructor(
     private readonly service: TsserverService
-  ) { }
+  ) {}
 
   public async execute(): Promise<void> {
     let client = await this.service.getClientHost()
@@ -70,7 +69,7 @@ async function goToProjectConfig(clientHost: TypeScriptServiceClientHost, uri: s
     // noop
   }
   if (!res || !res.body) {
-    workspace.showMessage('Could not determine TypeScript or JavaScript project.', 'warning')
+    window.showMessage('Could not determine TypeScript or JavaScript project.', 'warning')
     return
   }
   const { configFileName } = res.body
@@ -78,7 +77,7 @@ async function goToProjectConfig(clientHost: TypeScriptServiceClientHost, uri: s
     await workspace.openResource(URI.file(configFileName).toString())
     return
   }
-  workspace.showMessage('Config file not found', 'warning')
+  window.showMessage('Config file not found', 'warning')
 }
 
 function isImplicitProjectConfigFile(configFileName: string): boolean {
@@ -110,7 +109,7 @@ export class AutoFixCommand implements Command {
       return
     }
     let file = client.serviceClient.toPath(document.uri)
-    let diagnostics = diagnosticManager.getDiagnostics(document.uri)
+    let diagnostics = diagnosticManager.getDiagnostics(document.uri).slice() as Diagnostic[]
     let missingDiagnostics = diagnostics.filter(o => o.code == 2307)
     if (missingDiagnostics.length) {
       let names = missingDiagnostics.map(o => {
@@ -178,9 +177,14 @@ export class ConfigurePluginCommand implements Command {
 
   public constructor(
     private readonly pluginManager: PluginManager,
-  ) { }
+  ) {}
 
   public execute(pluginId: string, configuration: any): void {
     this.pluginManager.setConfiguration(pluginId, configuration)
   }
+}
+
+export function registCommand(cmd: Command): Disposable {
+  let { id, execute } = cmd
+  return commands.registerCommand(id as string, execute, cmd)
 }

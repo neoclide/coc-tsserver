@@ -2,15 +2,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { workspace, CodeActionProvider, CodeActionProviderMetadata } from 'coc.nvim'
-import { CancellationToken, Range, CodeActionContext, WorkspaceEdit, CodeActionKind, CodeAction, TextEdit } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { Command } from './commands'
-import Proto from './protocol'
-import * as typeconverts from './utils/typeConverters'
-import FileConfigurationManager from './features/fileConfigurationManager'
-import TypeScriptServiceClient from './typescriptServiceClient'
+import { CodeActionProvider, CodeActionProviderMetadata, TextDocument, workspace } from 'coc.nvim'
+import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import TsserverService from '../server'
+import { Command } from './commands'
+import FileConfigurationManager from './features/fileConfigurationManager'
+import Proto from './protocol'
+import TypeScriptServiceClient from './typescriptServiceClient'
+import * as typeconverts from './utils/typeConverters'
 
 export class OrganizeImportsCommand implements Command {
   public readonly id: string = 'tsserver.organizeImports'

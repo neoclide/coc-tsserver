@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import cp from 'child_process'
-import { disposeAll, ServiceStat, Uri, workspace } from 'coc.nvim'
+import { ServiceStat, Uri, window, workspace } from 'coc.nvim'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -270,7 +270,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   public ensureServiceStarted(): void {
     if (!this.servicePromise) {
       this.startService().catch(err => {
-        workspace.showMessage(`TSServer start failed: ${err.message}`, 'error')
+        window.showMessage(`TSServer start failed: ${err.message}`, 'error')
         this.error(`Service start failed: ${err.stack}`)
       })
     }
@@ -285,9 +285,9 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
     if (!currentVersion || !currentVersion.isValid) {
       if (this.configuration.globalTsdk) {
-        workspace.showMessage(`Can not find typescript module, in 'tsserver.tsdk': ${this.configuration.globalTsdk}`, 'error')
+        window.showMessage(`Can not find typescript module, in 'tsserver.tsdk': ${this.configuration.globalTsdk}`, 'error')
       } else {
-        workspace.showMessage(`Can not find typescript module, run ':CocInstall coc-tsserver' to fix it!`, 'error')
+        window.showMessage(`Can not find typescript module, run ':CocInstall coc-tsserver' to fix it!`, 'error')
       }
       return
     }
@@ -335,7 +335,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
               this.lastError = err
               this.error('TSServer errored with error.', err)
               this.error(`TSServer log file: ${this.tsServerLogFile || ''}`)
-              workspace.showMessage(`TSServer errored with error. ${err.message}`, 'error')
+              window.showMessage(`TSServer errored with error. ${err.message}`, 'error')
               this.serviceExited(false)
             })
             handle.onExit((code: any) => {
@@ -371,7 +371,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   public async openTsServerLogFile(): Promise<boolean> {
     const isRoot = process.getuid && process.getuid() == 0
     let echoErr = (msg: string) => {
-      workspace.showMessage(msg, 'error')
+      window.showMessage(msg, 'error')
     }
     if (isRoot) {
       echoErr('Log disabled for root user.')
@@ -463,10 +463,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         if (diff < 10 * 1000 /* 10 seconds */) {
           this.lastStart = Date.now()
           startService = false
-          workspace.showMessage('The TypeScript language service died 5 times right after it got started.', 'error') // tslint:disable-line
+          window.showMessage('The TypeScript language service died 5 times right after it got started.', 'error') // tslint:disable-line
         } else if (diff < 60 * 1000 /* 1 Minutes */) {
           this.lastStart = Date.now()
-          workspace.showMessage('The TypeScript language service died unexpectedly 5 times in the last 5 Minutes.', 'error') // tslint:disable-line
+          window.showMessage('The TypeScript language service died unexpectedly 5 times in the last 5 Minutes.', 'error') // tslint:disable-line
         }
       }
       if (startService) {

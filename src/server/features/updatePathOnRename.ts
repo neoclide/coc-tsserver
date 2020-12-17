@@ -1,15 +1,14 @@
+import { disposeAll, TextDocument, Uri, window, workspace } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Disposable, WorkspaceEdit, CancellationToken } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'vscode-languageserver-textdocument'
-import { Uri, disposeAll, workspace } from 'coc.nvim'
+import { CancellationToken, Disposable, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
+import { Mutex } from '../utils/mutex'
 import * as typeConverters from '../utils/typeConverters'
 import FileConfigurationManager from './fileConfigurationManager'
-import { Mutex } from '../utils/mutex'
 
 function wait(ms: number): Promise<void> {
   return new Promise(resolve => {
@@ -81,7 +80,7 @@ export default class UpdateImportsOnFileRenameHandler {
   }
 
   private async promptUser(newResource: Uri): Promise<boolean> {
-    return await workspace.showPrompt(`Update imports for moved file: ${newResource.fsPath}?`)
+    return await window.showPrompt(`Update imports for moved file: ${newResource.fsPath}?`)
   }
 
   private async getEditsForFileRename(document: TextDocument, oldFile: string, newFile: string): Promise<WorkspaceEdit> {
