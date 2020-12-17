@@ -53,7 +53,7 @@ export default class LanguageProvider {
         initialized = true
         this.registerProviders(client, typingsStatus)
       }
-    }, null, this.disposables)
+    })
   }
 
   private configurationChanged(): void {

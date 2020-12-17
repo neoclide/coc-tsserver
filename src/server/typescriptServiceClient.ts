@@ -33,7 +33,7 @@ interface ToCancelOnResourceChanged {
 }
 
 class ForkedTsServerProcess {
-  constructor(private childProcess: cp.ChildProcess) { }
+  constructor(private childProcess: cp.ChildProcess) {}
 
   public readonly toCancelOnResourceChange = new Set<ToCancelOnResourceChanged>()
 
@@ -172,7 +172,6 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         .then(undefined, () => void 0)
     }
     this.bufferSyncSupport.dispose()
-    disposeAll(this.disposables)
     this.logger.dispose()
     this._onTsServerStarted.dispose()
     this._onResendModelsRequested.dispose()
