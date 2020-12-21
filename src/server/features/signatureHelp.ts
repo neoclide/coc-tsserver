@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument } from 'coc.nvim'
-import { SignatureHelpProvider } from 'coc.nvim'
+import { SignatureHelpProvider, TextDocument } from 'coc.nvim'
 import { CancellationToken, Position, SignatureHelp, SignatureInformation } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -72,7 +71,7 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
       label,
       documentation: Previewer.markdownDocumentation(
         item.documentation,
-        item.tags.filter(x => x.name !== 'param')
+        item.tags?.filter(x => x.name !== 'param')
       ),
       parameters
     }
