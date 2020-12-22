@@ -5,6 +5,7 @@ import { TypeScriptVersion } from './versionProvider'
 export default class VersionStatus {
   private readonly _onChangeEditorSub: Disposable
   private readonly _versionBarEntry: StatusBarItem
+  private _versionString = ''
 
   constructor(
     private readonly _normalizePath: (resource: Uri) => string | null,
@@ -20,11 +21,16 @@ export default class VersionStatus {
     this._onChangeEditorSub.dispose()
   }
 
-  public onDidChangeTypeScriptVersion(_version: TypeScriptVersion): void {
-    this._versionBarEntry.text = `TSC`
+  public onDidChangeTypeScriptVersion(version: TypeScriptVersion): void {
+    this._versionString = version.versionString
   }
 
   public set loading(isLoading: boolean) {
+    if (isLoading) {
+      this._versionBarEntry.text = `Initialing tsserver ${this._versionString}`
+    } else {
+      this._versionBarEntry.text = `TSC ${this._versionString}`
+    }
     this._versionBarEntry.isProgress = isLoading
   }
 
