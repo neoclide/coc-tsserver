@@ -7,9 +7,6 @@ import fs from 'fs'
 import path from 'path'
 import API from './api'
 import { TypeScriptServiceConfiguration } from './configuration'
-declare var __webpack_require__: any
-declare var __non_webpack_require__: any
-const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require
 
 export class TypeScriptVersion {
   private _api: API | null | undefined
@@ -125,7 +122,7 @@ export class TypeScriptVersionProvider {
 
   public get bundledVersion(): TypeScriptVersion | null {
     try {
-      const file = requireFunc.resolve('typescript')
+      const file = require.resolve('typescript')
       const bundledVersion = new TypeScriptVersion(
         path.dirname(file),
         '')
