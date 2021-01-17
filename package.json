@@ -17,7 +17,7 @@
     "typescript"
   ],
   "scripts": {
-    "build": "node esbuild.js"
+    "prepare": "node esbuild.js"
   },
   "activationEvents": [
     "onLanguage:javascript",
