@@ -31,6 +31,8 @@ installation.
 **Note:** tsserver could be quite slow to initialize on big project, exclude
 unneunnecessary files in your jsconfig.json/tsconfig.json.
 
+**Note:** if you're using WSL, copy you project files from mounted dirs to linux home otherwise tsserver will not work properly.
+
 ## Supporting
 
 If you like my extension, consider supporting me on Patreon or PayPal:
