@@ -27,7 +27,7 @@ export default class VersionStatus {
 
   public set loading(isLoading: boolean) {
     if (isLoading) {
-      this._versionBarEntry.text = `Initialing tsserver ${this._versionString}`
+      this._versionBarEntry.text = `Initializing tsserver ${this._versionString}`
     } else {
       this._versionBarEntry.text = `TSC ${this._versionString}`
     }
