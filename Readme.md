@@ -51,13 +51,13 @@ For yarn2 ( >= v2.0.0-rc.36) user want to use local typescript module:
 - Run command `yarn dlx @yarnpkg/pnpify --sdk vim`, which will generate
   `.vim/coc-settings.json`, with content:
 
-  ````json
+  ```json
   {
     "tsserver.tsdk": ".yarn/sdks/typescript/lib",
     "eslint.packageManager": "yarn",
     "eslint.nodePath": ".yarn/sdks"
-  } ```
-  ````
+  }
+  ```
 
 ## Features
 
