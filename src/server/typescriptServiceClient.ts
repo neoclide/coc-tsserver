@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import cp from 'child_process'
-import { ServiceStat, Uri, window, workspace } from 'coc.nvim'
+import { Document, ServiceStat, Uri, window, workspace } from 'coc.nvim'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -491,7 +491,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public toResource(filepath: string): string {
     if (this._apiVersion.gte(API.v213)) {
-      if (filepath.startsWith('untitled:')) {
+      if (filepath.startsWith(this.inMemoryResourcePrefix + 'untitled:')) {
         let resource = Uri.parse(filepath)
         if (this.inMemoryResourcePrefix) {
           const dirName = path.dirname(resource.path)
@@ -524,14 +524,22 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
   }
 
+  public getDocument(resource: string): Document | undefined {
+    if (resource.startsWith('untitled:')) {
+      let bufnr = parseInt(resource.split(':', 2)[1], 10)
+      return workspace.getDocument(bufnr)
+    }
+    return workspace.getDocument(resource)
+  }
+
   private get inMemoryResourcePrefix(): string {
     return this._apiVersion.gte(API.v270) ? '^' : ''
   }
 
   public asUrl(filepath: string): Uri {
     if (this._apiVersion.gte(API.v213)) {
-      if (filepath.startsWith('untitled:')) {
-        let resource = Uri.parse(filepath)
+      if (filepath.startsWith(this.inMemoryResourcePrefix + 'untitled:')) {
+        let resource = Uri.parse(filepath.slice(this.inMemoryResourcePrefix.length))
         if (this.inMemoryResourcePrefix) {
           const dirName = path.dirname(resource.path)
           const fileName = path.basename(resource.path)
