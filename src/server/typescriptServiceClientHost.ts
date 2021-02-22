@@ -181,7 +181,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
 
   public async findLanguage(uri: string): Promise<LanguageProvider> {
     try {
-      let doc = await workspace.loadFile(uri)
+      let doc = this.client.getDocument(uri)
       if (!doc) return undefined
       let languages = Array.from(this.languagePerId.values())
       return languages.find(language => language.handles(uri, doc.textDocument))
