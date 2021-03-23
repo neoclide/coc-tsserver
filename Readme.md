@@ -73,7 +73,7 @@ Almost the same as VSCode.
   - `tsserver.organizeImports`
   - `tsserver.watchBuild`
 - Code completion support.
-- Go to definition (use ctags to navigate typescript node_modules https://github.com/microsoft/TypeScript/issues/37777)
+- Go to definition (use ctags to navigate typescript node_modules [microsoft/TypeScript#37777](https://github.com/microsoft/TypeScript/issues/37777))
 - Code validation.
 - Document highlight.
 - Document symbols of current buffer.
