@@ -141,6 +141,7 @@ for guide of coc.nvim's configuration.
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default:
   `true`
 - `typescript.showUnused`: show unused variable hint, default: `true`.
+- `typescript.autoClosingTags`: Enable/disable autoClosing of JSX tags, default: `false`.
 - `typescript.suggest.enabled` default: `true`
 - `typescript.suggest.paths`:Enable/disable suggest paths in import statement
   and require calls, default: `true`
@@ -176,6 +177,7 @@ for guide of coc.nvim's configuration.
 - `typescript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
 - `javascript.format.enabled`: Enable/disable format for javascript files.
 - `javascript.showUnused`: show unused variable hint.
+- `javascript.autoClosingTags`: Enable/disable autoClosing of JSX tags, default: `false`.
 - `javascript.updateImportsOnFileMove.enable` default: `true`
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`
