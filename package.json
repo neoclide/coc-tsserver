@@ -431,6 +431,10 @@
           "default": "allOpenProjects",
           "scope": "window"
         },
+        "typescript.autoClosingTags": {
+          "type": "boolean",
+          "default": false
+        },
         "javascript.showUnused": {
           "type": "boolean",
           "default": true,
@@ -592,6 +596,10 @@
           "default": true,
           "description": "%configuration.suggest.includeAutomaticOptionalChainCompletions%",
           "scope": "resource"
+        },
+        "javascript.autoClosingTags": {
+          "type": "boolean",
+          "default": false
         },
         "javascript.format.semicolons": {
           "type": "string",

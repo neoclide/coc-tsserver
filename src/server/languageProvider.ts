@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { disposeAll, languages, Uri, workspace } from 'coc.nvim'
+import { disposeAll, languages, TextDocument, Uri, workspace } from 'coc.nvim'
 import path from 'path'
-import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable, TextDocument } from 'vscode-languageserver-protocol'
+import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable } from 'vscode-languageserver-protocol'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
 import CompletionItemProvider from './features/completionItemProvider'
 import DefinitionProvider from './features/definitionProvider'
@@ -19,7 +19,6 @@ import HoverProvider from './features/hover'
 import ImplementationsCodeLensProvider from './features/implementationsCodeLens'
 import ImportfixProvider from './features/importFix'
 import InstallModuleProvider from './features/moduleInstall'
-// import TagCompletionProvider from './features/tagCompletion'
 import QuickfixProvider from './features/quickfix'
 import RefactorProvider from './features/refactor'
 import ReferenceProvider from './features/references'
@@ -27,6 +26,7 @@ import ReferencesCodeLensProvider from './features/referencesCodeLens'
 import RenameProvider from './features/rename'
 import SignatureHelpProvider from './features/signatureHelp'
 import SmartSelection from './features/smartSelect'
+import TagClosing from './features/tagClosing'
 import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
 import { OrganizeImportsCodeActionProvider } from './organizeImports'
 import TypeScriptServiceClient from './typescriptServiceClient'
@@ -147,17 +147,9 @@ export default class LanguageProvider {
     if (this.client.apiVersion.gte(API.v350)) {
       this._register(languages.registerSelectionRangeProvider(languageIds, new SmartSelection(this.client)))
     }
-    // if (this.client.apiVersion.gte(API.v300)) {
-    //   this._register(
-    //     languages.registerCompletionItemProvider(
-    //       `tsserver-${this.description.id}-tag`,
-    //       'TSC',
-    //       languageIds,
-    //       new TagCompletionProvider(client),
-    //       ['>']
-    //     )
-    //   )
-    // }
+    if (this.client.apiVersion.gte(API.v300)) {
+      this._register(new TagClosing(this.client, this.description.id))
+    }
   }
 
   public handles(resource: string, doc: TextDocument): boolean {
