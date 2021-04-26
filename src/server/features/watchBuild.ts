@@ -129,7 +129,7 @@ export default class WatchProject implements Disposable {
     let root = path.dirname(find)
     return {
       cmd: tscPath,
-      args: ['-p',tsconfigPath, '--watch', 'true', '--pretty', 'false'],
+      args: ['-p', tsconfigPath, '--watch', 'true', '--pretty', 'false'],
       cwd: root
     }
   }
