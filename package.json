@@ -109,6 +109,11 @@
           "default": true,
           "description": "Enable tsserver extension"
         },
+        "tsserver.tsconfigPath": {
+          "type": "string",
+          "default": "tsconfig.json",
+          "description": "Path to tsconfig file"
+        },
         "tsserver.locale": {
           "type": [
             "string",
