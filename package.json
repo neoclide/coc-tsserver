@@ -112,7 +112,7 @@
         "tsserver.tsconfigPath": {
           "type": "string",
           "default": "tsconfig.json",
-          "description": "Path to tsconfig file"
+          "description": "Path to tsconfig file for the `tsserver.watchBuild` command. Defaults to `tsconfig.json`."
         },
         "tsserver.locale": {
           "type": [
