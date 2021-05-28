@@ -49,7 +49,7 @@ class ApplyCompletionCodeActionCommand implements CommandItem {
 
 export default class TypeScriptCompletionItemProvider implements CompletionItemProvider {
 
-  public static readonly triggerCharacters = ['.', '"', '\'', '`', '/', '@', '<', '#']
+  public static readonly triggerCharacters = ['.', '"', '\'', '`', '/', '@', '<', '#', ' ']
   private completeOption: SuggestOptions
 
   constructor(
@@ -148,7 +148,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
             dotAccessorContext = { range, text }
           }
         }
-        isIncomplete = (response as any).metadata && (response as any).metadata.isIncomplete
+        isIncomplete = !!response.body.isIncomplete || (response as any).metadata && (response as any).metadata.isIncomplete
         entries = response.body.entries
       } catch (e) {
         if (e.message == 'No content available.') {
@@ -194,6 +194,8 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
       case '#': // Workaround for https://github.com/microsoft/TypeScript/issues/36367
         return this.client.apiVersion.lt(API.v381) ? undefined : '#'
+      case ' ':
+        return this.client.apiVersion.gte(API.v430) ? ' ' : undefined
 
       case '.':
       case '"':
@@ -336,6 +338,13 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       } else if (triggerCharacter === '<') {
         return false
       }
+    }
+
+    if (triggerCharacter === ' ') {
+      if (!this.completeOption.importStatementSuggestions || !this.client.apiVersion.lt(API.v430)) {
+        return false
+      }
+      return pre === 'import ';
     }
 
     return true

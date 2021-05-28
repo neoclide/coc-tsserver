@@ -37,7 +37,7 @@ export function convertCompletionEntry(
   if (tsEntry.isRecommended) {
     preselect = true
   }
-  if (tsEntry.source) {
+  if (tsEntry.source && tsEntry.hasAction) {
     // De-prioritze auto-imports https://github.com/Microsoft/vscode/issues/40311
     sortText = '\uffff' + sortText
   } else {
@@ -53,13 +53,18 @@ export function convertCompletionEntry(
   let insertText = tsEntry.insertText
   let commitCharacters = getCommitCharacters(tsEntry, context)
 
+  if (tsEntry.isImportStatementCompletion) {
+    insertText = label
+    insertTextFormat = InsertTextFormat.Snippet
+  }
+
   let textEdit: TextEdit | null = null
   if (tsEntry.replacementSpan) {
     let { start, end } = tsEntry.replacementSpan
     if (start.line == end.line) {
       textEdit = {
         range: Range.create(start.line - 1, start.offset - 1, end.line - 1, end.offset - 1),
-        newText: insertText || label
+        newText: tsEntry.insertText || label
       }
     }
   }

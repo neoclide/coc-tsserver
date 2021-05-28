@@ -326,6 +326,10 @@
           "default": true,
           "description": "Enable/disable suggest paths in import statement and require calls"
         },
+        "typescript.suggest.importStatements": {
+          "type": "boolean",
+          "default": true
+        },
         "typescript.suggest.autoImports": {
           "type": "boolean",
           "default": true,
@@ -335,6 +339,18 @@
           "type": "boolean",
           "default": true,
           "description": "Enable snippet for method suggestion"
+        },
+        "typescript.suggest.includeCompletionsForImportStatements": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable auto-import-style completions on partially-typed import statements. Requires using TypeScript 4.3+ in the workspace.",
+          "scope": "resource"
+        },
+        "typescript.suggest.includeCompletionsWithSnippetText": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable snippet completions from TS Server. Requires using TypeScript 4.3+ in the workspace.",
+          "scope": "resource"
         },
         "typescript.format.enabled": {
           "type": "boolean",
@@ -522,6 +538,12 @@
           "default": true,
           "description": "Enable snippet for method suggestion"
         },
+        "javascript.suggest.includeCompletionsForImportStatements": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable auto-import-style completions on partially-typed import statements. Requires using TypeScript 4.3+ in the workspace.",
+          "scope": "resource"
+        },
         "javascript.format.enabled": {
           "type": "boolean",
           "default": true,
@@ -630,12 +652,12 @@
   "devDependencies": {
     "@types/node": "^10.12.0",
     "coc.nvim": "^0.0.80",
+    "esbuild": "^0.8.29",
     "semver": "^7.3.2",
     "vscode-languageserver-protocol": "^3.15.3",
-    "esbuild": "^0.8.29",
     "which": "^2.0.2"
   },
   "dependencies": {
-    "typescript": "^4.1.3"
+    "typescript": "^4.3.2"
   }
 }

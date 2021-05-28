@@ -149,6 +149,11 @@ for guide of coc.nvim's configuration.
   default: `true`
 - `typescript.suggest.completeFunctionCalls`:Enable snippet for method
   suggestion, default: `true`
+- `typescript.suggest.includeCompletionsForImportStatements`: Enable/disable
+  auto-import-style completions on partially-typed import statements. Requires using
+  TypeScript 4.3+ in the workspace, default: `true`
+- `typescript.suggest.includeCompletionsWithSnippetText`: Enable snippet completions
+  from TS Server. Requires using TypeScript 4.3+ in the workspace, default: `true`
 - `typescript.format.enabled`:Enable/disable format of typescript files.
 - `typescript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `typescript.format.insertSpaceAfterConstructor` default: `false`
@@ -197,6 +202,9 @@ for guide of coc.nvim's configuration.
   default: `true`
 - `javascript.suggest.completeFunctionCalls`:Enable snippet for method
   suggestion, default: `true`
+- `javascript.suggest.includeCompletionsForImportStatements`: Enable/disable
+  auto-import-style completions on partially-typed import statements. Requires
+  using TypeScript 4.3+ in the workspace, default: `true`
 - `javascript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `javascript.format.insertSpaceAfterConstructor` default: `false`
 - `javascript.format.insertSpaceAfterSemicolonInForStatements` default: `true`
