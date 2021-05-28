@@ -37,6 +37,9 @@ export interface SuggestOptions {
   readonly completeFunctionCalls: boolean
   readonly autoImports: boolean
   readonly includeAutomaticOptionalChainCompletions: boolean
+  readonly importStatementSuggestions: boolean
+  readonly includeCompletionsForImportStatements: boolean
+  readonly includeCompletionsWithSnippetText: boolean
 }
 
 export default class FileConfigurationManager {
@@ -156,6 +159,9 @@ export default class FileConfigurationManager {
       paths: config.get<boolean>('paths', true),
       completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
       autoImports: config.get<boolean>('autoImports', true),
+      importStatementSuggestions: config.get<boolean>('importStatements', true),
+      includeCompletionsForImportStatements: config.get<boolean>('includeCompletionsForImportStatements', true),
+      includeCompletionsWithSnippetText: config.get<boolean>('includeCompletionsWithSnippetText', true),
       includeAutomaticOptionalChainCompletions: config.get<boolean>('includeAutomaticOptionalChainCompletions', true)
     }
   }
@@ -173,6 +179,8 @@ export default class FileConfigurationManager {
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
       providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
+      includeCompletionsForImportStatements: this.getCompleteOptions(language).includeCompletionsForImportStatements,
+      includeCompletionsWithSnippetText: this.getCompleteOptions(language).includeCompletionsWithSnippetText,
     }
     return preferences
   }
@@ -190,7 +198,7 @@ export default class FileConfigurationManager {
 
 type ModuleImportType = 'relative' | 'non-relative' | 'auto'
 
-function getImportModuleSpecifier(config): ModuleImportType {
+function getImportModuleSpecifier(config: WorkspaceConfiguration): ModuleImportType {
   let val = config.get('importModuleSpecifier')
   switch (val) {
     case 'relative':
