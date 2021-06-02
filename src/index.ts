@@ -1,6 +1,6 @@
 import { commands, ExtensionContext, services, workspace } from 'coc.nvim'
 import TsserverService from './server'
-import { AutoFixCommand, Command, ConfigurePluginCommand, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
+import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './server/commands'
 import { OrganizeImportsCommand } from './server/organizeImports'
 import { PluginManager } from './utils/plugins'
 
@@ -21,6 +21,7 @@ export async function activate(context: ExtensionContext): Promise<API> {
   registCommand(new ConfigurePluginCommand(pluginManager))
   registCommand(new AutoFixCommand(service))
   registCommand(new ReloadProjectsCommand(service))
+  registCommand(new FileReferencesCommand(service))
   registCommand(new OpenTsServerLogCommand(service))
   registCommand(new TypeScriptGoToProjectConfigCommand(service))
   registCommand(new OrganizeImportsCommand(service))

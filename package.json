@@ -90,6 +90,11 @@
         "command": "tsserver.restart"
       },
       {
+        "title": "Find File References",
+        "category": "TSServer",
+        "command": "tsserver.findAllFileReferences"
+      },
+      {
         "title": "Run `tsc --watch` for current project by use vim's job feature.",
         "category": "TSServer",
         "command": "tsserver.watchBuild"

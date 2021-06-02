@@ -19,7 +19,7 @@ export namespace ServerResponse {
 
     constructor(
       public readonly reason: string
-    ) { }
+    ) {}
   }
 
   // tslint:disable-next-line: new-parens
@@ -80,6 +80,7 @@ export interface TypeScriptRequestTypes {
   'selectionRange': [Proto.SelectionRangeRequestArgs, Proto.SelectionRangeResponse]
   'signatureHelp': [Proto.SignatureHelpRequestArgs, Proto.SignatureHelpResponse]
   'typeDefinition': [Proto.FileLocationRequestArgs, Proto.TypeDefinitionResponse]
+  'fileReferences': [Proto.FileRequestArgs, Proto.FileReferencesResponse]
 }
 
 export interface ITypeScriptServiceClient {
