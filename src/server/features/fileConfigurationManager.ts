@@ -196,17 +196,19 @@ export default class FileConfigurationManager {
   }
 }
 
-type ModuleImportType = 'relative' | 'non-relative' | 'auto'
+type ModuleImportType = 'shortest' | 'project-relative' | 'relative' | 'non-relative'
 
 function getImportModuleSpecifier(config: WorkspaceConfiguration): ModuleImportType {
   let val = config.get('importModuleSpecifier')
   switch (val) {
+    case 'project-relative':
+      return 'project-relative'
     case 'relative':
       return 'relative'
     case 'non-relative':
       return 'non-relative'
     default:
-      return 'auto'
+      return undefined
   }
 }
 

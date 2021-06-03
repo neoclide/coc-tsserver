@@ -277,12 +277,19 @@
         },
         "typescript.preferences.importModuleSpecifier": {
           "type": "string",
-          "default": "auto",
+          "default": "shortest",
           "description": "Preferred path style for auto imports.",
+          "enumDescriptions": [
+            "Prefers a non-relative import only if one is available that has fewer path segments than a relative import",
+            "Prefers a relative path to the imported file location",
+            "Prefers a non-relative import based on the `baseUrl` or `paths` configured in your `jsconfig.json` / `tsconfig.json`.",
+            "Prefers a non-relative import only if the relative import path would leave the package or project directory. Requires using TypeScript 4.2+ in the workspace."
+          ],
           "enum": [
-            "non-relative",
+            "shortest",
             "relative",
-            "auto"
+            "non-relative",
+            "project-relative"
           ]
         },
         "typescript.preferences.importModuleSpecifierEnding": {
@@ -475,12 +482,19 @@
         },
         "javascript.preferences.importModuleSpecifier": {
           "type": "string",
-          "default": "auto",
+          "default": "shortest",
           "description": "Preferred path style for auto imports.",
+          "enumDescriptions": [
+            "Prefers a non-relative import only if one is available that has fewer path segments than a relative import",
+            "Prefers a relative path to the imported file location",
+            "Prefers a non-relative import based on the `baseUrl` or `paths` configured in your `jsconfig.json` / `tsconfig.json`.",
+            "Prefers a non-relative import only if the relative import path would leave the package or project directory. Requires using TypeScript 4.2+ in the workspace."
+          ],
           "enum": [
-            "auto",
+            "shortest",
+            "relative",
             "non-relative",
-            "relative"
+            "project-relative"
           ]
         },
         "javascript.preferences.importModuleSpecifierEnding": {
