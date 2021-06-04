@@ -72,6 +72,7 @@ Almost the same as VSCode.
   - `tsserver.restart`
   - `tsserver.organizeImports`
   - `tsserver.watchBuild`
+  - `tsserver.findAllFileReferences`
 - Code completion support.
 - Go to definition (more info in [microsoft/TypeScript#37777](https://github.com/microsoft/TypeScript/issues/37777))
 - Code validation.

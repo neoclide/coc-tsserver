@@ -1,9 +1,10 @@
 import { commands, diagnosticManager, CancellationToken, Diagnostic, Disposable, ServiceStat, Uri as URI, window, workspace } from 'coc.nvim'
-import { Range, TextEdit } from 'vscode-languageserver-types'
+import { Location, Position, Range, TextEdit } from 'vscode-languageserver-types'
 import TsserverService from '../server'
 import { PluginManager } from '../utils/plugins'
 import * as Proto from './protocol'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
+import API from './utils/api'
 import { nodeModules } from './utils/helper'
 import { installModules } from './utils/modules'
 import * as typeConverters from './utils/typeConverters'
@@ -181,6 +182,39 @@ export class ConfigurePluginCommand implements Command {
 
   public execute(pluginId: string, configuration: any): void {
     this.pluginManager.setConfiguration(pluginId, configuration)
+  }
+}
+
+export class FileReferencesCommand implements Command {
+  public readonly id = 'tsserver.findAllFileReferences'
+  public static readonly minVersion = API.v420
+
+  public constructor(
+    private readonly service: TsserverService
+  ) {}
+
+  public async execute() {
+    const client = await this.service.getClientHost()
+    if (client.serviceClient.apiVersion.lt(FileReferencesCommand.minVersion)) {
+      window.showMessage('Find file references failed. Requires TypeScript 4.2+.', 'error')
+      return
+    }
+
+    const doc = await workspace.document
+    let { languageId } = doc.textDocument
+    if (client.serviceClient.modeIds.indexOf(languageId) == -1) return
+
+    const openedFiledPath = client.serviceClient.toOpenedFilePath(doc.uri)
+    if (!openedFiledPath) return
+
+    const response = await client.serviceClient.execute('fileReferences', { file: openedFiledPath }, CancellationToken.None)
+    if (response.type !== 'response' || !response.body) return
+
+    const locations: Location[] = (response as Proto.FileReferencesResponse).body.refs.map(r =>
+      typeConverters.Location.fromTextSpan(client.serviceClient.toResource(r.file), r)
+    )
+
+    await commands.executeCommand('editor.action.showReferences', doc.uri, Position.create(0, 0), locations)
   }
 }
 
