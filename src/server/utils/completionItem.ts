@@ -106,6 +106,7 @@ export function convertCompletionEntry(
       uri,
       position,
       name: tsEntry.name,
+      data: tsEntry.data,
       source: tsEntry.source || ''
     }
   }
