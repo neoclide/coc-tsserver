@@ -32,6 +32,7 @@ export default class WatchProject implements Disposable {
   ) {
     this.statusItem = window.createStatusBarItem(1, { progress: true })
     let task = this.task = workspace.createTask('TSC')
+
     this.disposables.push(commands.registerCommand(WatchProject.id, async () => {
       let opts = this.options = await this.getOptions()
       await this.start(opts)
@@ -117,15 +118,18 @@ export default class WatchProject implements Disposable {
       window.showMessage(`Local & global tsc not found`, 'error')
       return
     }
-    let find = await workspace.findUp(['tsconfig.json'])
+
+    const tsconfigPath = workspace.getConfiguration('tsserver').get<string>('tsconfigPath', 'tsconfig.json');
+    let find = await workspace.findUp([tsconfigPath])
     if (!find) {
-      window.showMessage('tsconfig.json not found!', 'error')
+      window.showMessage(`${tsconfigPath} not found!`, 'error')
       return
     }
+
     let root = path.dirname(find)
     return {
       cmd: tscPath,
-      args: ['-p', 'tsconfig.json', '--watch', 'true', '--pretty', 'false'],
+      args: ['-p', tsconfigPath, '--watch', 'true', '--pretty', 'false'],
       cwd: root
     }
   }
