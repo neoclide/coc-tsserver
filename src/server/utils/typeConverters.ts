@@ -7,6 +7,7 @@
  */
 import * as language from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
+import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient } from '../typescriptService'
 
 export namespace Range {
@@ -100,5 +101,35 @@ export namespace WorkspaceEdit {
       })
     }
     return { changes }
+  }
+}
+
+export namespace SymbolKind {
+  export function fromProtocolScriptElementKind(kind: Proto.ScriptElementKind) {
+    switch (kind) {
+      case PConst.Kind.module: return language.SymbolKind.Module
+      case PConst.Kind.class: return language.SymbolKind.Class
+      case PConst.Kind.enum: return language.SymbolKind.Enum
+      case PConst.Kind.enumMember: return language.SymbolKind.EnumMember
+      case PConst.Kind.interface: return language.SymbolKind.Interface
+      case PConst.Kind.indexSignature: return language.SymbolKind.Method
+      case PConst.Kind.callSignature: return language.SymbolKind.Method
+      case PConst.Kind.method: return language.SymbolKind.Method
+      case PConst.Kind.memberVariable: return language.SymbolKind.Property
+      case PConst.Kind.memberGetAccessor: return language.SymbolKind.Property
+      case PConst.Kind.memberSetAccessor: return language.SymbolKind.Property
+      case PConst.Kind.variable: return language.SymbolKind.Variable
+      case PConst.Kind.let: return language.SymbolKind.Variable
+      case PConst.Kind.const: return language.SymbolKind.Variable
+      case PConst.Kind.localVariable: return language.SymbolKind.Variable
+      case PConst.Kind.alias: return language.SymbolKind.Variable
+      case PConst.Kind.function: return language.SymbolKind.Function
+      case PConst.Kind.localFunction: return language.SymbolKind.Function
+      case PConst.Kind.constructSignature: return language.SymbolKind.Constructor
+      case PConst.Kind.constructorImplementation: return language.SymbolKind.Constructor
+      case PConst.Kind.typeParameter: return language.SymbolKind.TypeParameter
+      case PConst.Kind.string: return language.SymbolKind.String
+      default: return language.SymbolKind.Variable
+    }
   }
 }

@@ -50,7 +50,6 @@ export interface TypeScriptRequestTypes {
   'applyCodeActionCommand': [Proto.ApplyCodeActionCommandRequestArgs, Proto.ApplyCodeActionCommandResponse]
   'completionEntryDetails': [Proto.CompletionDetailsRequestArgs, Proto.CompletionDetailsResponse]
   'completionInfo': [Proto.CompletionsRequestArgs, Proto.CompletionInfoResponse]
-  'updateOpen': [Proto.UpdateOpenRequestArgs, Proto.Response]
   // tslint:disable-next-line: deprecation
   'completions': [Proto.CompletionsRequestArgs, Proto.CompletionsResponse]
   'configure': [Proto.ConfigureRequestArguments, Proto.ConfigureResponse]
@@ -80,6 +79,10 @@ export interface TypeScriptRequestTypes {
   'selectionRange': [Proto.SelectionRangeRequestArgs, Proto.SelectionRangeResponse]
   'signatureHelp': [Proto.SignatureHelpRequestArgs, Proto.SignatureHelpResponse]
   'typeDefinition': [Proto.FileLocationRequestArgs, Proto.TypeDefinitionResponse]
+  'updateOpen': [Proto.UpdateOpenRequestArgs, Proto.Response]
+  'prepareCallHierarchy': [Proto.FileLocationRequestArgs, Proto.PrepareCallHierarchyResponse]
+  'provideCallHierarchyIncomingCalls': [Proto.FileLocationRequestArgs, Proto.ProvideCallHierarchyIncomingCallsResponse]
+  'provideCallHierarchyOutgoingCalls': [Proto.FileLocationRequestArgs, Proto.ProvideCallHierarchyOutgoingCallsResponse]
   'fileReferences': [Proto.FileRequestArgs, Proto.FileReferencesResponse]
 }
 
