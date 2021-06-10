@@ -678,7 +678,7 @@
     "coc.nvim": "^0.0.80",
     "esbuild": "^0.8.29",
     "semver": "^7.3.2",
-    "vscode-languageserver-protocol": "^3.15.3",
+    "vscode-languageserver-protocol": "^3.16.0",
     "which": "^2.0.2"
   },
   "dependencies": {

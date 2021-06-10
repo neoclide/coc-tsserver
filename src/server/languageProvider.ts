@@ -6,6 +6,7 @@ import { disposeAll, languages, TextDocument, Uri, workspace } from 'coc.nvim'
 import path from 'path'
 import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable } from 'vscode-languageserver-protocol'
 import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
+import CallHierarchyProvider from './features/callHierarchy'
 import CompletionItemProvider from './features/completionItemProvider'
 import DefinitionProvider from './features/definitionProvider'
 import { DiagnosticKind } from './features/diagnostics'
@@ -104,6 +105,9 @@ export default class LanguageProvider {
     this._register(languages.registerDocumentRangeFormatProvider(languageIds, formatProvider))
     this._register(languages.registerOnTypeFormattingEditProvider(languageIds, formatProvider, [';', '}', '\n', String.fromCharCode(27)]))
     this._register(languages.registerCodeActionProvider(languageIds, new InstallModuleProvider(client), 'tsserver'))
+    if (typeof languages['registerCallHierarchyProvider'] === 'function') {
+      this._register(languages.registerCallHierarchyProvider(languageIds, new CallHierarchyProvider(client)))
+    }
 
     let { fileConfigurationManager } = this
     let conf = fileConfigurationManager.getLanguageConfiguration(this.id)
