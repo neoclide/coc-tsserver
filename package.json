@@ -682,6 +682,6 @@
     "which": "^2.0.2"
   },
   "dependencies": {
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.5"
   }
 }
