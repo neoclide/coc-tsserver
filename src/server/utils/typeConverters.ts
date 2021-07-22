@@ -23,6 +23,11 @@ export namespace Range {
       }
     }
   }
+  export const fromLocations = (start: Proto.Location, end: Proto.Location): language.Range =>
+    language.Range.create(
+      Math.max(0, start.line - 1), Math.max(start.offset - 1, 0),
+      Math.max(0, end.line - 1), Math.max(0, end.offset - 1))
+
 
   export const toFormattingRequestArgs = (file: string, range: language.Range): Proto.FormatRequestArgs => ({
     file,
