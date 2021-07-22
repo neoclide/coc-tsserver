@@ -86,7 +86,7 @@ export default class LanguageProvider {
     if (this.client.apiVersion.gte(API.v230)) {
       this._register(languages.registerCompletionItemProvider(
         `${this.description.id}-directive`,
-        'TSC', languageIds, new DirectiveCommentCompletionProvider(client,), ['@']
+        'TSC', languageIds, new DirectiveCommentCompletionProvider(client), ['@']
       ))
     }
 

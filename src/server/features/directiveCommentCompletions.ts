@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, CompletionContext, CompletionItem, CompletionItemKind, CompletionList, Position, Range } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'coc.nvim'
+import { CancellationToken, CompletionContext, CompletionItem, CompletionItemKind, CompletionList, Position, Range, TextDocument } from 'coc.nvim'
 import { workspace } from 'coc.nvim'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
@@ -37,7 +36,7 @@ const tsDirectives390: Directive[] = [
 ]
 
 export default class DirectiveCommentCompletionProvider {
-  constructor(private readonly client: ITypeScriptServiceClient) { }
+  constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public provideCompletionItems(
     document: TextDocument,
@@ -62,7 +61,7 @@ export default class DirectiveCommentCompletionProvider {
         ? tsDirectives390
         : tsDirectives
       let items = directives.map(directive => {
-        const item = CompletionItem.create(directive.value)
+        const item: CompletionItem = { label: directive.value }
         item.kind = CompletionItemKind.Snippet
         item.detail = directive.description
         item.textEdit = {

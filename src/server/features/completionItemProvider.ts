@@ -1,9 +1,9 @@
-import { commands, CompletionItemProvider, TextDocument, window, workspace } from 'coc.nvim'
+import { commands, CompletionItemProvider, TextDocument, CompletionList, CompletionItem, window, workspace } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Command, CompletionContext, CompletionItem, CompletionList, InsertTextFormat, MarkupContent, MarkupKind, Position, Range, TextEdit } from 'vscode-languageserver-protocol'
+import { CancellationToken, Command, CompletionContext, InsertTextFormat, MarkupContent, MarkupKind, Position, Range, TextEdit } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'

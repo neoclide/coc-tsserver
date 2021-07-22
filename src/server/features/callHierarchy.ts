@@ -93,7 +93,7 @@ function fromProtocolCallHierarchyItem(item: Proto.CallHierarchyItem): CallHiera
   }
 
   const kindModifiers = item.kindModifiers ? parseKindModifier(item.kindModifiers) : undefined
-  if (kindModifiers?.has(PConst.KindModifiers.depreacted)) {
+  if (kindModifiers?.has(PConst.KindModifiers.deprecated)) {
     result.tags = [SymbolTag.Deprecated]
   }
   return result
