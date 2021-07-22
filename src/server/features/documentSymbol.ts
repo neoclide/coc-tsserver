@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { TextDocument } from 'coc.nvim'
 import { DocumentSymbolProvider } from 'coc.nvim'
-import { CancellationToken, DocumentSymbol, Range, SymbolKind } from 'vscode-languageserver-protocol'
+import { CancellationToken, DocumentSymbol, Range, SymbolKind, SymbolTag } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -82,20 +82,15 @@ export default class TypeScriptDocumentSymbolProvider implements DocumentSymbolP
   }
 
   private static convertNavTree(
-    bucket: DocumentSymbol[],
+    output: DocumentSymbol[],
     item: Proto.NavigationTree,
   ): boolean {
     let shouldInclude = TypeScriptDocumentSymbolProvider.shouldInclueEntry(item)
     const children = new Set(item.childItems || [])
     for (const span of item.spans) {
       const range = typeConverters.Range.fromTextSpan(span)
-      const symbolInfo = DocumentSymbol.create(
-        item.text,
-        '',
-        getSymbolKind(item.kind),
-        range,
-        range)
-      symbolInfo.children = children.size > 0 ? [] : null
+      const symbolInfo = TypeScriptDocumentSymbolProvider.convertSymbol(item, range)
+      if (children.size) symbolInfo.children = []
 
       for (const child of children) {
         if (child.spans.some(span => !!containsRange(range, typeConverters.Range.fromTextSpan(span)))) {
@@ -106,11 +101,31 @@ export default class TypeScriptDocumentSymbolProvider implements DocumentSymbolP
       }
 
       if (shouldInclude) {
-        bucket.push(symbolInfo)
+        output.push(symbolInfo)
       }
     }
-
     return shouldInclude
+  }
+
+  private static convertSymbol(item: Proto.NavigationTree, range: Range): DocumentSymbol {
+    const selectionRange = item.nameSpan ? typeConverters.Range.fromTextSpan(item.nameSpan) : range
+    let label = item.text
+    switch (item.kind) {
+      case PConst.Kind.memberGetAccessor: label = `(get) ${label}`; break
+      case PConst.Kind.memberSetAccessor: label = `(set) ${label}`; break
+    }
+    const symbolInfo = DocumentSymbol.create(
+      label,
+      '',
+      getSymbolKind(item.kind),
+      range,
+      containsRange(range, selectionRange) ? selectionRange : range)
+
+    const kindModifiers = parseKindModifier(item.kindModifiers)
+    if (kindModifiers.has(PConst.KindModifiers.deprecated)) {
+      symbolInfo.tags = [SymbolTag.Deprecated]
+    }
+    return symbolInfo
   }
 
   private static shouldInclueEntry(
@@ -141,4 +156,8 @@ function containsRange(range: Range, otherRange: Range): boolean {
     return false
   }
   return true
+}
+
+function parseKindModifier(kindModifiers: string): Set<string> {
+  return new Set(kindModifiers.split(/,|\s+/g))
 }

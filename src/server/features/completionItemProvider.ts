@@ -344,7 +344,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       if (!this.completeOption.importStatementSuggestions || !this.client.apiVersion.lt(API.v430)) {
         return false
       }
-      return pre === 'import ';
+      return pre === 'import '
     }
 
     return true
