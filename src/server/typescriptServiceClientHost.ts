@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { disposeAll, languages, TextDocument, Uri, workspace } from 'coc.nvim'
-import { CancellationToken, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Disposable, Position, Range } from 'vscode-languageserver-protocol'
+import { CancellationToken, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, Position, Range } from 'vscode-languageserver-protocol'
 import { flatten } from '../utils/arrays'
 import { PluginManager } from '../utils/plugins'
 import { DiagnosticKind } from './features/diagnostics'
@@ -217,11 +217,11 @@ export default class TypeScriptServiceClientHost implements Disposable {
     }
   }
 
-  private createMarkerDatas(diagnostics: Proto.Diagnostic[]): (Diagnostic & { reportUnnecessary: any })[] {
+  private createMarkerDatas(diagnostics: Proto.Diagnostic[]): (Diagnostic & { reportUnnecessary: any, reportDeprecated: any })[] {
     return diagnostics.map(tsDiag => this.tsDiagnosticToLspDiagnostic(tsDiag))
   }
 
-  private tsDiagnosticToLspDiagnostic(diagnostic: Proto.Diagnostic): (Diagnostic & { reportUnnecessary: any }) {
+  private tsDiagnosticToLspDiagnostic(diagnostic: Proto.Diagnostic): (Diagnostic & { reportUnnecessary: any, reportDeprecated: any }) {
     const { start, end, text } = diagnostic
     const range = {
       start: typeConverters.Position.fromLocation(start),
@@ -237,11 +237,22 @@ export default class TypeScriptServiceClientHost implements Disposable {
         }
       })
     }
+    let tags: DiagnosticTag[] | undefined = []
+    if (diagnostic.reportsUnnecessary) {
+      tags.push(DiagnosticTag.Unnecessary)
+    }
+    if (diagnostic.reportsDeprecated) {
+      tags.push(DiagnosticTag.Deprecated)
+    }
+    tags = tags.length ? tags : undefined
+
     return {
       range,
+      tags,
       message: text,
       code: diagnostic.code ? diagnostic.code : null,
       severity: this.getDiagnosticSeverity(diagnostic),
+      reportDeprecated: diagnostic.reportsDeprecated,
       reportUnnecessary: diagnostic.reportsUnnecessary,
       source: diagnostic.source || 'tsserver',
       relatedInformation

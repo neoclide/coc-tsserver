@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { DiagnosticCollection, languages, workspace } from 'coc.nvim'
-import { Diagnostic } from 'vscode-languageserver-protocol'
+import { Diagnostic, DiagnosticTag } from 'vscode-languageserver-protocol'
 import { ResourceMap } from './resourceMap'
 
 export class DiagnosticSet {
@@ -146,8 +146,7 @@ export class DiagnosticsManager {
       .get(uri)
       .filter(x => {
         if (!enabled) {
-          // Still show unused
-          return x.code == 6133
+          return x.tags && (x.tags.includes(DiagnosticTag.Unnecessary) || x.tags.includes(DiagnosticTag.Deprecated))
         }
         return enabled
       })

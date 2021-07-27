@@ -265,6 +265,11 @@
           "default": true,
           "description": "Show unused variable hint."
         },
+        "typescript.showDeprecated": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show deprecated variable hint."
+        },
         "typescript.updateImportsOnFileMove.enable": {
           "type": "boolean",
           "default": true,
@@ -472,6 +477,11 @@
           "type": "boolean",
           "default": true,
           "description": "Show unused variable hint."
+        },
+        "javascript.showDeprecated": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show deprecated variable hint."
         },
         "javascript.updateImportsOnFileMove.enable": {
           "type": "boolean",

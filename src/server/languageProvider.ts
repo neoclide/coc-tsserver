@@ -179,14 +179,19 @@ export default class LanguageProvider {
   public diagnosticsReceived(
     diagnosticsKind: DiagnosticKind,
     file: Uri,
-    diagnostics: (Diagnostic & { reportUnnecessary: any })[]
+    diagnostics: (Diagnostic & { reportUnnecessary: any, reportDeprecated: any })[]
   ): void {
     const config = workspace.getConfiguration(this.id, file.toString())
     const reportUnnecessary = config.get<boolean>('showUnused', true)
+    const reportDeprecated = config.get<boolean>('showDeprecated', true)
     this.client.diagnosticsManager.diagnosticsReceived(diagnosticsKind, file.toString(), diagnostics.filter(diag => {
       if (!reportUnnecessary) {
-        diag.tags = undefined
         if (diag.reportUnnecessary && diag.severity === DiagnosticSeverity.Information) {
+          return false
+        }
+      }
+      if (!reportDeprecated) {
+        if (diag.reportDeprecated && diag.severity === DiagnosticSeverity.Hint) {
           return false
         }
       }

@@ -4,11 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 import { workspace } from 'coc.nvim'
 import { WorkspaceSymbolProvider } from 'coc.nvim'
-import { CancellationToken, Range, SymbolInformation, SymbolKind } from 'vscode-languageserver-protocol'
+import { CancellationToken, Range, SymbolInformation, SymbolKind, SymbolTag } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
+import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import * as typeConverters from '../utils/typeConverters'
+
+function parseKindModifier(kindModifiers: string): Set<string> {
+  return new Set(kindModifiers.split(/,|\s+/g))
+}
 
 function getSymbolKind(item: Proto.NavtoItem): SymbolKind {
   switch (item.kind) {
@@ -75,7 +80,10 @@ export default class TypeScriptWorkspaceSymbolProvider implements WorkspaceSymbo
         getSymbolKind(item),
         range,
         this.client.toResource(item.file))
-
+      const kindModifiers = item.kindModifiers ? parseKindModifier(item.kindModifiers) : undefined
+      if (kindModifiers?.has(PConst.KindModifiers.deprecated)) {
+        symbolInfo.tags = [SymbolTag.Deprecated]
+      }
       result.push(symbolInfo)
     }
     return result

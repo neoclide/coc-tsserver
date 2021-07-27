@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Range, CompletionItem, CompletionItemKind, InsertTextFormat, Position, TextEdit } from 'coc.nvim'
+import { CompletionItemTag } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 
@@ -52,6 +53,7 @@ export function convertCompletionEntry(
 
   let insertText = tsEntry.insertText
   let commitCharacters = getCommitCharacters(tsEntry, context)
+  let tags: CompletionItemTag[]
 
   if (tsEntry.isImportStatementCompletion) {
     insertText = label
@@ -73,6 +75,10 @@ export function convertCompletionEntry(
     if (kindModifiers.has(PConst.KindModifiers.optional)) {
       insertText = label
       label += '?'
+    }
+
+    if (kindModifiers.has(PConst.KindModifiers.deprecated)) {
+      tags = [CompletionItemTag.Deprecated]
     }
 
     if (kindModifiers.has(PConst.KindModifiers.color)) {
@@ -97,6 +103,7 @@ export function convertCompletionEntry(
     insertText,
     textEdit,
     kind,
+    tags,
     preselect,
     insertTextFormat,
     sortText,
