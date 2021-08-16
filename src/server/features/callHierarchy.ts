@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { CallHierarchyProvider, TextDocument, Uri } from 'coc.nvim'
+import { CallHierarchyProvider, TextDocument, Uri, workspace } from 'coc.nvim'
 import path from "path"
 import { CallHierarchyIncomingCall, CallHierarchyItem, CallHierarchyOutgoingCall, CancellationToken, Position, SymbolTag } from 'vscode-languageserver-protocol'
 import type * as Proto from '../protocol'
@@ -80,9 +80,7 @@ function parseKindModifier(kindModifiers: string): Set<string> {
 function fromProtocolCallHierarchyItem(item: Proto.CallHierarchyItem): CallHierarchyItem {
   const useFileName = isSourceFileItem(item)
   const name = useFileName ? path.basename(item.file) : item.name
-  // TODO
-  // const detail = useFileName ? workspace.asRelativePath(path.dirname(item.file)) : item.containerName ?? ''
-  const detail = item.containerName || ''
+  const detail = useFileName ? path.relative(workspace.cwd, path.dirname(item.file)) : item.containerName ?? ''
   const result: CallHierarchyItem = {
     name,
     detail,
