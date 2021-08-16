@@ -44,7 +44,7 @@ export default class LanguageProvider {
     public client: TypeScriptServiceClient,
     private readonly fileConfigurationManager: FileConfigurationManager,
     private description: LanguageDescription,
-    private typingsStatus: TypingsStatus
+    typingsStatus: TypingsStatus
   ) {
     workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
     this.configurationChanged()
