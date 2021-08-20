@@ -1,4 +1,4 @@
-import { commands, diagnosticManager, CancellationToken, Diagnostic, Disposable, ServiceStat, Uri as URI, window, workspace } from 'coc.nvim'
+import { commands, CancellationToken, Diagnostic, Disposable, ServiceStat, Uri as URI, window, workspace } from 'coc.nvim'
 import { Location, Position, Range, TextEdit } from 'vscode-languageserver-types'
 import TsserverService from '../server'
 import { PluginManager } from '../utils/plugins'
@@ -110,8 +110,7 @@ export class AutoFixCommand implements Command {
       return
     }
     let file = client.serviceClient.toPath(document.uri)
-    let collectionDiags = diagnosticManager.getDiagnostics(document.uri)
-    let diagnostics = Array.isArray(collectionDiags) ? collectionDiags as Diagnostic[] : collectionDiags[this.service.id]
+    let diagnostics = client.serviceClient.diagnosticsManager.getDiagnostics(document.uri)
     let missingDiagnostics = diagnostics.filter(o => o.code == 2307)
     if (missingDiagnostics.length) {
       let names = missingDiagnostics.map(o => {
