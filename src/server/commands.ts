@@ -110,7 +110,8 @@ export class AutoFixCommand implements Command {
       return
     }
     let file = client.serviceClient.toPath(document.uri)
-    let diagnostics = diagnosticManager.getDiagnostics(document.uri).slice() as Diagnostic[]
+    let collectionDiags = diagnosticManager.getDiagnostics(document.uri)
+    let diagnostics = Array.isArray(collectionDiags) ? collectionDiags as Diagnostic[] : collectionDiags[this.service.id]
     let missingDiagnostics = diagnostics.filter(o => o.code == 2307)
     if (missingDiagnostics.length) {
       let names = missingDiagnostics.map(o => {
