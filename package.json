@@ -314,6 +314,22 @@
           "description": "Preferred path ending for auto imports.",
           "scope": "resource"
         },
+        "typescript.preferences.jsxAttributeCompletionStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "braces",
+            "none"
+          ],
+          "markdownEnumDescriptions": [
+            "Insert `={}` or `=\"\"` after attribute names based on the prop type.",
+            "Insert `={}` after attribute names.",
+            "Only insert attribute names."
+          ],
+          "default": "auto",
+          "description": "Preferred style for JSX attribute completions.",
+          "scope": "resource"
+        },
         "typescript.preferences.quoteStyle": {
           "type": "string",
           "default": "auto",
@@ -522,6 +538,22 @@
           ],
           "default": "auto",
           "description": "Preferred path ending for auto imports.",
+          "scope": "resource"
+        },
+        "javascript.preferences.jsxAttributeCompletionStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "braces",
+            "none"
+          ],
+          "markdownEnumDescriptions": [
+            "Insert `={}` or `=\"\"` after attribute names based on the prop type.",
+            "Insert `={}` after attribute names.",
+            "Only insert attribute names."
+          ],
+          "default": "auto",
+          "description": "Preferred style for JSX attribute completions.",
           "scope": "resource"
         },
         "javascript.preferences.quoteStyle": {
