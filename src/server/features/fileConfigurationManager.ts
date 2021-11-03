@@ -40,6 +40,7 @@ export interface SuggestOptions {
   readonly importStatementSuggestions: boolean
   readonly includeCompletionsForImportStatements: boolean
   readonly includeCompletionsWithSnippetText: boolean
+  readonly includeCompletionsWithClassMemberSnippets: boolean
 }
 
 export default class FileConfigurationManager {
@@ -162,6 +163,7 @@ export default class FileConfigurationManager {
       importStatementSuggestions: config.get<boolean>('importStatements', true),
       includeCompletionsForImportStatements: config.get<boolean>('includeCompletionsForImportStatements', true),
       includeCompletionsWithSnippetText: config.get<boolean>('includeCompletionsWithSnippetText', true),
+      includeCompletionsWithClassMemberSnippets: config.get<boolean>('includeCompletionsWithClassMemberSnippets', true),
       includeAutomaticOptionalChainCompletions: config.get<boolean>('includeAutomaticOptionalChainCompletions', true)
     }
   }
@@ -180,6 +182,7 @@ export default class FileConfigurationManager {
       allowRenameOfImportPath: true,
       providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
       includeCompletionsForImportStatements: this.getCompleteOptions(language).includeCompletionsForImportStatements,
+      includeCompletionsWithClassMemberSnippets: this.getCompleteOptions(language).includeCompletionsWithClassMemberSnippets,
       includeCompletionsWithSnippetText: this.getCompleteOptions(language).includeCompletionsWithSnippetText,
     }
     return preferences

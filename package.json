@@ -374,6 +374,12 @@
           "description": "Enable/disable snippet completions from TS Server. Requires using TypeScript 4.3+ in the workspace.",
           "scope": "resource"
         },
+        "typescript.suggest.includeCompletionsWithClassMemberSnippets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace",
+          "scope": "resource"
+        },
         "typescript.format.enabled": {
           "type": "boolean",
           "default": true,
