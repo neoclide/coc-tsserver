@@ -330,6 +330,22 @@
           "description": "Preferred style for JSX attribute completions.",
           "scope": "resource"
         },
+        "typescript.preferences.includePackageJsonAutoImports": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ],
+          "enumDescriptions": [
+            "Search dependencies based on estimated performance impact.",
+            "Always search dependencies.",
+            "Never search dependencies."
+          ],
+          "default": "auto",
+          "markdownDescription": "Enable/disable searching `package.json` dependencies for available auto imports.",
+          "scope": "window"
+        },
         "typescript.preferences.quoteStyle": {
           "type": "string",
           "default": "auto",

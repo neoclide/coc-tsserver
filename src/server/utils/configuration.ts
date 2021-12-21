@@ -40,12 +40,19 @@ export namespace TsServerLogLevel {
 
 export class TypeScriptServiceConfiguration {
   private _configuration: WorkspaceConfiguration
+  private _includePackageJsonAutoImports: 'auto' | 'on' | 'off'
   private constructor() {
     this._configuration = workspace.getConfiguration('tsserver')
+    this._includePackageJsonAutoImports = workspace.getConfiguration('typescript').get<'auto' | 'on' | 'off'>('preferences.includePackageJsonAutoImports')
 
     workspace.onDidChangeConfiguration(() => {
       this._configuration = workspace.getConfiguration('tsserver')
+      this._includePackageJsonAutoImports = workspace.getConfiguration('typescript').get<'auto' | 'on' | 'off'>('preferences.includePackageJsonAutoImports')
     })
+  }
+
+  public get includePackageJsonAutoImports(): 'auto' | 'on' | 'off' {
+    return this._includePackageJsonAutoImports
   }
 
   public get locale(): string | null {

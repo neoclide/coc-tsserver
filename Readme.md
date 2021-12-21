@@ -137,6 +137,9 @@ for guide of coc.nvim's configuration.
 - `typescript.preferences.importModuleSpecifier` default: `"auto"`
 - `typescript.preferences.importModuleSpecifierEnding` default: `"auto"`
 - `typescript.preferences.quoteStyle` default: `"single"`
+- `typescript.preferences.includePackageJsonAutoImports`: Enable/disable
+  searching `package.json` dependencies for available auto imports, default:
+  `"auto"`
 - `typescript.suggestionActions.enabled`:Enable/disable suggestion diagnostics
   for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in
   the workspace., default: `true`

@@ -408,6 +408,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       preferences: {
         providePrefixAndSuffixTextForRename: true,
         allowRenameOfImportPath: true,
+        includePackageJsonAutoImports: this._configuration.includePackageJsonAutoImports
       },
       watchOptions
     }
