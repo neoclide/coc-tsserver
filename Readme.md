@@ -29,7 +29,7 @@ tsserver understand your code.
 installation.
 
 **Note:** tsserver could be quite slow to initialize on big project, exclude
-unneunnecessary files in your jsconfig.json/tsconfig.json.
+unnecessary files in your jsconfig.json/tsconfig.json.
 
 **Note:** if you're using WSL, copy you project files from mounted dirs to linux home otherwise tsserver will not work properly.
 
@@ -119,15 +119,15 @@ for guide of coc.nvim's configuration.
 - `tsserver.debugPort`:Debug port number of tsserver
 - `tsserver.watchOptions`:Configure which watching strategies should be used to
   keep track of files and directories. Requires using TypeScript 3.8+ in the
-  workspace, default: undefined.
+  workspace, default: `undefined`
 - `tsserver.reportStyleChecksAsWarnings` default: `true`
 - `tsserver.implicitProjectConfig.checkJs`:Enable checkJs for implicit project,
   default: `false`
 - `tsserver.implicitProjectConfig.experimentalDecorators`:Enable
   experimentalDecorators for implicit project, default: `false`
 - `tsserver.disableAutomaticTypeAcquisition`:Disable download of typings,
-  default: `true`
-- `tsserver.useBatchedBufferSync`: use batched buffer synchronize support.
+  default: `false`
+- `tsserver.useBatchedBufferSync`: use batched buffer synchronize support, default: `true`
 - `typescript.updateImportsOnFileMove.enable`:Enable update imports on file
   move., default: `true`
 - `typescript.implementationsCodeLens.enable`:Enable codeLens for
@@ -143,11 +143,11 @@ for guide of coc.nvim's configuration.
 - `typescript.validate.enable`:Enable/disable TypeScript validation., default:
   `true`
 - `typescript.showUnused`: show unused variable hint, default: `true`.
-- `typescript.autoClosingTags`: Enable/disable autoClosing of JSX tags, default: `false`.
+- `typescript.autoClosingTags`: Enable/disable autoClosing of JSX tags, default: `false`
 - `typescript.suggest.enabled` default: `true`
 - `typescript.suggest.paths`:Enable/disable suggest paths in import statement
   and require calls, default: `true`
-- `typescript.suggest.autoImports`:Enable/disable auto import suggests.,
+- `typescript.suggest.autoImports`:Enable/disable auto import suggests,
   default: `true`
 - `typescript.suggest.completeFunctionCalls`:Enable snippet for method
   suggestion, default: `true`
@@ -185,9 +185,9 @@ for guide of coc.nvim's configuration.
 - `typescript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
 - `typescript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
-- `javascript.format.enabled`: Enable/disable format for javascript files.
-- `javascript.showUnused`: show unused variable hint.
-- `javascript.autoClosingTags`: Enable/disable autoClosing of JSX tags, default: `false`.
+- `javascript.format.enabled`: Enable/disable format for javascript files, default: `true`
+- `javascript.showUnused`: show unused variable hint, default: `true`
+- `javascript.autoClosingTags`: Enable/disable autoClosing of JSX tags, default: `false`
 - `javascript.updateImportsOnFileMove.enable` default: `true`
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`
