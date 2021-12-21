@@ -19,9 +19,10 @@ export class OrganizeImportsCommand implements Command {
   ) {
   }
 
-  private async _execute(client: TypeScriptServiceClient, document: TextDocument): Promise<WorkspaceEdit | TextEdit[] | null> {
+  private async _execute(client: TypeScriptServiceClient, document: TextDocument, sortOnly = false): Promise<WorkspaceEdit | TextEdit[] | null> {
     let file = client.toPath(document.uri)
     const args: Proto.OrganizeImportsRequestArgs = {
+      skipDestructiveCodeActions: sortOnly,
       scope: {
         type: 'file',
         args: {
@@ -49,7 +50,7 @@ export class OrganizeImportsCommand implements Command {
     if (edit) await workspace.applyEdit(edit)
   }
 
-  public async execute(document?: TextDocument): Promise<void> {
+  public async execute(document?: TextDocument, sortOnly = false): Promise<void> {
     let client = await this.service.getClientHost()
     if (!document) {
       let doc = await workspace.document
@@ -61,8 +62,12 @@ export class OrganizeImportsCommand implements Command {
       }
       document = doc.textDocument
     }
-    await this._execute(client.serviceClient, document)
+    await this._execute(client.serviceClient, document, sortOnly)
   }
+}
+
+export class SourceImportsCommand extends OrganizeImportsCommand {
+  public readonly id = 'tsserver.sortImports'
 }
 
 export class OrganizeImportsCodeActionProvider implements CodeActionProvider {
@@ -91,11 +96,16 @@ export class OrganizeImportsCodeActionProvider implements CodeActionProvider {
     }
     await this.fileConfigManager.ensureConfigurationForDocument(document, token)
 
-    const action = CodeAction.create('Organize Imports', {
+    const organizeImportsAction = CodeAction.create('Organize Imports', {
       title: '',
       command: 'tsserver.organizeImports',
       arguments: [document]
     }, CodeActionKind.SourceOrganizeImports)
-    return [action]
+    const sortImportsAction = CodeAction.create('Sort Imports', {
+      title: '',
+      command: 'tsserver.sortImports',
+      arguments: [document, true]
+    }, 'source.sortImports')
+    return [organizeImportsAction, sortImportsAction]
   }
 }

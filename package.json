@@ -252,7 +252,7 @@
         },
         "tsserver.disableAutomaticTypeAcquisition": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Disable download of typings"
         },
         "tsserver.useBatchedBufferSync": {
@@ -314,6 +314,22 @@
           "description": "Preferred path ending for auto imports.",
           "scope": "resource"
         },
+        "typescript.preferences.jsxAttributeCompletionStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "braces",
+            "none"
+          ],
+          "markdownEnumDescriptions": [
+            "Insert `={}` or `=\"\"` after attribute names based on the prop type.",
+            "Insert `={}` after attribute names.",
+            "Only insert attribute names."
+          ],
+          "default": "auto",
+          "description": "Preferred style for JSX attribute completions.",
+          "scope": "resource"
+        },
         "typescript.preferences.quoteStyle": {
           "type": "string",
           "default": "auto",
@@ -372,6 +388,12 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable snippet completions from TS Server. Requires using TypeScript 4.3+ in the workspace.",
+          "scope": "resource"
+        },
+        "typescript.suggest.includeCompletionsWithClassMemberSnippets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace",
           "scope": "resource"
         },
         "typescript.format.enabled": {
@@ -522,6 +544,22 @@
           ],
           "default": "auto",
           "description": "Preferred path ending for auto imports.",
+          "scope": "resource"
+        },
+        "javascript.preferences.jsxAttributeCompletionStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "braces",
+            "none"
+          ],
+          "markdownEnumDescriptions": [
+            "Insert `={}` or `=\"\"` after attribute names based on the prop type.",
+            "Insert `={}` after attribute names.",
+            "Only insert attribute names."
+          ],
+          "default": "auto",
+          "description": "Preferred style for JSX attribute completions.",
           "scope": "resource"
         },
         "javascript.preferences.quoteStyle": {
@@ -685,7 +723,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^10.12.0",
-    "coc.nvim": "^0.0.81-next.6",
+    "coc.nvim": "^0.0.81-next.8",
     "esbuild": "^0.8.29",
     "semver": "^7.3.2",
     "vscode-languageserver-protocol": "^3.16.0",

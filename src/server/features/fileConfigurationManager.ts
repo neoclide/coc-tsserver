@@ -40,6 +40,7 @@ export interface SuggestOptions {
   readonly importStatementSuggestions: boolean
   readonly includeCompletionsForImportStatements: boolean
   readonly includeCompletionsWithSnippetText: boolean
+  readonly includeCompletionsWithClassMemberSnippets: boolean
 }
 
 export default class FileConfigurationManager {
@@ -162,6 +163,7 @@ export default class FileConfigurationManager {
       importStatementSuggestions: config.get<boolean>('importStatements', true),
       includeCompletionsForImportStatements: config.get<boolean>('includeCompletionsForImportStatements', true),
       includeCompletionsWithSnippetText: config.get<boolean>('includeCompletionsWithSnippetText', true),
+      includeCompletionsWithClassMemberSnippets: config.get<boolean>('includeCompletionsWithClassMemberSnippets', true),
       includeAutomaticOptionalChainCompletions: config.get<boolean>('includeAutomaticOptionalChainCompletions', true)
     }
   }
@@ -176,10 +178,13 @@ export default class FileConfigurationManager {
       quotePreference: this.getQuoteStyle(config),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
       importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(config),
+      // @ts-expect-error until TS 4.5 protocol update
+      jsxAttributeCompletionStyle: getJsxAttributeCompletionStyle(config),
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
       providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
       includeCompletionsForImportStatements: this.getCompleteOptions(language).includeCompletionsForImportStatements,
+      includeCompletionsWithClassMemberSnippets: this.getCompleteOptions(language).includeCompletionsWithClassMemberSnippets,
       includeCompletionsWithSnippetText: this.getCompleteOptions(language).includeCompletionsWithSnippetText,
     }
     return preferences
@@ -217,6 +222,14 @@ function getImportModuleSpecifierEndingPreference(config: WorkspaceConfiguration
     case 'minimal': return 'minimal'
     case 'index': return 'index'
     case 'js': return 'js'
+    default: return 'auto'
+  }
+}
+
+function getJsxAttributeCompletionStyle(config: WorkspaceConfiguration) {
+  switch (config.get<string>('jsxAttributeCompletionStyle')) {
+    case 'braces': return 'braces'
+    case 'none': return 'none'
     default: return 'auto'
   }
 }
