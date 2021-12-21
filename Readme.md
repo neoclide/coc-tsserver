@@ -128,6 +128,10 @@ for guide of coc.nvim's configuration.
 - `tsserver.disableAutomaticTypeAcquisition`:Disable download of typings,
   default: `false`
 - `tsserver.useBatchedBufferSync`: use batched buffer synchronize support, default: `true`
+- `tsserver.enableTracing`: Enables tracing TS server performance to a
+  directory. These trace files can be used to diagnose TS Server performance
+  issues. The log may contain file paths, source code, and other potentially
+  sensitive information from your project, default: `false`
 - `typescript.updateImportsOnFileMove.enable`:Enable update imports on file
   move., default: `true`
 - `typescript.implementationsCodeLens.enable`:Enable codeLens for

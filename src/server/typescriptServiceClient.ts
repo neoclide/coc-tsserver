@@ -20,7 +20,7 @@ import { ExecConfig, ITypeScriptServiceClient, ServerResponse } from './typescri
 import API from './utils/api'
 import { TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import Logger from './utils/logger'
-import { fork, getTempDirectory, getTempFile, IForkOptions, makeRandomHexString } from './utils/process'
+import { fork, getTempDirectory, createTempDirectory, getTempFile, IForkOptions, makeRandomHexString } from './utils/process'
 import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
 import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionProvider'
@@ -843,6 +843,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   private async getTsServerArgs(currentVersion: TypeScriptVersion): Promise<string[]> {
     const args: string[] = []
+
     args.push('--allowLocalPluginLoads')
 
     if (this.apiVersion.gte(API.v250)) {
@@ -860,10 +861,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
       args.push('--cancellationPipeName', this.cancellationPipeName + '*')
     }
 
+    const logDir = getTempDirectory()
     if (this.apiVersion.gte(API.v222)) {
       const isRoot = process.getuid && process.getuid() == 0
       if (this._configuration.tsServerLogLevel !== TsServerLogLevel.Off && !isRoot) {
-        const logDir = getTempDirectory()
         if (logDir) {
           this.tsServerLogFile = path.join(logDir, `tsserver.log`)
           this.info('TSServer log file :', this.tsServerLogFile)
@@ -879,6 +880,16 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
           )
           args.push('--logFile', this.tsServerLogFile)
         }
+      }
+    }
+
+    if (this._configuration.enableTsServerTracing) {
+      let tsServerTraceDirectory = createTempDirectory(`tsserver-trace-${makeRandomHexString(5)}`)
+      if (tsServerTraceDirectory) {
+        args.push('--traceDirectory', tsServerTraceDirectory)
+        this.info('TSServer trace directory :', tsServerTraceDirectory)
+      } else {
+        this.error('Could not create TSServer trace directory')
       }
     }
 

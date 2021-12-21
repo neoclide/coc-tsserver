@@ -51,6 +51,10 @@ export class TypeScriptServiceConfiguration {
     })
   }
 
+  public get enableTsServerTracing(): boolean {
+    return this._configuration.get<boolean>('enableTracing', false)
+  }
+
   public get includePackageJsonAutoImports(): 'auto' | 'on' | 'off' {
     return this._includePackageJsonAutoImports
   }

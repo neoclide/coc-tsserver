@@ -224,6 +224,12 @@
           ],
           "description": "Trace level of tsserver"
         },
+        "tsserver.enableTracing": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enables tracing TS server performance to a directory. These trace files can be used to diagnose TS Server performance issues. The log may contain file paths, source code, and other potentially sensitive information from your project.",
+          "scope": "window"
+        },
         "tsserver.pluginPaths": {
           "type": "array",
           "default": [],

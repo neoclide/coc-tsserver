@@ -24,10 +24,14 @@ export function makeRandomHexString(length: number): string {
   return result
 }
 
-export function getTempDirectory(): string {
+export function getTempDirectory(): string | undefined {
   let dir = path.join(os.tmpdir(), `coc.nvim-${process.pid}`)
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir)
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir)
+    }
+  } catch (e) {
+    return undefined
   }
   return dir
 }
@@ -36,19 +40,34 @@ function generatePipeName(): string {
   return getPipeName(makeRandomHexString(40))
 }
 
-function getPipeName(name: string): string {
+function getPipeName(name: string): string | undefined {
   const fullName = 'coc-tsc-' + name
   if (process.platform === 'win32') {
     return '\\\\.\\pipe\\' + fullName + '-sock'
   }
   const tmpdir = getTempDirectory()
+  if (!tmpdir) return undefined
   // Mac/Unix: use socket file
   return path.join(tmpdir, fullName + '.sock')
 }
 
-export function getTempFile(name: string): string {
+export function getTempFile(name: string): string | undefined {
   const fullName = 'coc-nvim-' + name
-  return path.join(getTempDirectory(), fullName + '.sock')
+  let dir = getTempDirectory()
+  if (!dir) return undefined
+  return path.join(dir, fullName + '.sock')
+}
+
+export function createTempDirectory(name: string) {
+  let dir = getTempDirectory()
+  if (!dir) return undefined
+  let res = path.join(dir, name)
+  try {
+    fs.mkdirSync(res)
+  } catch (e) {
+    return undefined
+  }
+  return res
 }
 
 function generatePatchedEnv(
