@@ -1,4 +1,4 @@
-import { StatusBarItem, window } from 'coc.nvim'
+import { StatusBarItem, workspace, window } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -110,10 +110,19 @@ export class AtaProgressReporter {
     }
   }
 
-  private onTypesInstallerInitializationFailed() { // tslint:disable-line
+  private async onTypesInstallerInitializationFailed() { // tslint:disable-line
     this.statusItem.hide()
     if (!this._invalid) {
-      window.showMessage('Could not install typings files for JavaScript language features. Please ensure that NPM is installed', 'error')
+      const config = workspace.getConfiguration('typescript')
+      if (config.get<boolean>('check.npmIsInstalled', true)) {
+        const dontShowAgain = "Don't Show Again"
+        const selected = await window.showWarningMessage(
+          "Could not install typings files for JavaScript language features. Please ensure that NPM is installed or configure 'typescript.npm' in your user settings. visit https://go.microsoft.com/fwlink/?linkid=847635  to learn more.",
+          dontShowAgain)
+        if (selected === dontShowAgain) {
+          config.update('check.npmIsInstalled', false, true)
+        }
+      }
     }
     this._invalid = true
   }

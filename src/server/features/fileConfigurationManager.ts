@@ -177,7 +177,7 @@ export default class FileConfigurationManager {
     const config = workspace.getConfiguration(`${language}.preferences`, uri)
     const suggestConfig = this.getCompleteOptions(language)
     // getImportModuleSpecifierEndingPreference available on ts 2.9.0
-    const preferences: Proto.UserPreferences & { importModuleSpecifierEnding?: string } = {
+    const preferences: Proto.UserPreferences = {
       quotePreference: this.getQuoteStyle(config),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
       importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(config),
@@ -191,6 +191,8 @@ export default class FileConfigurationManager {
       includeCompletionsForImportStatements: suggestConfig.includeCompletionsForImportStatements,
       includeCompletionsWithClassMemberSnippets: suggestConfig.includeCompletionsWithClassMemberSnippets,
       includeCompletionsWithSnippetText: suggestConfig.includeCompletionsWithSnippetText,
+      allowIncompleteCompletions: true,
+      displayPartsForJSDoc: true,
     }
     return preferences
   }

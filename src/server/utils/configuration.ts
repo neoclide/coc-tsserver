@@ -97,7 +97,7 @@ export class TypeScriptServiceConfiguration {
   }
 
   public get disableAutomaticTypeAcquisition(): boolean {
-    return this._configuration.get<boolean>('disableAutomaticTypeAcquisition', true)
+    return this._configuration.get<boolean>('disableAutomaticTypeAcquisition', false)
   }
 
   public get formatOnType(): boolean {

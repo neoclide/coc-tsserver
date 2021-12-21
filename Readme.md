@@ -132,6 +132,9 @@ for guide of coc.nvim's configuration.
   directory. These trace files can be used to diagnose TS Server performance
   issues. The log may contain file paths, source code, and other potentially
   sensitive information from your project, default: `false`
+- `typescript.check.npmIsInstalled`: Check if npm is installed for [Automatic
+  Type
+  Acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition).
 - `typescript.updateImportsOnFileMove.enable`:Enable update imports on file
   move., default: `true`
 - `typescript.implementationsCodeLens.enable`:Enable codeLens for

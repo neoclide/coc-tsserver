@@ -258,13 +258,19 @@
         },
         "tsserver.disableAutomaticTypeAcquisition": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Disable download of typings"
         },
         "tsserver.useBatchedBufferSync": {
           "type": "boolean",
           "default": true,
           "description": "Use batched buffer sync support."
+        },
+        "typescript.check.npmIsInstalled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Check if npm is installed for [Automatic Type Acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition).",
+          "scope": "window"
         },
         "typescript.showUnused": {
           "type": "boolean",
