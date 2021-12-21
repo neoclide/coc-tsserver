@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.44.tgz#3945e6b702cb6403f22b779c8ea9e5c3f44ead40"
   integrity sha512-vHPAyBX1ffLcy4fQHmDyIUMUb42gHZjPHU66nhvbMzAWJqHnySGZ6STwN3rwrnSd1FHB0DI/RWgGELgKSYRDmw==
 
-coc.nvim@^0.0.81-next.6:
-  version "0.0.81-next.6"
-  resolved "https://registry.yarnpkg.com/coc.nvim/-/coc.nvim-0.0.81-next.6.tgz#c3ee7079a66702ebb3b06d4c2bf333d9306ec561"
-  integrity sha512-VT+DhygyTIzu9IRrwCUljMzfNfh8TeXqqrvFsBE0E8cUwERgCAIvRbBMEDfqaaI+XFgyuwNRwbX5kEvfjG/u3g==
+coc.nvim@^0.0.81-next.8:
+  version "0.0.81-next.8"
+  resolved "https://registry.yarnpkg.com/coc.nvim/-/coc.nvim-0.0.81-next.8.tgz#7c0ec46cfab29d41ebdb9e3e9cabf1cb5cc2b920"
+  integrity sha512-1dk2j571Gxk4lXw2GVdGfOJeZAhfZ5HgmtA/p4NW5gorNVnCcC6qe2sp0LiecgiWfah3o+BsOTahr+Vjwj6GYA==
 
 esbuild@^0.8.29:
   version "0.8.29"

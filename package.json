@@ -685,7 +685,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^10.12.0",
-    "coc.nvim": "^0.0.81-next.6",
+    "coc.nvim": "^0.0.81-next.8",
     "esbuild": "^0.8.29",
     "semver": "^7.3.2",
     "vscode-languageserver-protocol": "^3.16.0",
