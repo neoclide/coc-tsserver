@@ -26,6 +26,7 @@ import ReferenceProvider from './features/references'
 import ReferencesCodeLensProvider from './features/referencesCodeLens'
 import RenameProvider from './features/rename'
 import SignatureHelpProvider from './features/signatureHelp'
+import SemanticTokensProvider from './features/semanticTokens'
 import SmartSelection from './features/smartSelect'
 import TagClosing from './features/tagClosing'
 import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
@@ -105,8 +106,12 @@ export default class LanguageProvider {
     this._register(languages.registerDocumentRangeFormatProvider(languageIds, formatProvider))
     this._register(languages.registerOnTypeFormattingEditProvider(languageIds, formatProvider, [';', '}', '\n', String.fromCharCode(27)]))
     this._register(languages.registerCodeActionProvider(languageIds, new InstallModuleProvider(client), 'tsserver'))
-    if (typeof languages['registerCallHierarchyProvider'] === 'function') {
+    if (this.client.apiVersion.gte(API.v380) && typeof languages['registerCallHierarchyProvider'] === 'function') {
       this._register(languages.registerCallHierarchyProvider(languageIds, new CallHierarchyProvider(client)))
+    }
+    if (this.client.apiVersion.gte(API.v370) && typeof languages['registerDocumentSemanticTokensProvider'] === 'function') {
+      const provider = new SemanticTokensProvider(client)
+      this._register(languages.registerDocumentSemanticTokensProvider(languageIds, provider, provider.getLegend()))
     }
 
     let { fileConfigurationManager } = this
