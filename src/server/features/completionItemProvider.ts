@@ -259,7 +259,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     item.additionalTextEdits = additionalTextEdits
     if (detail && item.insertTextFormat == InsertTextFormat.Snippet) {
       const shouldCompleteFunction = await this.isValidFunctionCompletionContext(filepath, position, token)
-      if (shouldCompleteFunction) {
+      if (shouldCompleteFunction && !item.insertText) {
         this.createSnippetOfFunctionCall(item, detail)
       }
     }

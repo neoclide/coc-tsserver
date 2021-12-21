@@ -156,6 +156,9 @@ for guide of coc.nvim's configuration.
   TypeScript 4.3+ in the workspace, default: `true`
 - `typescript.suggest.includeCompletionsWithSnippetText`: Enable snippet completions
   from TS Server. Requires using TypeScript 4.3+ in the workspace, default: `true`
+- `typescript.suggest.includeCompletionsWithClassMemberSnippets`: Enable/disable
+  snippet completions for class members. Requires using TypeScript 4.5+ in the
+  workspace, default: `true`
 - `typescript.format.enabled`:Enable/disable format of typescript files.
 - `typescript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `typescript.format.insertSpaceAfterConstructor` default: `false`
