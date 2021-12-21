@@ -163,7 +163,7 @@ export default class FileConfigurationManager {
       importStatementSuggestions: config.get<boolean>('importStatements', true),
       includeCompletionsForImportStatements: config.get<boolean>('includeCompletionsForImportStatements', true),
       includeCompletionsWithSnippetText: config.get<boolean>('includeCompletionsWithSnippetText', true),
-      includeCompletionsWithClassMemberSnippets: config.get<boolean>('includeCompletionsWithClassMemberSnippets', true),
+      includeCompletionsWithClassMemberSnippets: config.get<boolean>('classMemberSnippets.enabled', true),
       includeAutomaticOptionalChainCompletions: config.get<boolean>('includeAutomaticOptionalChainCompletions', true)
     }
   }
@@ -173,19 +173,19 @@ export default class FileConfigurationManager {
       return {}
     }
     const config = workspace.getConfiguration(`${language}.preferences`, uri)
+    const suggestConfig = this.getCompleteOptions(language)
     // getImportModuleSpecifierEndingPreference available on ts 2.9.0
     const preferences: Proto.UserPreferences & { importModuleSpecifierEnding?: string } = {
       quotePreference: this.getQuoteStyle(config),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
       importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(config),
-      // @ts-expect-error until TS 4.5 protocol update
       jsxAttributeCompletionStyle: getJsxAttributeCompletionStyle(config),
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
       providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
-      includeCompletionsForImportStatements: this.getCompleteOptions(language).includeCompletionsForImportStatements,
-      includeCompletionsWithClassMemberSnippets: this.getCompleteOptions(language).includeCompletionsWithClassMemberSnippets,
-      includeCompletionsWithSnippetText: this.getCompleteOptions(language).includeCompletionsWithSnippetText,
+      includeCompletionsForImportStatements: suggestConfig.includeCompletionsForImportStatements,
+      includeCompletionsWithClassMemberSnippets: suggestConfig.includeCompletionsWithClassMemberSnippets,
+      includeCompletionsWithSnippetText: suggestConfig.includeCompletionsWithSnippetText,
     }
     return preferences
   }

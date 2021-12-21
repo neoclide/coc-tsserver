@@ -390,7 +390,7 @@
           "description": "Enable/disable snippet completions from TS Server. Requires using TypeScript 4.3+ in the workspace.",
           "scope": "resource"
         },
-        "typescript.suggest.includeCompletionsWithClassMemberSnippets": {
+        "typescript.suggest.classMemberSnippets.enabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace",
@@ -614,6 +614,12 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable auto-import-style completions on partially-typed import statements. Requires using TypeScript 4.3+ in the workspace.",
+          "scope": "resource"
+        },
+        "javascript.suggest.classMemberSnippets.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace",
           "scope": "resource"
         },
         "javascript.format.enabled": {
