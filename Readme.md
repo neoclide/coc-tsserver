@@ -126,7 +126,7 @@ for guide of coc.nvim's configuration.
 - `tsserver.implicitProjectConfig.experimentalDecorators`:Enable
   experimentalDecorators for implicit project, default: `false`
 - `tsserver.disableAutomaticTypeAcquisition`:Disable download of typings,
-  default: `false`
+  default: `true`
 - `tsserver.useBatchedBufferSync`: use batched buffer synchronize support.
 - `typescript.updateImportsOnFileMove.enable`:Enable update imports on file
   move., default: `true`

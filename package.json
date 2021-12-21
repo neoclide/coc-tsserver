@@ -252,7 +252,7 @@
         },
         "tsserver.disableAutomaticTypeAcquisition": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Disable download of typings"
         },
         "tsserver.useBatchedBufferSync": {
