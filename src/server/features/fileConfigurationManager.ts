@@ -176,6 +176,8 @@ export default class FileConfigurationManager {
       quotePreference: this.getQuoteStyle(config),
       importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
       importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(config),
+      // @ts-expect-error until TS 4.5 protocol update
+      jsxAttributeCompletionStyle: getJsxAttributeCompletionStyle(config),
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
       providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
@@ -217,6 +219,14 @@ function getImportModuleSpecifierEndingPreference(config: WorkspaceConfiguration
     case 'minimal': return 'minimal'
     case 'index': return 'index'
     case 'js': return 'js'
+    default: return 'auto'
+  }
+}
+
+function getJsxAttributeCompletionStyle(config: WorkspaceConfiguration) {
+  switch (config.get<string>('jsxAttributeCompletionStyle')) {
+    case 'braces': return 'braces'
+    case 'none': return 'none'
     default: return 'auto'
   }
 }
