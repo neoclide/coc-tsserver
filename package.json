@@ -396,6 +396,12 @@
           "description": "Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace",
           "scope": "resource"
         },
+        "typescript.suggest.jsdoc.generateReturns": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable/disable generating `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in the workspace.",
+          "scope": "resource"
+        },
         "typescript.format.enabled": {
           "type": "boolean",
           "default": true,
@@ -620,6 +626,12 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace",
+          "scope": "resource"
+        },
+        "javascript.suggest.jsdoc.generateReturns": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable/disable generating `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in the workspace.",
           "scope": "resource"
         },
         "javascript.format.enabled": {

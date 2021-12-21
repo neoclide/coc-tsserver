@@ -159,6 +159,9 @@ for guide of coc.nvim's configuration.
 - `typescript.suggest.classMemberSnippets.enabled`: Enable/disable
   snippet completions for class members. Requires using TypeScript 4.5+ in the
   workspace, default: `true`
+- `typescript.suggest.jsdoc.generateReturns`: Enable/disable generating
+  `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in
+  the workspace. default: `true`
 - `typescript.format.enabled`:Enable/disable format of typescript files.
 - `typescript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `typescript.format.insertSpaceAfterConstructor` default: `false`
@@ -210,6 +213,9 @@ for guide of coc.nvim's configuration.
 - `javascript.suggest.includeCompletionsForImportStatements`: Enable/disable
   auto-import-style completions on partially-typed import statements. Requires
   using TypeScript 4.3+ in the workspace, default: `true`
+- `javascript.suggest.jsdoc.generateReturns`: Enable/disable generating
+  `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in
+  the workspace. default: `true`
 - `javascript.suggest.classMemberSnippets.enabled`: Enable/disable
   snippet completions for class members. Requires using TypeScript 4.5+ in the
   workspace, default: `true`

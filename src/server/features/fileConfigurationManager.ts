@@ -41,6 +41,7 @@ export interface SuggestOptions {
   readonly includeCompletionsForImportStatements: boolean
   readonly includeCompletionsWithSnippetText: boolean
   readonly includeCompletionsWithClassMemberSnippets: boolean
+  readonly generateReturnInDocTemplate: boolean
 }
 
 export default class FileConfigurationManager {
@@ -160,6 +161,7 @@ export default class FileConfigurationManager {
       paths: config.get<boolean>('paths', true),
       completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
       autoImports: config.get<boolean>('autoImports', true),
+      generateReturnInDocTemplate: config.get<boolean>('jsdoc.generateReturns', true),
       importStatementSuggestions: config.get<boolean>('importStatements', true),
       includeCompletionsForImportStatements: config.get<boolean>('includeCompletionsForImportStatements', true),
       includeCompletionsWithSnippetText: config.get<boolean>('includeCompletionsWithSnippetText', true),
@@ -182,7 +184,10 @@ export default class FileConfigurationManager {
       jsxAttributeCompletionStyle: getJsxAttributeCompletionStyle(config),
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
+      // can't support it with coc.nvim by now.
+      provideRefactorNotApplicableReason: false,
       providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
+      generateReturnInDocTemplate: suggestConfig.generateReturnInDocTemplate,
       includeCompletionsForImportStatements: suggestConfig.includeCompletionsForImportStatements,
       includeCompletionsWithClassMemberSnippets: suggestConfig.includeCompletionsWithClassMemberSnippets,
       includeCompletionsWithSnippetText: suggestConfig.includeCompletionsWithSnippetText,
