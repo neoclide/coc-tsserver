@@ -109,9 +109,14 @@ export default class LanguageProvider {
     if (this.client.apiVersion.gte(API.v380) && typeof languages['registerCallHierarchyProvider'] === 'function') {
       this._register(languages.registerCallHierarchyProvider(languageIds, new CallHierarchyProvider(client)))
     }
-    if (this.client.apiVersion.gte(API.v370) && typeof languages['registerDocumentSemanticTokensProvider'] === 'function') {
+    if (this.client.apiVersion.gte(API.v370)) {
       const provider = new SemanticTokensProvider(client)
-      this._register(languages.registerDocumentSemanticTokensProvider(languageIds, provider, provider.getLegend()))
+      if (typeof languages['registerDocumentSemanticTokensProvider'] === 'function') {
+        this._register(languages.registerDocumentSemanticTokensProvider(languageIds, provider, provider.getLegend()))
+      }
+      if (typeof languages['registerDocumentRangeSemanticTokensProvider'] === 'function') {
+        this._register(languages.registerDocumentRangeSemanticTokensProvider(languageIds, provider, provider.getLegend()))
+      }
     }
 
     let { fileConfigurationManager } = this
