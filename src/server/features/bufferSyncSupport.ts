@@ -345,9 +345,7 @@ export default class BufferSyncSupport {
   }
 
   public listen(): void {
-    if (this.listening) {
-      return
-    }
+    if (this.listening) return
     this.listening = true
     workspace.onDidOpenTextDocument(
       this.openTextDocument,

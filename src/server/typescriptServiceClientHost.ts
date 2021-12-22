@@ -102,39 +102,41 @@ export default class TypeScriptServiceClientHost implements Disposable {
       )
       this.languagePerId.set(description.id, manager)
     }
-    const languageIds = new Set<string>()
-    for (const plugin of pluginManager.plugins) {
-      if (plugin.configNamespace && plugin.languages.length) {
+    this.client.ensureServiceStarted()
+    this.client.onReady(() => {
+      const languageIds = new Set<string>()
+      for (const plugin of pluginManager.plugins) {
+        if (plugin.configNamespace && plugin.languages.length) {
+          this.registerExtensionLanguageProvider({
+            id: plugin.configNamespace,
+            modeIds: Array.from(plugin.languages),
+            diagnosticSource: 'ts-plugin',
+            diagnosticLanguage: DiagnosticLanguage.TypeScript,
+            diagnosticOwner: 'typescript',
+            isExternal: true
+          })
+        } else {
+          for (const language of plugin.languages) {
+            languageIds.add(language)
+          }
+        }
+      }
+
+      if (languageIds.size) {
         this.registerExtensionLanguageProvider({
-          id: plugin.configNamespace,
-          modeIds: Array.from(plugin.languages),
+          id: 'typescript-plugins',
+          modeIds: Array.from(languageIds.values()),
           diagnosticSource: 'ts-plugin',
           diagnosticLanguage: DiagnosticLanguage.TypeScript,
           diagnosticOwner: 'typescript',
           isExternal: true
         })
-      } else {
-        for (const language of plugin.languages) {
-          languageIds.add(language)
-        }
       }
-    }
-
-    if (languageIds.size) {
-      this.registerExtensionLanguageProvider({
-        id: 'typescript-plugins',
-        modeIds: Array.from(languageIds.values()),
-        diagnosticSource: 'ts-plugin',
-        diagnosticLanguage: DiagnosticLanguage.TypeScript,
-        diagnosticOwner: 'typescript',
-        isExternal: true
-      })
-    }
-
-    this.client.ensureServiceStarted()
+    })
     this.client.onTsServerStarted(() => {
       this.triggerAllDiagnostics()
     })
+
     workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
     this.configurationChanged()
   }

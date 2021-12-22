@@ -29,12 +29,7 @@ export async function activate(context: ExtensionContext): Promise<API> {
   registCommand({
     id: 'tsserver.restart',
     execute: (): void => {
-      // tslint:disable-next-line:no-floating-promises
-      service.stop().then(() => {
-        setTimeout(() => {
-          service.restart()
-        }, 100)
-      })
+      service.restart()
     }
   })
 

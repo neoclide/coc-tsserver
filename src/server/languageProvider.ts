@@ -49,13 +49,8 @@ export default class LanguageProvider {
   ) {
     workspace.onDidChangeConfiguration(this.configurationChanged, this, this.disposables)
     this.configurationChanged()
-
-    let initialized = false
-    client.onTsServerStarted(async () => { // tslint:disable-line
-      if (!initialized) {
-        initialized = true
-        this.registerProviders(client, typingsStatus)
-      }
+    client.onReady(() => {
+      this.registerProviders(client, typingsStatus)
     })
   }
 

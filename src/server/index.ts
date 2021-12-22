@@ -58,18 +58,14 @@ export default class TsserverService implements IServiceProvider {
     this.disposables.push(this.clientHost)
     let client = this.clientHost.serviceClient
     return new Promise(resolve => {
-      let started = false
-      client.onTsServerStarted(() => {
+      client.onReady(() => {
         Object.defineProperty(this, 'state', {
           get: () => {
             return this.clientHost.serviceClient.state
           }
         })
         this._onDidServiceReady.fire(void 0)
-        if (!started) {
-          started = true
-          resolve()
-        }
+        resolve()
       })
     })
   }
@@ -78,10 +74,10 @@ export default class TsserverService implements IServiceProvider {
     disposeAll(this.disposables)
   }
 
-  public async restart(): Promise<void> {
+  public restart(): void {
     if (!this.clientHost) return
     let client = this.clientHost.serviceClient
-    await client.restartTsServer()
+    client.restartTsServer()
   }
 
   public async stop(): Promise<void> {
@@ -89,6 +85,5 @@ export default class TsserverService implements IServiceProvider {
     this.clientHost.reset()
     let client = this.clientHost.serviceClient
     await client.stop()
-    return
   }
 }
