@@ -108,10 +108,6 @@ export class TypeScriptServiceConfiguration {
     return this._configuration.get<number>('maxTsServerMemory', 0)
   }
 
-  public get debugPort(): number | null {
-    return this._configuration.get<number>('debugPort', parseInt(process.env['TSS_DEBUG'], 10))
-  }
-
   public get npmLocation(): string | null {
     let path = this._configuration.get<string>('npm', '')
     if (path) return workspace.expand(path)

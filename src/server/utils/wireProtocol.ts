@@ -2,7 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { disposeAll } from 'coc.nvim'
 import stream from 'stream'
+import { Disposable, Emitter } from 'vscode-languageserver-protocol'
 
 const DefaultSize = 8192
 const ContentLength = 'Content-Length: '
@@ -99,18 +101,30 @@ export interface ICallback<T> {
   (data: T): void // tslint:disable-line
 }
 
-export class Reader<T> {
+export class Reader<T> implements Disposable {
   private readonly buffer: ProtocolBuffer = new ProtocolBuffer()
   private nextMessageLength = -1
+  private disposables: Disposable[] = []
 
-  public constructor(
-    private readonly readable: stream.Readable,
-    private readonly callback: ICallback<T>,
-    private readonly onError: (error: any) => void
-  ) {
-    this.readable.on('data', (data: Buffer) => {
+  private readonly _onError = new Emitter<Error>()
+  public readonly onError = this._onError.event
+
+  private readonly _onData = new Emitter<T>()
+  public readonly onData = this._onData.event
+
+  public constructor(readable: stream.Readable) {
+    const onData = (data: Buffer) => {
       this.onLengthData(data)
+    }
+    readable.on('data', onData)
+
+    this.disposables.push({
+      dispose: () => {
+        readable.off('data', onData)
+      }
     })
+    this.disposables.push(this._onError)
+    this.disposables.push(this._onData)
   }
 
   private onLengthData(data: Buffer): void {
@@ -129,10 +143,14 @@ export class Reader<T> {
         }
         this.nextMessageLength = -1
         const json = JSON.parse(msg)
-        this.callback(json)
+        this._onData.fire(json)
       }
     } catch (e) {
-      this.onError(e)
+      this._onError.fire(e)
     }
+  }
+
+  public dispose(): void {
+    disposeAll(this.disposables)
   }
 }

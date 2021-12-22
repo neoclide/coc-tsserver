@@ -98,16 +98,12 @@ export function fork(
 ): void {
   let callbackCalled = false
   const resolve = (result: cp.ChildProcess) => {
-    if (callbackCalled) {
-      return
-    }
+    if (callbackCalled) return
     callbackCalled = true
     callback(null, result)
   }
   const reject = (err: any) => {
-    if (callbackCalled) {
-      return
-    }
+    if (callbackCalled) return
     callbackCalled = true
     callback(err, null)
   }
@@ -123,7 +119,7 @@ export function fork(
     stdOutPipeName,
     stdErrPipeName
   )
-  newEnv['NODE_PATH'] = path.join(modulePath, '..', '..', '..') // tslint:disable-line
+  newEnv['NODE_PATH'] = path.join(modulePath, '..', '..', '..')
 
   let childProcess: cp.ChildProcess
   // Begin listening to stderr pipe
@@ -165,6 +161,7 @@ export function fork(
   const bootstrapperPath = path.resolve(__dirname, '../bin/tsserverForkStart')
   childProcess = cp.fork(bootstrapperPath, [modulePath].concat(args), {
     silent: true,
+    cwd: undefined,
     env: newEnv,
     execArgv: options.execArgv
   })

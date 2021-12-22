@@ -238,10 +238,6 @@
           },
           "description": "Folders contains tsserver plugins"
         },
-        "tsserver.debugPort": {
-          "type": "number",
-          "description": "Debug port number of tsserver"
-        },
         "tsserver.reportStyleChecksAsWarnings": {
           "type": "boolean",
           "default": true

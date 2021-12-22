@@ -116,7 +116,6 @@ for guide of coc.nvim's configuration.
 - `tsserver.log`:Log level of tsserver, default: `"off"`
 - `tsserver.trace.server`:Trace level of tsserver, default: `"off"`
 - `tsserver.pluginPaths`:Folders contains tsserver plugins, default: `[]`
-- `tsserver.debugPort`:Debug port number of tsserver
 - `tsserver.watchOptions`:Configure which watching strategies should be used to
   keep track of files and directories. Requires using TypeScript 3.8+ in the
   workspace, default: `undefined`

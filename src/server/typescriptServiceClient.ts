@@ -25,21 +25,21 @@ import Tracer from './utils/tracer'
 import { inferredProjectConfig } from './utils/tsconfig'
 import { TypeScriptVersion, TypeScriptVersionProvider } from './utils/versionProvider'
 import VersionStatus from './utils/versionStatus'
-import { ICallback, Reader } from './utils/wireProtocol'
+import { Reader } from './utils/wireProtocol'
 
 interface ToCancelOnResourceChanged {
   readonly resource: string
   cancel(): void
 }
 
-class ForkedTsServerProcess {
-  constructor(private childProcess: cp.ChildProcess) {}
+class ForkedTsServerProcess implements Disposable {
+  private readonly _reader: Reader<Proto.Response>
+
+  constructor(private childProcess: cp.ChildProcess) {
+    this._reader = new Reader<Proto.Response>(this.childProcess.stdout)
+  }
 
   public readonly toCancelOnResourceChange = new Set<ToCancelOnResourceChanged>()
-
-  public onError(cb: (err: Error) => void): void {
-    this.childProcess.on('error', cb)
-  }
 
   public onExit(cb: (err: any) => void): void {
     this.childProcess.on('exit', cb)
@@ -52,16 +52,22 @@ class ForkedTsServerProcess {
     )
   }
 
-  public createReader(
-    callback: ICallback<Proto.Response>,
-    onError: (error: any) => void
-  ): void {
-    // tslint:disable-next-line:no-unused-expression
-    new Reader<Proto.Response>(this.childProcess.stdout, callback, onError)
+  public onData(handler: (data: Proto.Response) => void): void {
+    this._reader.onData(handler)
+  }
+
+  public onError(handler: (err: Error) => void): void {
+    this.childProcess.on('error', handler)
+    this._reader.onError(handler)
   }
 
   public kill(): void {
     this.childProcess.kill()
+    this._reader.dispose()
+  }
+
+  public dispose(): void {
+    this._reader.dispose()
   }
 }
 
@@ -296,17 +302,24 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.versionStatus.onDidChangeTypeScriptVersion(currentVersion)
     this.lastError = null
     const tsServerForkArgs = await this.getTsServerArgs(currentVersion)
-    const debugPort = this._configuration.debugPort
-    const maxTsServerMemory = this._configuration.maxTsServerMemory
-    const options = {
-      execArgv: [
-        ...(debugPort ? [`--inspect=${debugPort}`] : []), // [`--debug-brk=5859`]
-        ...(maxTsServerMemory ? [`--max-old-space-size=${maxTsServerMemory}`] : []),
-      ],
-      cwd: workspace.root
-    }
+    const options = { execArgv: this.getExecArgv() }
     this.servicePromise = this.startProcess(currentVersion, tsServerForkArgs, options, resendModels)
     return this.servicePromise
+  }
+
+  private getExecArgv(): string[] {
+    const args: string[] = []
+    const debugPort = getDebugPort()
+    if (debugPort) {
+      const isBreak = process.env[process.env.remoteName ? 'TSS_REMOTE_DEBUG_BRK' : 'TSS_DEBUG_BRK'] !== undefined
+      const inspectFlag = isBreak ? '--inspect-brk' : '--inspect'
+      args.push(`${inspectFlag}=${debugPort}`)
+    }
+    const maxTsServerMemory = this._configuration.maxTsServerMemory
+    if (maxTsServerMemory) {
+      args.push(`--max-old-space-size=${maxTsServerMemory}`)
+    }
+    return args
   }
 
   private startProcess(currentVersion: TypeScriptVersion, args: string[], options: IForkOptions, resendModels: boolean): Promise<ForkedTsServerProcess> {
@@ -347,16 +360,11 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
               this.info(`TSServer log file: ${this.tsServerLogFile || ''}`)
               this.serviceExited(!this.isRestarting)
               this.isRestarting = false
+              handle.dispose()
             })
-
-            handle.createReader(
-              msg => {
-                this.dispatchMessage(msg)
-              },
-              error => {
-                this.error('ReaderError', error)
-              }
-            )
+            handle.onData(msg => {
+              this.dispatchMessage(msg)
+            })
             resolve(handle)
             this.serviceStarted(resendModels)
             this._onTsServerStarted.fire(currentVersion.version)
@@ -1012,4 +1020,16 @@ function getQueueingType(
     return RequestQueueingType.Fence
   }
   return lowPriority ? RequestQueueingType.LowPriority : RequestQueueingType.Normal
+}
+
+function getDebugPort(): number | undefined {
+  let debugBrk = process.env[process.env.remoteName ? 'TSS_REMOTE_DEBUG_BRK' : 'TSS_DEBUG_BRK']
+  let value = debugBrk || process.env[process.env.remoteName ? 'TSS_REMOTE_DEBUG_BRK' : 'TSS_DEBUG_BRK']
+  if (value) {
+    const port = parseInt(value)
+    if (!isNaN(port)) {
+      return port
+    }
+  }
+  return undefined
 }
