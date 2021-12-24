@@ -92,6 +92,11 @@ Almost the same as VSCode.
 - Rename imports on file rename, require
   [watchman](https://facebook.github.io/watchman/) installed in your \$PATH.
 - Search for workspace symbols.
+- Inlay hints support using virtual text feature of neovim, which requires:
+  - TypeScript >= 4.4.0
+  - Neovim >= 0.4.0
+  - Enabled by options starts with `typescript.inlayHints` or
+    `javascript.inlayHints`.
 
 Tsserver module first resolved from your local workspace. If it's not found, use
 tsserver from `tsserver.tsdk` configuration or use bundled tsserver with this
@@ -197,6 +202,7 @@ for guide of coc.nvim's configuration.
 - `typescript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
 - `typescript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
+- `typescript.inlayHints`: inlayHints related options.
 - `javascript.format.enabled`: Enable/disable format for javascript files, default: `true`
 - `javascript.showUnused`: show unused variable hint, default: `true`
 - `javascript.autoClosingTags`: Enable/disable autoClosing of JSX tags, default: `false`
@@ -253,6 +259,7 @@ for guide of coc.nvim's configuration.
 - `javascript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `javascript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
 - `javascript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
+- `javascript.inlayHints`: inlayHints related options.
 
 Configurations are the same as with VSCode. Try completion with `tsserver`,
 `typescript` or `javascript` in your `coc-settings.json`.
