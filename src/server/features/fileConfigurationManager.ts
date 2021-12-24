@@ -193,6 +193,7 @@ export default class FileConfigurationManager {
       includeCompletionsWithSnippetText: suggestConfig.includeCompletionsWithSnippetText,
       allowIncompleteCompletions: true,
       displayPartsForJSDoc: true,
+      ...getInlayHintsPreferences(language),
     }
     return preferences
   }
@@ -238,5 +239,36 @@ function getJsxAttributeCompletionStyle(config: WorkspaceConfiguration) {
     case 'braces': return 'braces'
     case 'none': return 'none'
     default: return 'auto'
+  }
+}
+
+export class InlayHintSettingNames {
+  static readonly parameterNamesSuppressWhenArgumentMatchesName = 'inlayHints.parameterNames.suppressWhenArgumentMatchesName'
+  static readonly parameterNamesEnabled = 'inlayHints.parameterTypes.enabled'
+  static readonly variableTypesEnabled = 'inlayHints.variableTypes.enabled'
+  static readonly propertyDeclarationTypesEnabled = 'inlayHints.propertyDeclarationTypes.enabled'
+  static readonly functionLikeReturnTypesEnabled = 'inlayHints.functionLikeReturnTypes.enabled'
+  static readonly enumMemberValuesEnabled = 'inlayHints.enumMemberValues.enabled'
+}
+
+export function getInlayHintsPreferences(language: string) {
+  const config = workspace.getConfiguration(language)
+  return {
+    includeInlayParameterNameHints: getInlayParameterNameHintsPreference(config),
+    includeInlayParameterNameHintsWhenArgumentMatchesName: !config.get<boolean>(InlayHintSettingNames.parameterNamesSuppressWhenArgumentMatchesName, true),
+    includeInlayFunctionParameterTypeHints: config.get<boolean>(InlayHintSettingNames.parameterNamesEnabled, false),
+    includeInlayVariableTypeHints: config.get<boolean>(InlayHintSettingNames.variableTypesEnabled, false),
+    includeInlayPropertyDeclarationTypeHints: config.get<boolean>(InlayHintSettingNames.propertyDeclarationTypesEnabled, false),
+    includeInlayFunctionLikeReturnTypeHints: config.get<boolean>(InlayHintSettingNames.functionLikeReturnTypesEnabled, false),
+    includeInlayEnumMemberValueHints: config.get<boolean>(InlayHintSettingNames.enumMemberValuesEnabled, false),
+  } as const
+}
+
+function getInlayParameterNameHintsPreference(config: WorkspaceConfiguration) {
+  switch (config.get<string>('inlayHints.parameterNames.enabled')) {
+    case 'none': return 'none'
+    case 'literals': return 'literals'
+    case 'all': return 'all'
+    default: return undefined
   }
 }

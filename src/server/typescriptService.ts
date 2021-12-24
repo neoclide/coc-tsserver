@@ -84,6 +84,7 @@ export interface TypeScriptRequestTypes {
   'provideCallHierarchyIncomingCalls': [Proto.FileLocationRequestArgs, Proto.ProvideCallHierarchyIncomingCallsResponse]
   'provideCallHierarchyOutgoingCalls': [Proto.FileLocationRequestArgs, Proto.ProvideCallHierarchyOutgoingCallsResponse]
   'fileReferences': [Proto.FileRequestArgs, Proto.FileReferencesResponse]
+  'provideInlayHints': [Proto.InlayHintsRequestArgs, Proto.InlayHintsResponse]
 }
 
 export interface ITypeScriptServiceClient {
