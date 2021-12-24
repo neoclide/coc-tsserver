@@ -29,6 +29,7 @@ import SignatureHelpProvider from './features/signatureHelp'
 import SemanticTokensProvider from './features/semanticTokens'
 import SmartSelection from './features/smartSelect'
 import TagClosing from './features/tagClosing'
+import TypeScriptInlayHintsProvider from './features/inlayHints'
 import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
 import { OrganizeImportsCodeActionProvider } from './organizeImports'
 import TypeScriptServiceClient from './typescriptServiceClient'
@@ -158,6 +159,9 @@ export default class LanguageProvider {
     }
     if (this.client.apiVersion.gte(API.v300)) {
       this._register(new TagClosing(this.client, this.description.id))
+    }
+    if (this.client.apiVersion.gte(API.v440) && workspace.isNvim) {
+      this._register(new TypeScriptInlayHintsProvider(this.client, this.fileConfigurationManager))
     }
   }
 

@@ -730,7 +730,111 @@
         "javascript.suggest.includeAutomaticOptionalChainCompletions": {
           "type": "boolean",
           "default": true,
-          "description": "%configuration.suggest.includeAutomaticOptionalChainCompletions%",
+          "description": "Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled.",
+          "scope": "resource"
+        },
+        "typescript.inlayHints.parameterNames.enabled": {
+          "type": "string",
+          "enum": [
+            "none",
+            "literals",
+            "all"
+          ],
+          "enumDescriptions": [
+            "Disable parameter name hints.",
+            "Enable parameter name hints only for literal arguments.",
+            "Enable parameter name hints for literal and non-literal arguments."
+          ],
+          "default": "none",
+          "description": "Enable/disable inlay hints of parameter names.",
+          "scope": "resource"
+        },
+        "typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suppress parameter name hints on arguments whose text is identical to the parameter name.",
+          "scope": "resource"
+        },
+        "typescript.inlayHints.parameterTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of parameter types.",
+          "scope": "resource"
+        },
+        "typescript.inlayHints.variableTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of variable types.",
+          "scope": "resource"
+        },
+        "typescript.inlayHints.propertyDeclarationTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of property declarations.",
+          "scope": "resource"
+        },
+        "typescript.inlayHints.functionLikeReturnTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of return type for function signatures.",
+          "scope": "resource"
+        },
+        "typescript.inlayHints.enumMemberValues.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of enum member values.",
+          "scope": "resource"
+        },
+        "javascript.inlayHints.parameterNames.enabled": {
+          "type": "string",
+          "enum": [
+            "none",
+            "literals",
+            "all"
+          ],
+          "enumDescriptions": [
+            "Disable parameter name hints.",
+            "Enable parameter name hints only for literal arguments.",
+            "Enable parameter name hints for literal and non-literal arguments."
+          ],
+          "default": "none",
+          "description": "Enable/disable inlay hints of parameter names.",
+          "scope": "resource"
+        },
+        "javascript.inlayHints.parameterNames.suppressWhenArgumentMatchesName": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suppress parameter name hints on arguments whose text is identical to the parameter name.",
+          "scope": "resource"
+        },
+        "javascript.inlayHints.parameterTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of parameter types.",
+          "scope": "resource"
+        },
+        "javascript.inlayHints.variableTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of variable types.",
+          "scope": "resource"
+        },
+        "javascript.inlayHints.propertyDeclarationTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of property declarations.",
+          "scope": "resource"
+        },
+        "javascript.inlayHints.functionLikeReturnTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of return type for function signatures.",
+          "scope": "resource"
+        },
+        "javascript.inlayHints.enumMemberValues.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable inlay hints of enum member values.",
           "scope": "resource"
         },
         "javascript.autoClosingTags": {
