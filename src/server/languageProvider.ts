@@ -161,7 +161,7 @@ export default class LanguageProvider {
       this._register(new TagClosing(this.client, this.description.id))
     }
     if (this.client.apiVersion.gte(API.v440) && workspace.isNvim) {
-      this._register(new TypeScriptInlayHintsProvider(this.client, this.fileConfigurationManager))
+      this._register(new TypeScriptInlayHintsProvider(this.client, this.fileConfigurationManager, languageIds))
     }
   }
 

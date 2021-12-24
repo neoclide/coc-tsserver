@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, CancellationTokenSource, Disposable, disposeAll, Document, events, Position, Range, TextDocument, workspace } from 'coc.nvim'
+import { CancellationToken, CancellationTokenSource, Disposable, disposeAll, Document, Position, Range, TextDocument, workspace } from 'coc.nvim'
 import type * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
@@ -43,28 +43,48 @@ export default class TypeScriptInlayHintsProvider implements Disposable {
     this._inlayHints.clear()
   }
 
-  constructor(private readonly client: ITypeScriptServiceClient, private readonly fileConfigurationManager: FileConfigurationManager) {
-    events.on('InsertLeave', async bufnr => {
-      const doc = workspace.getDocument(bufnr)
-      await this.syncAndRenderHints(doc)
-    }, this, this._disposables)
-
+  constructor(
+    private readonly client: ITypeScriptServiceClient,
+    private readonly fileConfigurationManager: FileConfigurationManager,
+    private readonly languageIds: string[]
+  ) {
+    let languageId = this.languageIds[0]
+    let section = `${languageId}.inlayHints`
+    workspace.onDidChangeConfiguration(async e => {
+      if (e.affectsConfiguration(section)) {
+        for (let doc of workspace.documents) {
+          if (!this.inlayHintsEnabled(languageId)) {
+            doc.buffer.clearNamespace(this.inlayHintsNS)
+          } else {
+            await this.syncAndRenderHints(doc)
+          }
+        }
+      }
+    }, null, this._disposables)
     workspace.onDidOpenTextDocument(async e => {
       const doc = workspace.getDocument(e.bufnr)
       await this.syncAndRenderHints(doc)
-    }, this, this._disposables)
+    }, null, this._disposables)
 
     workspace.onDidChangeTextDocument(async e => {
       const doc = workspace.getDocument(e.bufnr)
-      await this.syncAndRenderHints(doc)
-    }, this, this._disposables)
+      if (this.languageIds.includes(doc.textDocument.languageId)) {
+        this.renderHintsForAllDocuments()
+      }
+    }, null, this._disposables)
 
-    this.syncAndRenderHints()
+    this.renderHintsForAllDocuments()
   }
 
-  private async syncAndRenderHints(doc?: Document) {
-    if (!doc) doc = await workspace.document
-    if (!isESDocument(doc)) return
+  private async renderHintsForAllDocuments(): Promise<void> {
+    for (let doc of workspace.documents) {
+      await this.syncAndRenderHints(doc)
+    }
+  }
+
+  private async syncAndRenderHints(doc: Document) {
+    if (!this.languageIds.includes(doc.textDocument.languageId)) return
+    if (!this.inlayHintsEnabled(this.languageIds[0])) return
 
     if (this._tokenSource) {
       this._tokenSource.cancel()
@@ -118,8 +138,6 @@ export default class TypeScriptInlayHintsProvider implements Disposable {
   }
 
   async provideInlayHints(document: TextDocument, range: Range, token: CancellationToken): Promise<InlayHint[]> {
-    if (!this.inlayHintsEnabled(document.languageId)) return []
-
     const filepath = this.client.toOpenedFilePath(document.uri)
     if (!filepath) return []
 
@@ -143,11 +161,6 @@ export default class TypeScriptInlayHintsProvider implements Disposable {
       }
     })
   }
-}
-
-function isESDocument(doc: Document) {
-  if (!doc || !doc.attached) return false
-  return doc.filetype === 'typescript' || doc.filetype === 'javascript'
 }
 
 function fromProtocolInlayHintKind(kind: Proto.InlayHintKind): InlayHintKind {
