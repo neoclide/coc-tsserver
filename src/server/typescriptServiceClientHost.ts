@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { disposeAll, languages, TextDocument, Uri, workspace } from 'coc.nvim'
+import { ConfigurationChangeEvent, disposeAll, languages, TextDocument, Uri, workspace } from 'coc.nvim'
 import { CancellationToken, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, Position, Range } from 'vscode-languageserver-protocol'
 import { flatten } from '../utils/arrays'
 import { PluginManager } from '../utils/plugins'
@@ -113,6 +113,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
             diagnosticSource: 'ts-plugin',
             diagnosticLanguage: DiagnosticLanguage.TypeScript,
             diagnosticOwner: 'typescript',
+            standardFileExtensions: [],
             isExternal: true
           })
         } else {
@@ -129,6 +130,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
           diagnosticSource: 'ts-plugin',
           diagnosticLanguage: DiagnosticLanguage.TypeScript,
           diagnosticOwner: 'typescript',
+          standardFileExtensions: [],
           isExternal: true
         })
       }
@@ -176,17 +178,20 @@ export default class TypeScriptServiceClientHost implements Disposable {
     return this.languagePerId.get(languageId)
   }
 
-  private configurationChanged(): void {
-    const config = workspace.getConfiguration('tsserver')
-    this.reportStyleCheckAsWarnings = config.get('reportStyleChecksAsWarnings', true)
+  private configurationChanged(e?: ConfigurationChangeEvent): void {
+    if (!e || e.affectsConfiguration('tsserver')) {
+      const config = workspace.getConfiguration('tsserver')
+      this.reportStyleCheckAsWarnings = config.get('reportStyleChecksAsWarnings', true)
+    }
   }
 
   public async findLanguage(uri: string): Promise<LanguageProvider> {
     try {
       let doc = this.client.getDocument(uri)
-      if (!doc) return undefined
       let languages = Array.from(this.languagePerId.values())
-      return languages.find(language => language.handles(uri, doc.textDocument))
+      // possible not opened
+      if (doc) return languages.find(language => language.handles(uri, doc.textDocument))
+      return languages.find(language => language.handlesUri(Uri.parse(uri)))
     } catch {
       return undefined
     }

@@ -166,11 +166,20 @@ export default class LanguageProvider {
   }
 
   public handles(resource: string, doc: TextDocument): boolean {
-    if (doc && this.description.modeIds.indexOf(doc.languageId) >= 0) {
+    if (doc && this.description.modeIds.includes(doc.languageId)) {
       return true
     }
-    const base = path.basename(Uri.parse(resource).fsPath)
+    return this.handlesConfigFile(Uri.parse(resource))
+  }
+
+  private handlesConfigFile(uri: Uri): boolean {
+    const base = path.basename(uri.fsPath)
     return !!base && (!!this.description.configFilePattern && this.description.configFilePattern.test(base))
+  }
+
+  public handlesUri(resource: Uri): boolean {
+    const ext = path.extname(resource.path).slice(1).toLowerCase()
+    return this.description.standardFileExtensions.includes(ext) || this.handlesConfigFile(resource)
   }
 
   private get id(): string { // tslint:disable-line
