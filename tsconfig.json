@@ -8,6 +8,7 @@
     "allowUnreachableCode": true,
     "allowUnusedLabels": true,
     "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
     "noImplicitAny": false,
     "noImplicitReturns": false,
     "noUnusedLocals": false,

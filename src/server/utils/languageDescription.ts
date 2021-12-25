@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as languageModeIds from './languageModeIds'
+import path from 'path'
+import { Uri } from 'coc.nvim'
 
 export interface LanguageDescription {
   readonly id: string
   readonly diagnosticSource: string
   readonly diagnosticLanguage: DiagnosticLanguage
   readonly modeIds: string[]
-  readonly configFile?: string
   readonly isExternal?: boolean
   readonly diagnosticOwner: string
   readonly configFilePattern?: RegExp
@@ -26,10 +27,8 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     id: 'typescript',
     diagnosticSource: 'ts',
     diagnosticOwner: 'typescript',
-    modeIds: [languageModeIds.typescript, languageModeIds.typescriptreact,
-    languageModeIds.typescripttsx, languageModeIds.typescriptjsx],
     diagnosticLanguage: DiagnosticLanguage.TypeScript,
-    configFile: 'tsconfig.json',
+    modeIds: [languageModeIds.typescript, languageModeIds.typescriptreact, languageModeIds.typescripttsx, languageModeIds.typescriptjsx],
     configFilePattern: /^tsconfig(\..*)?\.json$/gi,
     standardFileExtensions: [
       'ts',
@@ -42,9 +41,7 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     id: 'javascript',
     diagnosticSource: 'ts',
     diagnosticOwner: 'typescript',
-    modeIds: [languageModeIds.javascript, languageModeIds.javascriptreact, languageModeIds.javascriptjsx],
-    diagnosticLanguage: DiagnosticLanguage.JavaScript,
-    configFile: 'jsconfig.json',
+    modeIds: [languageModeIds.javascript, languageModeIds.javascriptreact, languageModeIds.javascriptjsx], diagnosticLanguage: DiagnosticLanguage.JavaScript,
     configFilePattern: /^jsconfig(\..*)?\.json$/gi,
     standardFileExtensions: [
       'js',
@@ -56,3 +53,19 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
     ]
   }
 ]
+
+export function isTsConfigFileName(fileName: string): boolean {
+  return /^tsconfig\.(.+\.)?json$/i.test(path.basename(fileName))
+}
+
+export function isJsConfigOrTsConfigFileName(fileName: string): boolean {
+  return /^[jt]sconfig\.(.+\.)?json$/i.test(path.basename(fileName))
+}
+
+export function doesResourceLookLikeATypeScriptFile(resource: Uri): boolean {
+  return /\.(tsx?|mts|cts)$/i.test(resource.fsPath)
+}
+
+export function doesResourceLookLikeAJavaScriptFile(resource: Uri): boolean {
+  return /\.(jsx?|mjs|cjs)$/i.test(resource.fsPath)
+}

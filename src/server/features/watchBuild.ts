@@ -1,23 +1,9 @@
-import { commands, disposeAll, StatusBarItem, TaskOptions, Uri, window, workspace } from 'coc.nvim'
+import { commands, Disposable, disposeAll, StatusBarItem, TaskOptions, Uri, window, workspace } from 'coc.nvim'
 import path from 'path'
-import { Disposable, Location } from 'vscode-languageserver-protocol'
 import TypeScriptServiceClient from '../typescriptServiceClient'
 
 const countRegex = /Found\s+(\d+)\s+error/
 const errorRegex = /^(.+)\((\d+),(\d+)\):\s(\w+)\sTS(\d+):\s*(.+)$/
-
-interface ErrorItem {
-  location: Location
-  text: string
-  type: string
-}
-
-enum TscStatus {
-  INIT,
-  COMPILING,
-  RUNNING,
-  ERROR,
-}
 
 export default class WatchProject implements Disposable {
   private disposables: Disposable[] = []
@@ -119,7 +105,7 @@ export default class WatchProject implements Disposable {
       return
     }
 
-    const tsconfigPath = workspace.getConfiguration('tsserver').get<string>('tsconfigPath', 'tsconfig.json');
+    const tsconfigPath = workspace.getConfiguration('tsserver').get<string>('tsconfigPath', 'tsconfig.json')
     let find = await workspace.findUp([tsconfigPath])
     if (!find) {
       window.showMessage(`${tsconfigPath} not found!`, 'error')
