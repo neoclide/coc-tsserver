@@ -145,6 +145,7 @@ for guide of coc.nvim's configuration.
   implementations, default: `true`
 - `typescript.referencesCodeLens.enable`:Enable codeLens for references,
   default: `true`
+- `typescript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in typescript files. Default: `false`
 - `typescript.preferences.importModuleSpecifier` default: `"auto"`
 - `typescript.preferences.importModuleSpecifierEnding` default: `"auto"`
 - `typescript.preferences.quoteStyle` default: `"single"`
@@ -209,6 +210,7 @@ for guide of coc.nvim's configuration.
 - `javascript.updateImportsOnFileMove.enable` default: `true`
 - `javascript.implementationsCodeLens.enable` default: `true`
 - `javascript.referencesCodeLens.enable` default: `true`
+- `javascript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in JavaScript files default: `false`
 - `javascript.preferences.importModuleSpecifier` default: `"auto"`
 - `javascript.preferences.importModuleSpecifierEnding` default: `"auto"`
 - `javascript.preferences.quoteStyle` default: `"single"`

@@ -46,7 +46,8 @@ export abstract class TypeScriptBaseCodeLensProvider implements CodeLensProvider
 
   public constructor(
     protected client: ITypeScriptServiceClient,
-    private cachedResponse: CachedNavTreeResponse
+    private cachedResponse: CachedNavTreeResponse,
+    protected modeId: string
   ) {}
 
   public get onDidChangeCodeLenses(): Event<void> {
@@ -116,38 +117,31 @@ export abstract class TypeScriptBaseCodeLensProvider implements CodeLensProvider
       )
     }
   }
-  protected getSymbolRange(
-    document: TextDocument,
-    item: Proto.NavigationTree
-  ): Range | null {
-    if (!item) {
-      return null
-    }
+}
 
-    // TS 3.0+ provides a span for just the symbol
-    if ((item as any).nameSpan) {
-      return typeConverters.Range.fromTextSpan((item as any).nameSpan)
-    }
+export function getSymbolRange(
+  document: TextDocument,
+  item: Proto.NavigationTree
+): Range | null {
+  if (item.nameSpan) {
+    return typeConverters.Range.fromTextSpan(item.nameSpan)
+  }
 
-    // In older versions, we have to calculate this manually. See #23924
-    const span = item.spans && item.spans[0]
-    if (!span) {
-      return null
-    }
+  // In older versions, we have to calculate this manually. See #23924
+  const span = item.spans && item.spans[0]
+  if (!span) {
+    return null
+  }
 
-    const range = typeConverters.Range.fromTextSpan(span)
-    const text = document.getText(range)
+  const range = typeConverters.Range.fromTextSpan(span)
+  const text = document.getText(range)
 
-    const identifierMatch = new RegExp(
-      `^(.*?(\\b|\\W))${escapeRegExp(item.text || '')}(\\b|\\W)`,
-      'gm'
-    )
-    const match = identifierMatch.exec(text)
-    const prefixLength = match ? match.index + match[1].length : 0
-    const startOffset = document.offsetAt(range.start) + prefixLength
-    return {
-      start: document.positionAt(startOffset),
-      end: document.positionAt(startOffset + item.text.length)
-    }
+  const identifierMatch = new RegExp(`^(.*?(\\b|\\W))${escapeRegExp(item.text || '')}(\\b|\\W)`, 'gm')
+  const match = identifierMatch.exec(text)
+  const prefixLength = match ? match.index + match[1].length : 0
+  const startOffset = document.offsetAt(range.start) + prefixLength
+  return {
+    start: document.positionAt(startOffset),
+    end: document.positionAt(startOffset + item.text.length)
   }
 }

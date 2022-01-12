@@ -7,7 +7,7 @@ import { TextDocument } from 'coc.nvim'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 import * as typeConverters from '../utils/typeConverters'
-import { TypeScriptBaseCodeLensProvider } from './baseCodeLensProvider'
+import { TypeScriptBaseCodeLensProvider, getSymbolRange } from './baseCodeLensProvider'
 
 export default class TypeScriptImplementationsCodeLensProvider extends TypeScriptBaseCodeLensProvider {
   public async resolveCodeLens(
@@ -21,43 +21,39 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
       filepath,
       codeLens.range.start
     )
-    try {
-      const response = await this.client.execute('implementation', args, token, { lowPriority: true })
-      if (response && response.type == 'response' && response.body) {
-        const locations = response.body
-          .map(reference => {
-            return {
-              uri: this.client.toResource(reference.file),
-              range: {
-                start: typeConverters.Position.fromLocation(reference.start),
-                end: {
-                  line: reference.start.line,
-                  character: 0
-                }
-              }
-            }
-          })
-          // Exclude original from implementations
-          .filter(
-            location => !(
-              location.uri.toString() === uri &&
-              location.range.start.line === codeLens.range.start.line &&
-              location.range.start.character ===
-              codeLens.range.start.character
-            )
-          )
-
-        codeLens.command = this.getCommand(locations, codeLens)
-        return codeLens
+    const response = await this.client.execute('implementation', args, token, { lowPriority: true })
+    if (response.type !== 'response' || !response.body) {
+      codeLens.command = {
+        title: response.type === 'cancelled'
+          ? 'cancelled'
+          : 'could not determine implementation',
+        command: ''
       }
-    } catch {
-      // noop
+      return codeLens
     }
-
-    codeLens.command = {
-      title: '0 implementations',
-      command: ''
-    }
+    const locations = response.body
+      .map(reference => {
+        return {
+          uri: this.client.toResource(reference.file),
+          range: {
+            start: typeConverters.Position.fromLocation(reference.start),
+            end: {
+              line: reference.start.line,
+              character: 0
+            }
+          }
+        }
+      })
+      // Exclude original from implementations
+      .filter(
+        location => !(
+          location.uri.toString() === uri &&
+          location.range.start.line === codeLens.range.start.line &&
+          location.range.start.character ===
+          codeLens.range.start.character
+        )
+      )
+    codeLens.command = this.getCommand(locations, codeLens)
     return codeLens
   }
 
@@ -84,7 +80,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
   ): Range | null {
     switch (item.kind) {
       case PConst.Kind.interface:
-        return super.getSymbolRange(document, item)
+        return getSymbolRange(document, item)
 
       case PConst.Kind.class:
       case PConst.Kind.method:
@@ -92,7 +88,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
       case PConst.Kind.memberGetAccessor:
       case PConst.Kind.memberSetAccessor:
         if (item.kindModifiers.match(/\babstract\b/g)) {
-          return super.getSymbolRange(document, item)
+          return getSymbolRange(document, item)
         }
         break
     }

@@ -34,7 +34,7 @@ export interface TypeScriptServerPlugin {
   readonly languages: string[]
 }
 
-export enum ExectuionTarget {
+export enum ExecutionTarget {
   Semantic,
   Syntax
 }
@@ -43,7 +43,7 @@ export type ExecConfig = {
   readonly lowPriority?: boolean
   readonly nonRecoverable?: boolean
   readonly cancelOnResourceChange?: string
-  readonly executionTarget?: ExectuionTarget
+  readonly executionTarget?: ExecutionTarget
 }
 
 export interface TypeScriptRequestTypes {

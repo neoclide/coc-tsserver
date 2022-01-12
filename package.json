@@ -293,6 +293,12 @@
           "default": true,
           "description": "Enable codeLens for references"
         },
+        "typescript.referencesCodeLens.showOnAllFunctions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable references CodeLens on all functions in typescript files.",
+          "scope": "window"
+        },
         "typescript.preferences.importModuleSpecifier": {
           "type": "string",
           "default": "shortest",
@@ -546,6 +552,12 @@
         "javascript.referencesCodeLens.enable": {
           "type": "boolean",
           "default": true
+        },
+        "javascript.referencesCodeLens.showOnAllFunctions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable references CodeLens on all functions in JavaScript files.",
+          "scope": "window"
         },
         "javascript.preferences.importModuleSpecifier": {
           "type": "string",

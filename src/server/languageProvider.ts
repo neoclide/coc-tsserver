@@ -149,10 +149,10 @@ export default class LanguageProvider {
         'tsserver', [CodeActionKind.QuickFix]))
     let cachedResponse = new CachedNavTreeResponse()
     if (this.client.apiVersion.gte(API.v206) && conf.get<boolean>('referencesCodeLens.enable')) {
-      this._register(languages.registerCodeLensProvider(languageIds, new ReferencesCodeLensProvider(client, cachedResponse)))
+      this._register(languages.registerCodeLensProvider(languageIds, new ReferencesCodeLensProvider(client, cachedResponse, this.description.id)))
     }
     if (this.client.apiVersion.gte(API.v220) && conf.get<boolean>('implementationsCodeLens.enable')) {
-      this._register(languages.registerCodeLensProvider(languageIds, new ImplementationsCodeLensProvider(client, cachedResponse)))
+      this._register(languages.registerCodeLensProvider(languageIds, new ImplementationsCodeLensProvider(client, cachedResponse, this.description.id)))
     }
     if (this.client.apiVersion.gte(API.v350)) {
       this._register(languages.registerSelectionRangeProvider(languageIds, new SmartSelection(this.client)))
