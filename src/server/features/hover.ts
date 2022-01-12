@@ -7,7 +7,7 @@ import { HoverProvider } from 'coc.nvim'
 import { CancellationToken, Hover, MarkedString, Position } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
-import { tagsMarkdownPreview } from '../utils/previewer'
+import { markdownDocumentation } from '../utils/previewer'
 import * as typeConverters from '../utils/typeConverters'
 
 export default class TypeScriptHoverProvider implements HoverProvider {
@@ -42,14 +42,16 @@ export default class TypeScriptHoverProvider implements HoverProvider {
   }
 
   private static getContents(data: Proto.QuickInfoResponseBody): MarkedString[] { // tslint:disable-line
-    const parts = []
-
+    const parts: MarkedString[] = []
     if (data.displayString) {
+      // const displayParts: string[] = []
       parts.push({ language: 'typescript', value: data.displayString })
     }
-
-    const tags = tagsMarkdownPreview(data.tags)
-    parts.push(data.documentation + (tags ? '\n\n' + tags : ''))
+    const markup = markdownDocumentation(data.documentation, data.tags)
+    parts.push({
+      language: 'markdown',
+      value: markup.value
+    })
     return parts
   }
 }

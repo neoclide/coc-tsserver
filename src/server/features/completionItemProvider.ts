@@ -251,7 +251,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     }
     const detail = details[0]
     if (!item.detail && detail.displayParts.length) {
-      item.detail = Previewer.plain(detail.displayParts)
+      item.detail = Previewer.plainWithLinks(detail.displayParts)
     }
     item.documentation = this.getDocumentation(detail)
     const { command, additionalTextEdits } = this.getCodeActions(detail, filepath)
@@ -354,12 +354,12 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   private getDocumentation(detail: Proto.CompletionEntryDetails): MarkupContent | undefined {
     let documentation = ''
     if (detail.source) {
-      const importPath = `'${Previewer.plain(detail.source)}'`
+      const importPath = `'${Previewer.plainWithLinks(detail.source)}'`
       const autoImportLabel = `Auto import from ${importPath}`
       documentation += `${autoImportLabel}\n`
     }
     let parts = [
-      Previewer.plain(detail.documentation),
+      Previewer.plainWithLinks(detail.documentation),
       Previewer.tagsMarkdownPreview(detail.tags)
     ]
     parts = parts.filter(s => s && s.trim() != '')

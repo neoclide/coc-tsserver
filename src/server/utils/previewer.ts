@@ -94,20 +94,15 @@ function getTagDocumentation(tag: Proto.JSDocTagInfo): string | undefined {
   return label + (text.match(/\r\n|\n/g) ? '  \n' + text : ` — ${text}`)
 }
 
-export function plain(parts: Proto.SymbolDisplayPart[]): string {
-  if (!parts || !parts.length) return ''
-  return parts.map(part => part.text).join('')
-}
-
 export function tagsMarkdownPreview(tags: Proto.JSDocTagInfo[]): string {
   return (tags || []).map(getTagDocumentation).join('  \n\n')
 }
 
 export function markdownDocumentation(
-  documentation: Proto.SymbolDisplayPart[],
+  documentation: Proto.SymbolDisplayPart[] | string,
   tags: Proto.JSDocTagInfo[]
 ): MarkupContent {
-  let out = plain(documentation)
+  let out = plainWithLinks(documentation)
   const tagsPreview = tagsMarkdownPreview(tags)
   if (tagsPreview) {
     out = out + ('\n\n' + tagsPreview)
@@ -116,6 +111,12 @@ export function markdownDocumentation(
     kind: MarkupKind.Markdown,
     value: out
   }
+}
+
+export function plainWithLinks(
+  parts: readonly Proto.SymbolDisplayPart[] | string,
+): string {
+  return processInlineTags(convertLinkTags(parts))
 }
 
 /**
