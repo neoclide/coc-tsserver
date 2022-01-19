@@ -1,6 +1,6 @@
 {
   "name": "coc-tsserver",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "description": "tsserver extension for coc.nvim",
   "main": "lib/index.js",
   "publisher": "chemzqm",
@@ -529,7 +529,8 @@
         },
         "typescript.autoClosingTags": {
           "type": "boolean",
-          "default": false
+          "default": true,
+          "description": "Enable/disable automatic closing of JSX tags."
         },
         "javascript.showUnused": {
           "type": "boolean",
@@ -851,7 +852,8 @@
         },
         "javascript.autoClosingTags": {
           "type": "boolean",
-          "default": false
+          "default": true,
+          "description": "Enable/disable automatic closing of JSX tags."
         },
         "javascript.format.semicolons": {
           "type": "string",
@@ -881,7 +883,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^12.12.12",
-    "coc.nvim": "^0.0.81-next.8",
+    "coc.nvim": "^0.0.81-next.11",
     "esbuild": "^0.14.11",
     "semver": "^7.3.5",
     "vscode-languageserver-protocol": "^3.16.0",

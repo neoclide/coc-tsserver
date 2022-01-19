@@ -5,13 +5,10 @@
 import { CancellationTokenSource, Disposable, disposeAll, Position, Range, snippetManager, events, workspace, InsertChange } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
-import API from '../utils/api'
 import SnippetString from '../utils/SnippetString'
 import * as typeConverters from '../utils/typeConverters'
 
 export default class TagClosing implements Disposable {
-  public static readonly minVersion = API.v300
-
   private static _configurationLanguages: Record<string, string> = {
     'javascriptreact': 'javascript',
     'typescriptreact': 'typescript',
@@ -21,27 +18,21 @@ export default class TagClosing implements Disposable {
   private _disposed = false
   private _timeout: NodeJS.Timer | undefined = undefined
   private _cancel: CancellationTokenSource | undefined = undefined
-  private lastInsert: string
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly descriptionLanguageId: string
   ) {
-    events.on('InsertCharPre', character => {
-      this.lastInsert = character
-    }, null, this._disposables)
-    events.on('TextChangedI', this.onChange, this, this._disposables)
-    events.on('TextChangedP', this.onChange, this, this._disposables)
+    events.on('TextInsert', this.onInsertChange, this, this._disposables)
   }
 
-  private async onChange(bufnr: number, change: InsertChange): Promise<void> {
+  private async onInsertChange(bufnr: number, change: InsertChange, lastInsert: string): Promise<void> {
     let doc = workspace.getDocument((bufnr))
     if (!doc || !doc.attached) return
     let enabled = this.isEnabled(doc.filetype, doc.uri)
     if (!enabled) return
     let { pre, changedtick, lnum } = change
-    if (!pre.endsWith('/') && !pre.endsWith('>')) return
-    if (!pre.endsWith(this.lastInsert)) return
+    if (lastInsert !== '/' && lastInsert != '>') return
     if (pre.length > 1 && pre[pre.length - 2] == '>') return
     const filepath = this.client.toOpenedFilePath(doc.uri)
     if (!filepath) return
@@ -73,7 +64,6 @@ export default class TagClosing implements Disposable {
         return
       }
       if (this._disposed) return
-
       const insertion = response.body
       if (doc.changedtick === changedtick) {
         snippetManager.insertSnippet(
@@ -82,7 +72,7 @@ export default class TagClosing implements Disposable {
           Range.create(position, position)
         )
       }
-    }, 50)
+    }, 30)
   }
 
   private isEnabled(languageId: string, uri: string): boolean {

@@ -1,3 +1,7 @@
+# 1.9.7
+
+- Change default of `javascript.autoClosingTags` and `typescript.autoClosingTags` to `true`.
+
 # 1.9.6
 
 - Rework codeLens related.
