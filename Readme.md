@@ -88,6 +88,8 @@ Almost the same as VSCode.
 - Code refactor using code actions.
 - Find references.
 - Signature help.
+- Call hierarchy.
+- Selection range.
 - Semantic tokens.
 - Rename symbols support.
 - Automatic tag closing.
