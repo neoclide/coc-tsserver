@@ -88,7 +88,9 @@ Almost the same as VSCode.
 - Code refactor using code actions.
 - Find references.
 - Signature help.
+- Semantic tokens.
 - Rename symbols support.
+- Automatic tag closing.
 - Rename imports on file rename, require
   [watchman](https://facebook.github.io/watchman/) installed in your \$PATH.
 - Search for workspace symbols.
@@ -177,6 +179,7 @@ for guide of coc.nvim's configuration.
 - `typescript.suggest.jsdoc.generateReturns`: Enable/disable generating
   `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in
   the workspace. default: `true`
+- `typescript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
 - `typescript.format.enabled`:Enable/disable format of typescript files.
 - `typescript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `typescript.format.insertSpaceAfterConstructor` default: `false`
@@ -202,7 +205,6 @@ for guide of coc.nvim's configuration.
 - `typescript.format.insertSpaceAfterTypeAssertion` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `typescript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
-- `typescript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
 - `typescript.inlayHints`: inlayHints related options.
 - `javascript.format.enabled`: Enable/disable format for javascript files, default: `true`
 - `javascript.showUnused`: show unused variable hint, default: `true`
@@ -236,6 +238,7 @@ for guide of coc.nvim's configuration.
 - `javascript.suggest.classMemberSnippets.enabled`: Enable/disable
   snippet completions for class members. Requires using TypeScript 4.5+ in the
   workspace, default: `true`
+- `javascript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
 - `javascript.format.insertSpaceAfterCommaDelimiter` default: `true`
 - `javascript.format.insertSpaceAfterConstructor` default: `false`
 - `javascript.format.insertSpaceAfterSemicolonInForStatements` default: `true`
@@ -260,11 +263,12 @@ for guide of coc.nvim's configuration.
 - `javascript.format.insertSpaceAfterTypeAssertion` default: `false`
 - `javascript.format.placeOpenBraceOnNewLineForFunctions` default: `false`
 - `javascript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
-- `javascript.suggest.includeAutomaticOptionalChainCompletions`: default: `true`
 - `javascript.inlayHints`: inlayHints related options.
 
-Configurations are the same as with VSCode. Try completion with `tsserver`,
-`typescript` or `javascript` in your `coc-settings.json`.
+Configurations are the same as with VSCode. Install
+[coc-json](https://github.com/neoclide/coc-json) and try completion with
+`tsserver`, `typescript` or `javascript` in your
+`coc-settings.json`.
 
 ## Related extensions
 
