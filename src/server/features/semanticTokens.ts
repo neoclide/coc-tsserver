@@ -29,9 +29,14 @@ export default class TypeScriptDocumentSemanticTokensProvider implements Documen
     }
   }
 
+  private logIgnored(uri: string): void {
+    this.client.logger.warn(`${uri} content length exceed limit 100000`)
+  }
+
   async provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): Promise<SemanticTokens | null> {
     const file = this.client.toOpenedFilePath(document.uri)
     if (!file || document.getText().length > CONTENT_LENGTH_LIMIT) {
+      this.logIgnored(document.uri)
       return null
     }
     return this._provideSemanticTokens(document, { file, start: 0, length: document.getText().length }, token)
@@ -40,6 +45,7 @@ export default class TypeScriptDocumentSemanticTokensProvider implements Documen
   async provideDocumentRangeSemanticTokens(document: TextDocument, range: Range, token: CancellationToken): Promise<SemanticTokens | null> {
     const file = this.client.toOpenedFilePath(document.uri)
     if (!file || (document.offsetAt(range.end) - document.offsetAt(range.start) > CONTENT_LENGTH_LIMIT)) {
+      this.logIgnored(document.uri)
       return null
     }
 

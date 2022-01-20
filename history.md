@@ -1,3 +1,7 @@
+# 1.9.8
+
+- Log to output when document content exceed limit of semantic tokens.
+
 # 1.9.7
 
 - Change default of `javascript.autoClosingTags` and `typescript.autoClosingTags` to `true`.
