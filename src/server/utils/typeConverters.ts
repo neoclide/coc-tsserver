@@ -6,6 +6,7 @@
  * Helpers for converting FROM LanguageServer types language-server ts types
  */
 import * as language from 'vscode-languageserver-protocol'
+import { TextDocumentEdit } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import * as PConst from '../protocol.const'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -98,14 +99,20 @@ export namespace WorkspaceEdit {
     client: ITypeScriptServiceClient,
     edits: Iterable<Proto.FileCodeEdits>
   ): language.WorkspaceEdit {
-    let changes = {}
+    let documentChanges: TextDocumentEdit[] = []
     for (const edit of edits) {
       let uri = client.toResource(edit.fileName)
-      changes[uri] = edit.textChanges.map(change => {
-        return TextEdit.fromCodeEdit(change)
+      documentChanges.push({
+        textDocument: {
+          uri,
+          version: null
+        },
+        edits: edit.textChanges.map(change => {
+          return TextEdit.fromCodeEdit(change)
+        })
       })
     }
-    return { changes }
+    return { documentChanges }
   }
 }
 
