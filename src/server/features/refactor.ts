@@ -1,8 +1,8 @@
-import { CodeActionProvider, CodeActionProviderMetadata, commands, TextDocument, window, workspace } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { CodeActionProvider, Uri, CodeActionProviderMetadata, commands, TextDocument, window, workspace } from 'coc.nvim'
 import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import { Command, registCommand } from '../commands'
 import Proto from '../protocol'
@@ -55,13 +55,22 @@ class ApplyRefactoringCommand implements Command {
   }
 
   private async toWorkspaceEdit(body: Proto.RefactorEditInfo): Promise<WorkspaceEdit> {
-    for (const edit of body.edits) {
-      await workspace.createFile(edit.fileName, { ignoreIfExists: true })
-    }
     let workspaceEdit = typeConverters.WorkspaceEdit.fromFileCodeEdits(
       this.client,
       body.edits
     )
+    let documentChanges = workspaceEdit.documentChanges = workspaceEdit.documentChanges || []
+    for (const edit of body.edits) {
+      let resource = this.client.toResource(edit.fileName)
+      if (Uri.parse(resource).scheme === 'file') {
+        // should create file first.
+        documentChanges.unshift({
+          kind: 'create',
+          uri: resource,
+          options: { ignoreIfExists: true }
+        })
+      }
+    }
     return workspaceEdit
   }
 }

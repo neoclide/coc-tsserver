@@ -39,7 +39,7 @@ export class OrganizeImportsCommand implements Command {
       client,
       response.body
     )
-    let keys = Object.keys(edit.changes)
+    let keys = Object.keys(edit.changes || {})
     if (keys.length == 1) {
       let doc = workspace.getDocument(keys[0])
       if (doc) {

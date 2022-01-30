@@ -16,7 +16,7 @@ export default class TypeScriptRenameProvider implements RenameProvider {
   public constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly fileConfigurationManager: FileConfigurationManager
-  ) { }
+  ) {}
 
   public async prepareRename(
     document: TextDocument,
@@ -60,8 +60,8 @@ export default class TypeScriptRenameProvider implements RenameProvider {
     }
 
     if (this.client.apiVersion.gte(API.v310)) {
-      if ((renameInfo as any).fileToRename) {
-        const edits = await this.renameFile((renameInfo as any).fileToRename, newName, token)
+      if (renameInfo.fileToRename) {
+        const edits = await this.renameFile(renameInfo.fileToRename, newName, token)
         if (edits) {
           return edits
         } else {
