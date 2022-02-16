@@ -114,6 +114,8 @@ for guide of coc.nvim's configuration.
 
 - `tsserver.enable`:Enable tsserver extension, default: `true`
 - `tsserver.locale`:Locale of tsserver, default: `""`
+- `tsserver.ignoreLocalTsserver`:Always use tsserver module from tsserver.tsdk
+  or coc-tsserver extension.
 - `tsserver.typingsCacheLocation`:Folder path for cache typings, default: `""`
 - `tsserver.formatOnType`:Run format on type special characters., default:
   `true`
