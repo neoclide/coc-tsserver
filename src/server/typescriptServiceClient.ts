@@ -34,6 +34,7 @@ export interface TsDiagnostics {
 
 export default class TypeScriptServiceClient implements ITypeScriptServiceClient {
   private token: number = 0
+  private noRestart = false
   public state = ServiceStat.Initial
   public readonly logger: Logger = new Logger()
   public readonly bufferSyncSupport: BufferSyncSupport
@@ -169,6 +170,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         tsServerProcess.onExit(() => {
           resolve()
         })
+        this.noRestart = true
         tsServerProcess.kill()
       } else {
         resolve()
@@ -381,6 +383,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this._callbacks = new CallbackMap<Proto.Response>()
     this._requestQueue = new RequestQueue()
     this._pendingResponses = new Set<number>()
+    if (this.noRestart) {
+      this.noRestart = false
+      return
+    }
     if (restart) {
       const diff = Date.now() - this.lastStart
       this.numberRestarts++

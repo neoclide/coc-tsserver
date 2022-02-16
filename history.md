@@ -1,3 +1,12 @@
+# 1.9.10
+
+- Watch for `tsserver.enable` configuration to change service state.
+- Fix tsserver not work well with `:CocList services`
+
+# 1.9.9
+
+- Use documentChanges for workspaceEdit.
+
 # 1.9.8
 
 - Log to output when document content exceed limit of semantic tokens.

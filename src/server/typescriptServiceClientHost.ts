@@ -160,10 +160,6 @@ export default class TypeScriptServiceClientHost implements Disposable {
     this.ataProgressReporter.dispose()
   }
 
-  public reset(): void {
-    this.fileConfigurationManager.reset()
-  }
-
   public get serviceClient(): TypeScriptServiceClient {
     return this.client
   }
