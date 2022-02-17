@@ -99,20 +99,21 @@ export default class TsserverService implements IServiceProvider {
     })
   }
 
-  public start(): Promise<void> {
+  public async start(): Promise<void> {
     if (!this.enable) return
     if (this.clientHost) {
       let client = this.clientHost.serviceClient
       client.restartTsServer()
       return
     }
+    let tscPath = await workspace.nvim.getVar('Tsserver_path') as string
     this._state = ServiceStat.Starting
-    this.clientHost = new TypeScriptServiceClientHost(this.descriptions, this.pluginManager)
+    this.clientHost = new TypeScriptServiceClientHost(this.descriptions, this.pluginManager, tscPath)
     let client = this.clientHost.serviceClient
-    return new Promise(resolve => {
+    await new Promise(resolve => {
       client.onReady(() => {
         this._onDidServiceReady.fire(void 0)
-        resolve()
+        resolve(undefined)
       })
     })
   }

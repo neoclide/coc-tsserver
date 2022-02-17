@@ -106,6 +106,15 @@ export class TypeScriptVersionProvider {
     return undefined
   }
 
+  public getVersionFromTscPath(tscPath: string): TypeScriptVersion | undefined {
+    if (!tscPath || !fs.existsSync(tscPath)) return undefined
+    let libFolder = path.resolve(tscPath, '../../lib')
+    if (fs.existsSync(libFolder)) {
+      let version = new TypeScriptVersion(libFolder)
+      if (version.isValid) return version
+    }
+  }
+
   public getLocalVersion(): TypeScriptVersion | undefined {
     let folders = workspace.workspaceFolders.map(f => Uri.parse(f.uri).fsPath)
     for (let p of folders) {

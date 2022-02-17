@@ -38,7 +38,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
   private readonly fileConfigurationManager: FileConfigurationManager
   private reportStyleCheckAsWarnings = true
 
-  constructor(descriptions: LanguageDescription[], pluginManager: PluginManager) {
+  constructor(descriptions: LanguageDescription[], pluginManager: PluginManager, tscPath: string | undefined) {
     let timer: NodeJS.Timer
     const handleProjectChange = () => {
       if (timer) clearTimeout(timer)
@@ -57,7 +57,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
     packageFileWatcher.onDidChange(handleProjectChange, this, this.disposables)
 
     const allModeIds = this.getAllModeIds(descriptions, pluginManager)
-    this.client = new TypeScriptServiceClient(pluginManager, allModeIds)
+    this.client = new TypeScriptServiceClient(pluginManager, allModeIds, tscPath)
     this.disposables.push(this.client)
     this.client.onDiagnosticsReceived(({ kind, resource, diagnostics }) => {
       this.diagnosticsReceived(kind, resource, diagnostics).catch(e => {

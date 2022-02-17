@@ -70,7 +70,8 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   constructor(
     public readonly pluginManager: PluginManager,
-    public readonly modeIds: string[]
+    public readonly modeIds: string[],
+    private readonly tscPathVim: string | undefined
   ) {
     this.pathSeparator = path.sep
     this.lastStart = Date.now()
@@ -217,7 +218,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private startService(resendModels = false): ForkedTsServerProcess | undefined {
     const { ignoreLocalTsserver } = this.configuration
     let currentVersion: TypeScriptVersion
-    if (!ignoreLocalTsserver) currentVersion = this.versionProvider.getLocalVersion()
+    console.log('===========')
+    console.log(this.tscPathVim)
+    if (this.tscPathVim) currentVersion = this.versionProvider.getVersionFromTscPath(this.tscPathVim)
+    if (!currentVersion && !ignoreLocalTsserver) currentVersion = this.versionProvider.getLocalVersion()
     if (!currentVersion || !fs.existsSync(currentVersion.tsServerPath)) {
       this.info('Local tsserver not found, using bundled tsserver with coc-tsserver.')
       currentVersion = this.versionProvider.getDefaultVersion()
@@ -232,6 +236,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     }
     this._apiVersion = currentVersion.version
     this._tscPath = currentVersion.tscPath
+    workspace.nvim.setVar('Tsserver_path', this._tscPath, true)
     this.versionStatus.onDidChangeTypeScriptVersion(currentVersion)
     const tsServerForkArgs = this.getTsServerArgs(currentVersion)
     const options = { execArgv: this.getExecArgv() }
