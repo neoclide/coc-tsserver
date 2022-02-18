@@ -138,9 +138,14 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public dispose(): void {
     this.tsServerProcess.kill()
+    this.diagnosticsManager.dispose()
     this.bufferSyncSupport.dispose()
     this.logger.dispose()
     this._onTsServerStarted.dispose()
+    this._onProjectLanguageServiceStateChanged.dispose()
+    this._onDidBeginInstallTypings.dispose()
+    this._onDidEndInstallTypings.dispose()
+    this._onTypesInstallerInitializationFailed.dispose()
     this._onResendModelsRequested.dispose()
     this.versionStatus.dispose()
   }
