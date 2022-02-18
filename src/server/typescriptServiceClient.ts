@@ -223,8 +223,6 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   private startService(resendModels = false): ForkedTsServerProcess | undefined {
     const { ignoreLocalTsserver } = this.configuration
     let currentVersion: TypeScriptVersion
-    console.log('===========')
-    console.log(this.tscPathVim)
     if (this.tscPathVim) currentVersion = this.versionProvider.getVersionFromTscPath(this.tscPathVim)
     if (!currentVersion && !ignoreLocalTsserver) currentVersion = this.versionProvider.getLocalVersion()
     if (!currentVersion || !fs.existsSync(currentVersion.tsServerPath)) {
