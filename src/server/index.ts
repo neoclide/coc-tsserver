@@ -100,14 +100,14 @@ export default class TsserverService implements IServiceProvider {
   }
 
   public async start(): Promise<void> {
-    if (!this.enable) return
+    if (!this.enable || this._state == ServiceStat.Starting) return
+    this._state = ServiceStat.Starting
     if (this.clientHost) {
       let client = this.clientHost.serviceClient
       client.restartTsServer()
       return
     }
-    let tscPath = await workspace.nvim.getVar('Tsserver_path') as string
-    this._state = ServiceStat.Starting
+    let tscPath = await workspace.nvim.getVar('Tsserver_path') as string | null
     this.clientHost = new TypeScriptServiceClientHost(this.descriptions, this.pluginManager, tscPath)
     let client = this.clientHost.serviceClient
     await new Promise(resolve => {
@@ -132,7 +132,7 @@ export default class TsserverService implements IServiceProvider {
     if (!this.clientHost) return
     let client = this.clientHost.serviceClient
     await client.stop()
-    this.clientHost.dispose()
+    this.clientHost?.dispose()
     this.clientHost = null
     this._state = ServiceStat.Stopped
   }
