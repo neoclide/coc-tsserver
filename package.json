@@ -876,6 +876,14 @@
       {
         "language": "typescriptreact",
         "path": "./snippets/typescript.json"
+      },
+      {
+        "language": "javascript",
+        "path": "./snippets/javascript.json"
+      },
+      {
+        "language": "javascriptreact",
+        "path": "./snippets/javascript.json"
       }
     ]
   },
