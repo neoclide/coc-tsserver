@@ -118,14 +118,10 @@ export default class TsserverService implements IServiceProvider {
     })
   }
 
-  public restart(): void {
+  public async restart(): Promise<void> {
     if (!this.enable) return
-    if (this.clientHost) {
-      let client = this.clientHost.serviceClient
-      client.restartTsServer()
-    } else {
-      void this.start()
-    }
+    await this.stop()
+    await this.start()
   }
 
   public async stop(): Promise<void> {
