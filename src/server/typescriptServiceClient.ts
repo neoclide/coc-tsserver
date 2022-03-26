@@ -431,6 +431,9 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
   }
 
   public toResource(filepath: string): string {
+    if (filepath.includes('zipfile:')) {
+      return filepath.replace(/.*zipfile:/, 'zipfile://');
+    }
     if (this._apiVersion.gte(API.v213)) {
       if (filepath.startsWith(this.inMemoryResourcePrefix + 'untitled:')) {
         let resource = Uri.parse(filepath)
