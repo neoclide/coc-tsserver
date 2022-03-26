@@ -1,3 +1,16 @@
+# 1.9.15
+
+- Fix uri for `zipfile`.
+
+# 1.9.14
+
+- Add javascript snippets
+- Fix command `tsserver.restart` not work
+
+# 1.9.11
+
+- Resued resolved tsserver path after `:CocRestart`
+
 # 1.9.10
 
 - Watch for `tsserver.enable` configuration to change service state.
