@@ -51,12 +51,24 @@ export default class Logger {
     this.logLevel('Error', message, data)
   }
 
+  private now(): string {
+    const now = new Date()
+    return padLeft(now.getUTCHours() + '', 2, '0')
+      + ':' + padLeft(now.getMinutes() + '', 2, '0')
+      + ':' + padLeft(now.getUTCSeconds() + '', 2, '0') + '.' + now.getMilliseconds()
+  }
+
   public logLevel(level: string, message: string, data?: any): void {
     this.output.appendLine(
-      `[${level}  - ${new Date().toLocaleTimeString()}] ${message}`
+      `[${level}  - ${this.now()}] ${message}`
     )
     if (data) {
       this.output.appendLine(this.data2String(data))
     }
   }
+}
+
+
+function padLeft(s: string, n: number, pad = ' ') {
+  return pad.repeat(Math.max(0, n - s.length)) + s
 }
