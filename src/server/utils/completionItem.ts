@@ -59,6 +59,9 @@ export function convertCompletionEntry(
     insertText = label
     insertTextFormat = InsertTextFormat.Snippet
   }
+  if (tsEntry.isSnippet) {
+    insertTextFormat = InsertTextFormat.Snippet
+  }
 
   let textEdit: TextEdit | null = null
   if (tsEntry.replacementSpan) {
