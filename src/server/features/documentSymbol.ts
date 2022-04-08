@@ -38,6 +38,7 @@ const getSymbolKind = (kind: string): SymbolKind => {
       return SymbolKind.Variable
     case PConst.Kind.constructSignature:
     case PConst.Kind.constructorImplementation:
+      return SymbolKind.Constructor
     case PConst.Kind.function:
     case PConst.Kind.localFunction:
       return SymbolKind.Function

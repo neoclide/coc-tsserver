@@ -139,6 +139,7 @@ function convertKind(kind: string): CompletionItemKind {
     case PConst.Kind.memberSetAccessor:
       return CompletionItemKind.Field
     case PConst.Kind.function:
+    case PConst.Kind.localFunction:
       return CompletionItemKind.Function
     case PConst.Kind.method:
     case PConst.Kind.constructSignature:
