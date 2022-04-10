@@ -274,6 +274,11 @@ for guide of coc.nvim's configuration.
 - `javascript.suggest.completeJSDocs` `typescript.suggest.completeJSDocs`:
   Enable/disable suggestion to complete JSDoc comments. default: `true`
 
+### Added on 1.10.1
+- `typescript.suggest.objectLiteralMethodSnippets.enabled`
+  `javascript.suggest.objectLiteralMethodSnippets.enabled`:
+  Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace
+
 Configurations are the same as with VSCode. Install
 [coc-json](https://github.com/neoclide/coc-json) and try completion with
 `tsserver`, `typescript` or `javascript` in your

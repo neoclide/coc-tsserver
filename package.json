@@ -875,6 +875,18 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable suggestion to complete JSDoc comments."
+        },
+        "javascript.suggest.objectLiteralMethodSnippets.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace",
+          "scope": "resource"
+        },
+        "typescript.suggest.objectLiteralMethodSnippets.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace",
+          "scope": "resource"
         }
       }
     },

@@ -161,6 +161,8 @@ export default class FileConfigurationManager {
       paths: config.get<boolean>('paths', true),
       completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
       autoImports: config.get<boolean>('autoImports', true),
+      // @ts-expect-error until 4.7
+      includeCompletionsWithObjectLiteralMethodSnippets: config.get<boolean>('suggest.objectLiteralMethodSnippets.enabled', true),
       generateReturnInDocTemplate: config.get<boolean>('jsdoc.generateReturns', true),
       importStatementSuggestions: config.get<boolean>('importStatements', true),
       includeCompletionsForImportStatements: config.get<boolean>('includeCompletionsForImportStatements', true),
