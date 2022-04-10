@@ -865,6 +865,16 @@
             "insert",
             "remove"
           ]
+        },
+        "javascript.suggest.completeJSDocs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable suggestion to complete JSDoc comments."
+        },
+        "typescript.suggest.completeJSDocs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable suggestion to complete JSDoc comments."
         }
       }
     },

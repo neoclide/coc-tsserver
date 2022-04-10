@@ -269,6 +269,11 @@ for guide of coc.nvim's configuration.
 - `javascript.format.placeOpenBraceOnNewLineForControlBlocks` default: `false`
 - `javascript.inlayHints`: inlayHints related options.
 
+### Added on 1.10.0
+
+- `javascript.suggest.completeJSDocs` `typescript.suggest.completeJSDocs`:
+  Enable/disable suggestion to complete JSDoc comments. default: `true`
+
 Configurations are the same as with VSCode. Install
 [coc-json](https://github.com/neoclide/coc-json) and try completion with
 `tsserver`, `typescript` or `javascript` in your

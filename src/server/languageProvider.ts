@@ -31,6 +31,7 @@ import SignatureHelpProvider from './features/signatureHelp'
 import SmartSelection from './features/smartSelect'
 import TagClosing from './features/tagClosing'
 import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
+import { JsDocCompletionProvider } from './features/jsDocCompletion'
 import { OrganizeImportsCodeActionProvider } from './organizeImports'
 import TypeScriptServiceClient from './typescriptServiceClient'
 import API from './utils/api'
@@ -73,11 +74,17 @@ export default class LanguageProvider {
     typingsStatus: TypingsStatus
   ): void {
     let languageIds = this.description.modeIds
-    let clientId = `tsserver-${this.description.id}`
+    let clientId = `tsc-${this.description.id}`
     this._register(
       languages.registerCompletionItemProvider(clientId, 'TSC', languageIds,
         new CompletionItemProvider(client, typingsStatus, this.fileConfigurationManager, this.description.id),
         CompletionItemProvider.triggerCharacters
+      )
+    )
+    this._register(
+      languages.registerCompletionItemProvider(`tsc-${this.description.id}-jsdoc`, 'TSC', languageIds,
+        new JsDocCompletionProvider(client, this.description, this.fileConfigurationManager),
+        ['*', ' ']
       )
     )
     if (this.client.apiVersion.gte(API.v230)) {

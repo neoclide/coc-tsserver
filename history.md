@@ -1,3 +1,8 @@
+# 1.10.0
+
+- Support jsdoc completion.
+- Add configurations `javascript.suggest.completeJSDocs` and `typescript.suggest.completeJSDocs`.
+
 # 1.9.15
 
 - Fix uri for `zipfile`.
