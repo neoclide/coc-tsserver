@@ -87,7 +87,13 @@ export default class FileConfigurationManager {
   }
 
   public async ensureConfigurationForDocument(document: TextDocument, token: CancellationToken): Promise<void> {
-    let opts = await workspace.getFormatOptions(document.uri)
+    let opts: { insertSpaces: boolean, tabSize: number }
+    let cached = this.cachedMap.get(document.uri)
+    if (cached) {
+      opts = { insertSpaces: cached.formatOptions.convertTabsToSpaces, tabSize: cached.formatOptions.tabSize }
+    } else {
+      opts = await workspace.getFormatOptions(document.uri)
+    }
     return this.ensureConfigurationOptions(document, opts.insertSpaces, opts.tabSize, token)
   }
 
