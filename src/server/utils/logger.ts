@@ -60,7 +60,7 @@ export default class Logger {
 
   public logLevel(level: string, message: string, data?: any): void {
     this.output.appendLine(
-      `[${level}  - ${this.now()}] ${message}`
+      `[${level} - ${this.now()}] ${message}`
     )
     if (data) {
       this.output.appendLine(this.data2String(data))
