@@ -1,3 +1,12 @@
+# 1.10.2
+
+- Fix snippet completion not work for optional complete item.
+
+# 1.10.1
+
+- Avoid unnecessary fetch of format option.
+- Add `typescript.suggest.objectLiteralMethodSnippets.enabled`
+
 # 1.10.0
 
 - Support jsdoc completion.
