@@ -76,7 +76,7 @@ export function convertCompletionEntry(
   if (tsEntry.kindModifiers) {
     const kindModifiers = new Set(tsEntry.kindModifiers.split(/,|\s+/g))
     if (kindModifiers.has(PConst.KindModifiers.optional)) {
-      insertText = label
+      insertText = insertText ?? label
       label += '?'
     }
 
