@@ -42,6 +42,7 @@ export interface SuggestOptions {
   readonly includeCompletionsWithSnippetText: boolean
   readonly includeCompletionsWithClassMemberSnippets: boolean
   readonly generateReturnInDocTemplate: boolean
+  readonly includeCompletionsWithObjectLiteralMethodSnippets: boolean
 }
 
 export default class FileConfigurationManager {
@@ -167,7 +168,6 @@ export default class FileConfigurationManager {
       paths: config.get<boolean>('paths', true),
       completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
       autoImports: config.get<boolean>('autoImports', true),
-      // @ts-expect-error until 4.7
       includeCompletionsWithObjectLiteralMethodSnippets: config.get<boolean>('suggest.objectLiteralMethodSnippets.enabled', true),
       generateReturnInDocTemplate: config.get<boolean>('jsdoc.generateReturns', true),
       importStatementSuggestions: config.get<boolean>('importStatements', true),
@@ -182,26 +182,31 @@ export default class FileConfigurationManager {
     if (this.client.apiVersion.lt(API.v290)) {
       return {}
     }
-    const config = workspace.getConfiguration(`${language}.preferences`, uri)
+    const config = workspace.getConfiguration(language, uri)
+    const preferencesConfig = workspace.getConfiguration(`${language}.preferences`, uri)
     const suggestConfig = this.getCompleteOptions(language)
     // getImportModuleSpecifierEndingPreference available on ts 2.9.0
     const preferences: Proto.UserPreferences = {
-      quotePreference: this.getQuoteStyle(config),
-      importModuleSpecifierPreference: getImportModuleSpecifier(config) as any,
-      importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(config),
-      jsxAttributeCompletionStyle: getJsxAttributeCompletionStyle(config),
+      quotePreference: this.getQuoteStyle(preferencesConfig),
+      importModuleSpecifierPreference: getImportModuleSpecifier(preferencesConfig) as any,
+      importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(preferencesConfig),
+      jsxAttributeCompletionStyle: getJsxAttributeCompletionStyle(preferencesConfig),
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
       // can't support it with coc.nvim by now.
       provideRefactorNotApplicableReason: false,
-      providePrefixAndSuffixTextForRename: config.get<boolean>('renameShorthandProperties', true) === false ? false : config.get<boolean>('useAliasesForRenames', true),
+      providePrefixAndSuffixTextForRename: preferencesConfig.get<boolean>('renameShorthandProperties', true) === false ? false : preferencesConfig.get<boolean>('useAliasesForRenames', true),
       generateReturnInDocTemplate: suggestConfig.generateReturnInDocTemplate,
       includeCompletionsForImportStatements: suggestConfig.includeCompletionsForImportStatements,
       includeCompletionsWithClassMemberSnippets: suggestConfig.includeCompletionsWithClassMemberSnippets,
       includeCompletionsWithSnippetText: suggestConfig.includeCompletionsWithSnippetText,
+      // @ts-expect-error until 4.7
+      includeCompletionsWithObjectLiteralMethodSnippets: suggestConfig.includeCompletionsWithObjectLiteralMethodSnippets,
+      includeAutomaticOptionalChainCompletions: suggestConfig.includeAutomaticOptionalChainCompletions,
+      useLabelDetailsInCompletionEntries: true,
       allowIncompleteCompletions: true,
       displayPartsForJSDoc: true,
-      ...getInlayHintsPreferences(language),
+      ...getInlayHintsPreferences(config),
     }
     return preferences
   }
@@ -259,8 +264,7 @@ export class InlayHintSettingNames {
   static readonly enumMemberValuesEnabled = 'inlayHints.enumMemberValues.enabled'
 }
 
-export function getInlayHintsPreferences(language: string) {
-  const config = workspace.getConfiguration(language)
+export function getInlayHintsPreferences(config: WorkspaceConfiguration) {
   return {
     includeInlayParameterNameHints: getInlayParameterNameHintsPreference(config),
     includeInlayParameterNameHintsWhenArgumentMatchesName: !config.get<boolean>(InlayHintSettingNames.parameterNamesSuppressWhenArgumentMatchesName, true),

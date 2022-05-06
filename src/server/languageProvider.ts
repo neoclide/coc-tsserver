@@ -73,7 +73,7 @@ export default class LanguageProvider {
     client: TypeScriptServiceClient,
     typingsStatus: TypingsStatus
   ): void {
-    let languageIds = this.description.modeIds
+    let languageIds = this.description.languageIds
     let clientId = `tsc-${this.description.id}`
     this._register(
       languages.registerCompletionItemProvider(clientId, 'TSC', languageIds,
@@ -167,13 +167,19 @@ export default class LanguageProvider {
     if (this.client.apiVersion.gte(API.v300)) {
       this._register(new TagClosing(this.client, this.description.id))
     }
-    if (this.client.apiVersion.gte(API.v440) && workspace.isNvim) {
-      this._register(new TypeScriptInlayHintsProvider(this.client, this.fileConfigurationManager, languageIds))
+    if (this.client.apiVersion.gte(API.v440)) {
+      if (typeof languages.registerInlayHintsProvider === 'function') {
+        let provider = new TypeScriptInlayHintsProvider(this.description, this.client, this.fileConfigurationManager)
+        this._register(provider)
+        this._register(languages.registerInlayHintsProvider(languageIds, provider))
+      } else {
+        this.client.logger.error(`languages.registerInlayHintsProvider is not a function, inlay hints won't work`)
+      }
     }
   }
 
   public handles(resource: string, doc: TextDocument): boolean {
-    if (doc && this.description.modeIds.includes(doc.languageId)) {
+    if (doc && this.description.languageIds.includes(doc.languageId)) {
       return true
     }
     return this.handlesConfigFile(Uri.parse(resource))

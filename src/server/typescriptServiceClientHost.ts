@@ -110,7 +110,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
         if (plugin.configNamespace && plugin.languages.length) {
           this.registerExtensionLanguageProvider({
             id: plugin.configNamespace,
-            modeIds: Array.from(plugin.languages),
+            languageIds: Array.from(plugin.languages),
             diagnosticSource: 'ts-plugin',
             diagnosticLanguage: DiagnosticLanguage.TypeScript,
             diagnosticOwner: 'typescript',
@@ -127,7 +127,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
       if (languageIds.size) {
         this.registerExtensionLanguageProvider({
           id: 'typescript-plugins',
-          modeIds: Array.from(languageIds.values()),
+          languageIds: Array.from(languageIds.values()),
           diagnosticSource: 'ts-plugin',
           diagnosticLanguage: DiagnosticLanguage.TypeScript,
           diagnosticOwner: 'typescript',
@@ -293,7 +293,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
 
   private getAllModeIds(descriptions: LanguageDescription[], pluginManager: PluginManager): string[] {
     const allModeIds = flatten([
-      ...descriptions.map(x => x.modeIds),
+      ...descriptions.map(x => x.languageIds),
       ...pluginManager.plugins.map(x => x.languages)
     ])
     return allModeIds

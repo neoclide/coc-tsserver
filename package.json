@@ -913,7 +913,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^12.12.12",
-    "coc.nvim": "^0.0.81-next.23",
+    "coc.nvim": "^0.0.81-next.25",
     "esbuild": "^0.14.11",
     "semver": "^7.3.5",
     "vscode-languageserver-protocol": "^3.16.0",
