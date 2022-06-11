@@ -45,16 +45,22 @@ export default class TypeScriptFoldingProvider implements FoldingRangeProvider {
   ): FoldingRange | undefined {
     const range = typeConverters.Range.fromTextSpan(span.textSpan)
     const kind = TypeScriptFoldingProvider.getFoldingRangeKind(span)
+    let { start, end } = range
 
     // Workaround for #49904
     if (span.kind === 'comment') {
       let doc = workspace.getDocument(document.uri)
-      const line = doc.getline(range.start.line)
+      const line = doc.getline(start.line)
       if (line.match(/\/\/\s*#endregion/gi)) {
         return undefined
       }
+    } else if (span.kind === 'code') {
+      let doc = workspace.getDocument(document.uri)
+      if (end.line > start.line && /^\s*}/.test(doc.getline(end.line))) {
+        end.line -= 1
+        end.character = doc.getline(end.line).length
+      }
     }
-    let { start, end } = range
     return FoldingRange.create(start.line, end.line, start.character, end.character, kind)
   }
 
