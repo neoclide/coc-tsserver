@@ -1,3 +1,7 @@
+# 1.10.5
+
+- Fix a fold issue #380
+
 # 1.10.2
 
 - Fix snippet completion not work for optional complete item.
