@@ -1,7 +1,7 @@
 import { commands, disposeAll, IServiceProvider, ServiceStat, workspace, WorkspaceConfiguration } from 'coc.nvim'
 import { Disposable, DocumentSelector, Emitter, Event } from 'vscode-languageserver-protocol'
 import { PluginManager } from '../utils/plugins'
-import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ReloadProjectsCommand, TypeScriptGoToProjectConfigCommand } from './commands'
+import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ReloadProjectsCommand, SourceDefinitionCommand, TypeScriptGoToProjectConfigCommand } from './commands'
 import { OrganizeImportsCommand, SourceImportsCommand } from './organizeImports'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import { LanguageDescription, standardLanguageDescriptions } from './utils/languageDescription'
@@ -69,6 +69,7 @@ export default class TsserverService implements IServiceProvider {
     registCommand(new TypeScriptGoToProjectConfigCommand(this))
     registCommand(new OrganizeImportsCommand(this))
     registCommand(new SourceImportsCommand(this))
+    registCommand(new SourceDefinitionCommand(this))
     registCommand({
       id: 'tsserver.restart',
       execute: (): void => {

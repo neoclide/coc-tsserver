@@ -30,11 +30,10 @@
     "onLanguage:jsx-tags",
     "onLanguage:jsonc",
     "onCommand:_typescript.configurePlugin",
-    "onCommand:typescript.reloadProjects",
-    "onCommand:javascript.reloadProjects",
-    "onCommand:javascript.goToProjectConfig",
-    "onCommand:typescript.goToProjectConfig",
-    "onCommand:typescript.openTsServerLog",
+    "onCommand:tsserver.reloadProjects",
+    "onCommand:tsserver.goToProjectConfig",
+    "onCommand:tsserver.openTsServerLog",
+    "onCommand:tsserver.goToSourceDefinition",
     "onCommand:tsserver.watchBuild"
   ],
   "contributes": {
@@ -93,6 +92,11 @@
         "title": "Find File References",
         "category": "TSServer",
         "command": "tsserver.findAllFileReferences"
+      },
+      {
+        "command": "tsserver.goToSourceDefinition",
+        "title": "Go to Source Definition",
+        "category": "TSServer"
       },
       {
         "title": "Run `tsc --watch` for current project by use vim's job feature.",
