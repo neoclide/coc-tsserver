@@ -218,6 +218,56 @@ export class FileReferencesCommand implements Command {
   }
 }
 
+export class SourceDefinitionCommand implements Command {
+  public static readonly context = 'tsSupportsSourceDefinition'
+  public static readonly minVersion = API.v470
+
+  public readonly id = 'tsserver.goToSourceDefinition'
+
+  public constructor(private readonly service: TsserverService) {}
+
+  public async execute() {
+    const client = await this.service.getClientHost()
+    if (client.serviceClient.apiVersion.lt(SourceDefinitionCommand.minVersion)) {
+      window.showErrorMessage('Go to Source Definition failed. Requires TypeScript 4.7+.')
+      return
+    }
+
+    const { document, position } = await workspace.getCurrentState()
+    if (client.serviceClient.modeIds.indexOf(document.languageId) == -1) {
+      window.showErrorMessage('Go to Source Definition failed. Unsupported file type.')
+      return
+    }
+    const openedFiledPath = client.serviceClient.toOpenedFilePath(document.uri)
+    if (!openedFiledPath) {
+      window.showErrorMessage('Go to Source Definition failed. Unknown file type.')
+      return
+    }
+
+    await window.withProgress({ title: 'Finding source definitions' }, async (_progress, token) => {
+
+      const args = typeConverters.Position.toFileLocationRequestArgs(openedFiledPath, position)
+      const response = await client.serviceClient.execute('findSourceDefinition', args, token)
+      if (response.type === 'response' && response.body) {
+        const locations: Location[] = (response as Proto.DefinitionResponse).body.map(reference =>
+          typeConverters.Location.fromTextSpan(client.serviceClient.toResource(reference.file), reference))
+
+        if (locations.length) {
+          commands.executeCommand('editor.action.showReferences', document.uri, position, locations)
+          // if (locations.length === 1) {
+          //   commands.executeCommand('vscode.open', locations[0].uri)
+          // } else {
+          //   commands.executeCommand('editor.action.showReferences', document.uri, position, locations)
+          // }
+          return
+        }
+      }
+
+      window.showErrorMessage('No source definitions found.')
+    })
+  }
+}
+
 export function registCommand(cmd: Command): Disposable {
   let { id, execute } = cmd
   return commands.registerCommand(id as string, execute, cmd)
