@@ -1,3 +1,7 @@
+# 1.11.0
+
+- Add command `tsserver.goToSourceDefinition`.
+
 # 1.10.5
 
 - Fix a fold issue #380
