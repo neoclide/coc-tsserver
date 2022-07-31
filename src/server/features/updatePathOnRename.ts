@@ -61,11 +61,11 @@ export default class UpdateImportsOnFileRenameHandler {
       await workspace.nvim.command(`silent ${oldDocument.bufnr}bwipeout!`)
     }
     let document = workspace.getDocument(newUri)
-    if (document) {
-      await workspace.nvim.command(`silent ${document.bufnr}bwipeout!`)
-      await wait(30)
+    if (!document) {
+      document = await workspace.loadFile(newUri)
+    } else {
+      workspace.nvim.command('checktime', true)
     }
-    document = await workspace.loadFile(newUri)
     if (!document) return
     await wait(50)
     const edits = await this.getEditsForFileRename(
