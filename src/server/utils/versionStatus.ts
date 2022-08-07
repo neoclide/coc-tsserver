@@ -14,6 +14,8 @@ export default class VersionStatus {
     this._versionBarEntry = window.createStatusBarItem(99)
     this._onChangeEditorSub = events.on('BufEnter', this.onBufEnter, this)
     this._versionBarEntry.show()
+    this._versionBarEntry.text = 'Initializing tsserver'
+    this._versionBarEntry.isProgress = true
   }
 
   public dispose(): void {
