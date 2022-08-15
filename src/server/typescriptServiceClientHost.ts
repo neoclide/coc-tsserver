@@ -8,7 +8,6 @@ import { flatten } from '../utils/arrays'
 import { PluginManager } from '../utils/plugins'
 import { DiagnosticKind } from './features/diagnostics'
 import FileConfigurationManager from './features/fileConfigurationManager'
-import WatchBuild from './features/watchBuild'
 import WorkspaceSymbolProvider from './features/workspaceSymbols'
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
@@ -66,7 +65,6 @@ export default class TypeScriptServiceClientHost implements Disposable {
     }, null, this.disposables)
 
     // features
-    this.disposables.push(new WatchBuild(this.client))
     this.disposables.push(languages.registerWorkspaceSymbolProvider(new WorkspaceSymbolProvider(this.client, allModeIds)))
     this.client.onConfigDiagnosticsReceived(diag => {
       let { body } = diag

@@ -3,6 +3,7 @@ import { Disposable, DocumentSelector, Emitter, Event } from 'vscode-languageser
 import { PluginManager } from '../utils/plugins'
 import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ReloadProjectsCommand, SourceDefinitionCommand, TypeScriptGoToProjectConfigCommand } from './commands'
 import { OrganizeImportsCommand, SourceImportsCommand } from './organizeImports'
+import WatchProject from './watchBuild'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import { LanguageDescription, standardLanguageDescriptions } from './utils/languageDescription'
 
@@ -43,6 +44,7 @@ export default class TsserverService implements IServiceProvider {
     this.selector = this.descriptions.reduce((arr, c) => {
       return arr.concat(c.languageIds)
     }, [])
+    console.log(111)
     this.registCommands()
   }
 
@@ -61,6 +63,14 @@ export default class TsserverService implements IServiceProvider {
       let { id, execute } = cmd
       subscriptions.push(commands.registerCommand(id as string, execute, cmd))
     }
+    let watchProject = new WatchProject(this)
+    subscriptions.push(watchProject)
+    registCommand({
+      id: WatchProject.id,
+      execute: () => {
+        return watchProject.execute()
+      }
+    })
     registCommand(new ConfigurePluginCommand(this.pluginManager))
     registCommand(new AutoFixCommand(this))
     registCommand(new ReloadProjectsCommand(this))
