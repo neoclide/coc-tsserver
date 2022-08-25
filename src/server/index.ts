@@ -44,7 +44,6 @@ export default class TsserverService implements IServiceProvider {
     this.selector = this.descriptions.reduce((arr, c) => {
       return arr.concat(c.languageIds)
     }, [])
-    console.log(111)
     this.registCommands()
   }
 
