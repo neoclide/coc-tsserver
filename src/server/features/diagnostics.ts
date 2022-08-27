@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DiagnosticCollection, languages, workspace } from 'coc.nvim'
+import { DiagnosticCollection, Uri, languages, workspace } from 'coc.nvim'
 import { Diagnostic, DiagnosticTag } from 'vscode-languageserver-protocol'
 import { ResourceMap } from './resourceMap'
 

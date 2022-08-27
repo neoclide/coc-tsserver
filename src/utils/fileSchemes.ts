@@ -6,6 +6,7 @@
 export const file = 'file'
 export const untitled = 'untitled'
 export const git = 'git'
+export const fugitive = 'fugitive'
 /** Live share scheme */
 export const vsls = 'vsls'
 export const walkThroughSnippet = 'walkThroughSnippet'
@@ -21,5 +22,6 @@ export const semanticSupportedSchemes = [
  */
 export const disabledSchemes = new Set([
   git,
+  fugitive,
   vsls
 ])

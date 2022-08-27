@@ -215,11 +215,11 @@ export default class TypeScriptServiceClientHost implements Disposable {
       language.diagnosticsReceived(
         kind,
         resource,
-        this.createMarkerDatas(diagnostics))
+        this.createMarkerData(diagnostics))
     }
   }
 
-  private createMarkerDatas(diagnostics: Proto.Diagnostic[]): (Diagnostic & { reportUnnecessary: any, reportDeprecated: any })[] {
+  private createMarkerData(diagnostics: Proto.Diagnostic[]): (Diagnostic & { reportUnnecessary: any, reportDeprecated: any })[] {
     return diagnostics.map(tsDiag => this.tsDiagnosticToLspDiagnostic(tsDiag))
   }
 

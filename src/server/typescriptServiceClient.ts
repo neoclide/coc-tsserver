@@ -42,6 +42,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   private fileConfigurationManager: FileConfigurationManager
   private pathSeparator: string
+  private readonly emptyAuthority = 'ts-nul-authority'
   private tracer: Tracer
   private _configuration: TypeScriptServiceConfiguration
   private versionProvider: TypeScriptVersionProvider
@@ -432,7 +433,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
 
   public toResource(filepath: string): string {
     if (filepath.includes('zipfile:')) {
-      return filepath.replace(/.*zipfile:/, 'zipfile://');
+      return filepath.replace(/.*zipfile:/, 'zipfile://')
     }
     if (this._apiVersion.gte(API.v213)) {
       if (filepath.startsWith(this.inMemoryResourcePrefix + 'untitled:')) {
@@ -938,7 +939,7 @@ function getDiagnosticsKind(event: Proto.Event): DiagnosticKind {
     case 'suggestionDiag':
       return DiagnosticKind.Suggestion
   }
-  throw new Error('Unknown dignostics kind')
+  throw new Error('Unknown diagnostics kind')
 }
 
 const fenceCommands = new Set(['change', 'close', 'open'])

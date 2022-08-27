@@ -30,21 +30,21 @@ class CloseOperation {
   readonly type = BufferOperationType.Close;
   constructor(
     public readonly args: string
-  ) { }
+  ) {}
 }
 
 class OpenOperation {
   readonly type = BufferOperationType.Open;
   constructor(
     public readonly args: Proto.OpenRequestArgs
-  ) { }
+  ) {}
 }
 
 class ChangeOperation {
   readonly type = BufferOperationType.Change;
   constructor(
     public readonly args: Proto.FileCodeEdits
-  ) { }
+  ) {}
 }
 
 type BufferOperation = CloseOperation | OpenOperation | ChangeOperation
@@ -59,7 +59,7 @@ class SyncedBuffer {
     public readonly filepath: string,
     private readonly client: ITypeScriptServiceClient,
     private readonly synchronizer: BufferSynchronizer,
-  ) { }
+  ) {}
 
   public open(): void {
     const args: Proto.OpenRequestArgs = {
