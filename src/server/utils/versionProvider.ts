@@ -102,7 +102,11 @@ export class TypeScriptVersionProvider {
 
   public get globalVersion(): TypeScriptVersion | undefined {
     let { globalTsdk } = this.configuration
-    if (globalTsdk) return new TypeScriptVersion(workspace.expand(globalTsdk))
+    let folder = workspace.expand(globalTsdk)
+    if (!path.isAbsolute(folder)) {
+      folder = path.join(workspace.root, folder)
+    }
+    if (globalTsdk) return new TypeScriptVersion(folder)
     return undefined
   }
 

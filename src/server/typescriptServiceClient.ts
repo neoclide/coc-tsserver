@@ -227,7 +227,16 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     if (this.tscPathVim) currentVersion = this.versionProvider.getVersionFromTscPath(this.tscPathVim)
     if (!currentVersion && !ignoreLocalTsserver) currentVersion = this.versionProvider.getLocalVersion()
     if (!currentVersion || !fs.existsSync(currentVersion.tsServerPath)) {
-      this.info('Local tsserver not found, using bundled tsserver with coc-tsserver.')
+      if (ignoreLocalTsserver) {
+        this.info(`local tsserver is ignored, try global version`)
+      } else {
+        this.info(`local tsserver is not found, try global version`)
+      }
+      currentVersion = this.versionProvider.globalVersion
+      if (currentVersion) this.info('Local and global tsserver not found, using global tsserver from configuration')
+    }
+    if (!currentVersion || !fs.existsSync(currentVersion.tsServerPath)) {
+      this.info('Local and global tsserver not found, using bundled tsserver with coc-tsserver.')
       currentVersion = this.versionProvider.getDefaultVersion()
     }
     if (!currentVersion || !currentVersion.isValid) {
