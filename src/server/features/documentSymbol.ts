@@ -86,7 +86,7 @@ export default class TypeScriptDocumentSymbolProvider implements DocumentSymbolP
     output: DocumentSymbol[],
     item: Proto.NavigationTree,
   ): boolean {
-    let shouldInclude = TypeScriptDocumentSymbolProvider.shouldInclueEntry(item)
+    let shouldInclude = TypeScriptDocumentSymbolProvider.shouldIncludeEntry(item)
     const children = new Set(item.childItems || [])
     for (const span of item.spans) {
       const range = typeConverters.Range.fromTextSpan(span)
@@ -129,7 +129,7 @@ export default class TypeScriptDocumentSymbolProvider implements DocumentSymbolP
     return symbolInfo
   }
 
-  private static shouldInclueEntry(
+  private static shouldIncludeEntry(
     item: Proto.NavigationTree | Proto.NavigationBarItem
   ): boolean {
     if (item.kind === PConst.Kind.alias) {
