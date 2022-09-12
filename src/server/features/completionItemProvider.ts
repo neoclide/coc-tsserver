@@ -222,7 +222,8 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   ): Promise<CompletionItem> {
     if (item == null) return undefined
 
-    let { uri, position, source, name, data } = item.data
+    let { uri, position, source, name, data, resolved } = item.data
+    if (resolved) return item
     const filepath = this.client.toPath(uri)
     if (!filepath) return undefined
     const args: Proto.CompletionDetailsRequestArgs = {
@@ -261,6 +262,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         this.createSnippetOfFunctionCall(item, detail)
       }
     }
+    item.data.resolved = true
     return item
   }
 
