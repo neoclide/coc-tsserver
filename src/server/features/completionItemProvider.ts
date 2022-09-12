@@ -225,8 +225,6 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     let { uri, position, source, name, data } = item.data
     const filepath = this.client.toPath(uri)
     if (!filepath) return undefined
-    let document = workspace.getDocument(uri)
-    if (!document) return undefined
     const args: Proto.CompletionDetailsRequestArgs = {
       ...typeConverters.Position.toFileLocationRequestArgs(
         filepath,
@@ -259,11 +257,10 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     item.additionalTextEdits = additionalTextEdits
     if (detail && item.insertTextFormat == InsertTextFormat.Snippet) {
       const shouldCompleteFunction = await this.isValidFunctionCompletionContext(filepath, position, token)
-      if (shouldCompleteFunction && !item.insertText) {
+      if (shouldCompleteFunction) {
         this.createSnippetOfFunctionCall(item, detail)
       }
     }
-
     return item
   }
 
@@ -380,7 +377,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     let { displayParts } = detail
     const parameterListParts = getParameterListParts(displayParts)
     const snippet = new SnippetString()
-    snippet.appendText(`${item.insertText || item.label}(`)
+    snippet.appendText(`${item.insertText ?? item.label}(`)
     appendJoinedPlaceholders(snippet, parameterListParts.parts, ', ')
     if (parameterListParts.hasOptionalParameters) {
       snippet.appendTabstop()
