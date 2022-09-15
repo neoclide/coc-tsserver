@@ -226,6 +226,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     if (resolved) return item
     const filepath = this.client.toPath(uri)
     if (!filepath) return undefined
+    let previousInsert = item.insertText
     const args: Proto.CompletionDetailsRequestArgs = {
       ...typeConverters.Position.toFileLocationRequestArgs(
         filepath,
@@ -258,7 +259,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     item.additionalTextEdits = additionalTextEdits
     if (detail && item.insertTextFormat == InsertTextFormat.Snippet) {
       const shouldCompleteFunction = await this.isValidFunctionCompletionContext(filepath, position, token)
-      if (shouldCompleteFunction) {
+      if (shouldCompleteFunction && previousInsert == item.insertText) {
         this.createSnippetOfFunctionCall(item, detail)
       }
     }
