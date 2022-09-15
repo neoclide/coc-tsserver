@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Uri, disposeAll, workspace } from 'coc.nvim'
-import { CancellationTokenSource, CancellationToken, Emitter, Event, DidChangeTextDocumentParams, Disposable, TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol'
+import { Uri, disposeAll, DidChangeTextDocumentParams, workspace } from 'coc.nvim'
+import { CancellationTokenSource, CancellationToken, Emitter, Event, Disposable, TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol'
 import { TextDocument } from 'coc.nvim'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'

@@ -200,7 +200,6 @@ export default class FileConfigurationManager {
       includeCompletionsForImportStatements: suggestConfig.includeCompletionsForImportStatements,
       includeCompletionsWithClassMemberSnippets: suggestConfig.includeCompletionsWithClassMemberSnippets,
       includeCompletionsWithSnippetText: suggestConfig.includeCompletionsWithSnippetText,
-      // @ts-expect-error until 4.7
       includeCompletionsWithObjectLiteralMethodSnippets: suggestConfig.includeCompletionsWithObjectLiteralMethodSnippets,
       includeAutomaticOptionalChainCompletions: suggestConfig.includeAutomaticOptionalChainCompletions,
       useLabelDetailsInCompletionEntries: true,

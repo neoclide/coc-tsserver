@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SignatureHelpProvider, TextDocument } from 'coc.nvim'
-import { CancellationToken, Position, SignatureHelp, SignatureInformation } from 'vscode-languageserver-protocol'
+import { LinesTextDocument, SignatureHelp, SignatureHelpProvider } from 'coc.nvim'
+import { CancellationToken, Position, SignatureInformation } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import * as Previewer from '../utils/previewer'
@@ -15,10 +15,10 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
   public constructor(private readonly client: ITypeScriptServiceClient) {}
 
   public async provideSignatureHelp(
-    document: TextDocument,
+    document: LinesTextDocument,
     position: Position,
     token: CancellationToken
-  ): Promise<SignatureHelp | undefined> {
+  ): Promise<SignatureHelp> {
     const filepath = this.client.toPath(document.uri)
     if (!filepath) {
       return undefined
@@ -41,7 +41,7 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
 
     const result: SignatureHelp = {
       activeSignature: info.selectedItemIndex,
-      activeParameter: this.getActiveParmeter(info),
+      activeParameter: this.getActiveParameter(info),
       signatures: info.items.map(signature => {
         return this.convertSignature(signature)
       })
@@ -49,7 +49,7 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
     return result
   }
 
-  private getActiveParmeter(info: Proto.SignatureHelpItems): number {
+  private getActiveParameter(info: Proto.SignatureHelpItems): number {
     const activeSignature = info.items[info.selectedItemIndex]
     if (activeSignature && activeSignature.isVariadic) {
       return Math.min(info.argumentIndex, activeSignature.parameters.length - 1)

@@ -1,5 +1,5 @@
-import { commands, disposeAll, IServiceProvider, ServiceStat, workspace, WorkspaceConfiguration } from 'coc.nvim'
-import { Disposable, DocumentSelector, Emitter, Event } from 'vscode-languageserver-protocol'
+import { commands, disposeAll, DocumentSelector, IServiceProvider, ServiceStat, workspace, WorkspaceConfiguration } from 'coc.nvim'
+import { Disposable, Emitter, Event } from 'vscode-languageserver-protocol'
 import { PluginManager } from '../utils/plugins'
 import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ReloadProjectsCommand, SourceDefinitionCommand, TypeScriptGoToProjectConfigCommand } from './commands'
 import { OrganizeImportsCommand, SourceImportsCommand } from './organizeImports'

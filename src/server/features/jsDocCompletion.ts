@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, CompletionItem, CompletionItemKind, CompletionItemProvider, InsertTextFormat, Position, Range, SnippetString, TextDocument, workspace } from 'coc.nvim'
+import { CancellationToken, CompletionItem, CompletionItemKind, CompletionItemProvider, InsertTextFormat, LinesTextDocument, Position, Range, SnippetString, workspace } from 'coc.nvim'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { LanguageDescription } from '../utils/languageDescription'
 import * as typeConverters from '../utils/typeConverters'
@@ -11,8 +11,8 @@ import FileConfigurationManager from './fileConfigurationManager'
 
 const defaultJsDoc = new SnippetString(`/**\n * $0\n */`)
 
-function createCompleteItem(document: TextDocument, position: Position): CompletionItem {
-  const line = document.lineAt(position.line).text
+function createCompleteItem(document: LinesTextDocument, position: Position): CompletionItem {
+  const line = document.lines[position.line] ?? ''
   const prefix = line.slice(0, position.character).match(/\/\**\s*$/)
   const suffix = line.slice(position.character).match(/^\s*\**\//)
   const start = Position.create(position.line, prefix ? position.character - prefix[0].length : position.character)
@@ -39,7 +39,7 @@ export class JsDocCompletionProvider implements CompletionItemProvider {
   ) {}
 
   public async provideCompletionItems(
-    document: TextDocument,
+    document: LinesTextDocument,
     position: Position,
     token: CancellationToken
   ): Promise<CompletionItem[] | undefined> {
@@ -80,12 +80,12 @@ export class JsDocCompletionProvider implements CompletionItemProvider {
   }
 
   private isPotentiallyValidDocCompletionPosition(
-    document: TextDocument,
+    document: LinesTextDocument,
     position: Position
   ): boolean {
     // Only show the JSdoc completion when the everything before the cursor is whitespace
     // or could be the opening of a comment
-    const line = document.lineAt(position.line).text
+    const line = document.lines[position.line] ?? ''
     const prefix = line.slice(0, position.character)
     if (!/^\s*$|\/\*\s*$|^\s*\/\*+\s*$/.test(prefix)) {
       return false
