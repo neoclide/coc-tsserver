@@ -35,6 +35,7 @@ export function convertCompletionEntry(
   let sortText = tsEntry.sortText
   let preselect = false
   let detail: string
+  let isSnippet = false
   if (tsEntry.isRecommended) {
     preselect = true
   }
@@ -60,6 +61,7 @@ export function convertCompletionEntry(
     insertTextFormat = InsertTextFormat.Snippet
   }
   if (tsEntry.isSnippet) {
+    isSnippet = true
     insertTextFormat = InsertTextFormat.Snippet
   }
 
@@ -115,6 +117,7 @@ export function convertCompletionEntry(
     data: {
       uri,
       position,
+      isSnippet,
       name: tsEntry.name,
       data: tsEntry.data,
       source: tsEntry.source || ''

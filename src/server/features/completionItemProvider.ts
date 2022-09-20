@@ -222,8 +222,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   ): Promise<CompletionItem> {
     if (item == null) return undefined
 
-    let { uri, position, source, name, data, resolved } = item.data
-    if (resolved) return item
+    let { uri, position, isSnippet, source, name, data } = item.data
     const filepath = this.client.toPath(uri)
     if (!filepath) return undefined
     let previousInsert = item.insertText
@@ -257,13 +256,12 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     const { command, additionalTextEdits } = this.getCodeActions(detail, filepath)
     if (command) item.command = command
     item.additionalTextEdits = additionalTextEdits
-    if (detail && item.insertTextFormat == InsertTextFormat.Snippet) {
+    if (!isSnippet && detail && item.insertTextFormat == InsertTextFormat.Snippet) {
       const shouldCompleteFunction = await this.isValidFunctionCompletionContext(filepath, position, token)
       if (shouldCompleteFunction && previousInsert == item.insertText) {
         this.createSnippetOfFunctionCall(item, detail)
       }
     }
-    item.data.resolved = true
     return item
   }
 
