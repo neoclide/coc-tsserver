@@ -1,8 +1,8 @@
-import { commands, CompletionItemProvider, TextDocument, CompletionList, CompletionItem, window, workspace } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { commands, CompletionItemProvider, TextDocument, CompletionList, CompletionItem, window, workspace } from 'coc.nvim'
 import { CancellationToken, Command, CompletionContext, InsertTextFormat, MarkupContent, MarkupKind, Position, Range, TextEdit } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import * as PConst from '../protocol.const'
@@ -222,7 +222,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   ): Promise<CompletionItem> {
     if (item == null) return undefined
 
-    let { uri, position, isSnippet, source, name, data } = item.data
+    let { uri, position, source, name, data } = item.data
     const filepath = this.client.toPath(uri)
     if (!filepath) return undefined
     let previousInsert = item.insertText
@@ -256,7 +256,8 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     const { command, additionalTextEdits } = this.getCodeActions(detail, filepath)
     if (command) item.command = command
     item.additionalTextEdits = additionalTextEdits
-    if (!isSnippet && detail && item.insertTextFormat == InsertTextFormat.Snippet) {
+    if (!item.data.isSnippet && detail && item.insertTextFormat == InsertTextFormat.Snippet) {
+      item.data.isSnippet = true
       const shouldCompleteFunction = await this.isValidFunctionCompletionContext(filepath, position, token)
       if (shouldCompleteFunction && previousInsert == item.insertText) {
         this.createSnippetOfFunctionCall(item, detail)
