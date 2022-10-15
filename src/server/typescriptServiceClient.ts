@@ -286,7 +286,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         window.showErrorMessage(`TypeScript language server exited with error. Error message is: ${err.message}`)
         this.error('TSServer errored with error.', err)
         this.error(`TSServer log file: ${this.tsServerLogFile || ''}`)
-        window.showMessage(`TSServer errored with error. ${err.message}`, 'error')
+        window.showErrorMessage(`TSServer errored with error. ${err.message}`)
         this.serviceExited(false)
       })
       handle.onExit((code: any, signal: string) => {
@@ -414,10 +414,10 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
         if (diff < 10 * 1000 /* 10 seconds */) {
           this.lastStart = Date.now()
           startService = false
-          window.showMessage('The TypeScript language service died 5 times right after it got started.', 'error') // tslint:disable-line
+          window.showErrorMessage('The TypeScript language service died 5 times right after it got started.')
         } else if (diff < 60 * 1000 /* 1 Minutes */) {
           this.lastStart = Date.now()
-          window.showMessage('The TypeScript language service died unexpectedly 5 times in the last 5 Minutes.', 'error') // tslint:disable-line
+          window.showErrorMessage('The TypeScript language service died unexpectedly 5 times in the last 5 Minutes.')
         }
       }
       if (startService) {

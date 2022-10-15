@@ -24,7 +24,7 @@ export class ReloadProjectsCommand implements Command {
   public async execute(): Promise<void> {
     let client = await this.service.getClientHost()
     client.reloadProjects()
-    window.showMessage('projects reloaded')
+    window.showInformationMessage('projects reloaded')
   }
 }
 
@@ -70,7 +70,7 @@ async function goToProjectConfig(clientHost: TypeScriptServiceClientHost, uri: s
     // noop
   }
   if (!res || !res.body) {
-    window.showMessage('Could not determine TypeScript or JavaScript project.', 'warning')
+    window.showWarningMessage('Could not determine TypeScript or JavaScript project.')
     return
   }
   const { configFileName } = res.body
@@ -78,7 +78,7 @@ async function goToProjectConfig(clientHost: TypeScriptServiceClientHost, uri: s
     await workspace.openResource(URI.file(configFileName).toString())
     return
   }
-  window.showMessage('Config file not found', 'warning')
+  window.showWarningMessage('Config file not found')
 }
 
 function isImplicitProjectConfigFile(configFileName: string): boolean {
@@ -196,7 +196,7 @@ export class FileReferencesCommand implements Command {
   public async execute() {
     const client = await this.service.getClientHost()
     if (client.serviceClient.apiVersion.lt(FileReferencesCommand.minVersion)) {
-      window.showMessage('Find file references failed. Requires TypeScript 4.2+.', 'error')
+      window.showErrorMessage('Find file references failed. Requires TypeScript 4.2+.')
       return
     }
 

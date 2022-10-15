@@ -70,7 +70,7 @@ export async function installModules(uri: string, names: string[]): Promise<void
   let workspaceFolder = workspace.getWorkspaceFolder(uri)
   let root = workspaceFolder ? Uri.parse(workspaceFolder.uri).fsPath : undefined
   if (!root || !fs.existsSync(path.join(root, 'package.json'))) {
-    window.showMessage(`package.json not found from workspaceFolder: ${root}`, 'error')
+    window.showErrorMessage(`package.json not found from workspaceFolder: ${root}`)
     return
   }
   let arr = names.concat(names.map(s => `@types/${s}`))
@@ -95,9 +95,9 @@ export async function installModules(uri: string, names: string[]): Promise<void
     await runCommand(cmd, root)
   } catch (e) {
     statusItem.dispose()
-    window.showMessage(`Install error ${e.message}`, 'error')
+    window.showErrorMessage(`Install error ${e.message}`)
     return
   }
   statusItem.dispose()
-  window.showMessage(`Installed: ${exists.join(' ')}`, 'more')
+  window.showInformationMessage(`Installed: ${exists.join(' ')}`)
 }

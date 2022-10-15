@@ -22,7 +22,7 @@ export default class WatchProject implements Disposable {
 
     task.onExit(code => {
       if (code != 0) {
-        window.showMessage(`TSC exit with code ${code}`, 'warning')
+        window.showWarningMessage(`TSC exit with code ${code}`)
       }
       this.onStop()
     })
@@ -32,7 +32,7 @@ export default class WatchProject implements Disposable {
       }
     })
     task.onStderr(lines => {
-      window.showMessage(`TSC error: ` + lines.join('\n'), 'error')
+      window.showErrorMessage(`TSC error: ` + lines.join('\n'))
     })
     this.disposables.push(Disposable.create(() => {
       task.dispose()
@@ -44,6 +44,7 @@ export default class WatchProject implements Disposable {
 
   public async execute(): Promise<void> {
     let opts = this.options = await this.getOptions()
+    if (!opts) return
     await this.start(opts)
   }
 
@@ -104,14 +105,14 @@ export default class WatchProject implements Disposable {
     let client = await this.service.getClientHost()
     let { tscPath } = client.serviceClient
     if (!tscPath) {
-      window.showMessage(`Local & global tsc not found`, 'error')
+      window.showErrorMessage(`Local & global tsc not found`)
       return
     }
     let doc = await workspace.document
     const tsconfigPath = workspace.getConfiguration('tsserver', doc.uri).get<string>('tsconfigPath', 'tsconfig.json')
     let find = await workspace.findUp([tsconfigPath])
     if (!find) {
-      window.showMessage(`${tsconfigPath} not found!`, 'error')
+      window.showErrorMessage(`${tsconfigPath} not found!`)
       return
     }
 
