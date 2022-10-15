@@ -107,8 +107,8 @@ export default class WatchProject implements Disposable {
       window.showMessage(`Local & global tsc not found`, 'error')
       return
     }
-
-    const tsconfigPath = workspace.getConfiguration('tsserver').get<string>('tsconfigPath', 'tsconfig.json')
+    let doc = await workspace.document
+    const tsconfigPath = workspace.getConfiguration('tsserver', doc.uri).get<string>('tsconfigPath', 'tsconfig.json')
     let find = await workspace.findUp([tsconfigPath])
     if (!find) {
       window.showMessage(`${tsconfigPath} not found!`, 'error')
