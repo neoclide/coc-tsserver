@@ -80,10 +80,6 @@ export class TypeScriptServiceConfiguration {
     return this._configuration.get<protocol.WatchOptions>('watchOptions')
   }
 
-  public get typingsCacheLocation(): string {
-    return this._configuration.get<string>('typingsCacheLocation', '')
-  }
-
   public get tsServerPluginPaths(): string[] {
     return this._configuration.get<string[]>('pluginPaths', [])
   }

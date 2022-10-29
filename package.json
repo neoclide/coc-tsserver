@@ -116,11 +116,13 @@
         "tsserver.enable": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Enable tsserver extension"
         },
         "tsserver.tsconfigPath": {
           "type": "string",
           "default": "tsconfig.json",
+          "scope": "resource",
           "description": "Path to tsconfig file for the `tsserver.watchBuild` command. Defaults to `tsconfig.json`."
         },
         "tsserver.locale": {
@@ -128,13 +130,9 @@
             "string",
             "null"
           ],
+          "scope": "application",
           "default": null,
           "description": "Sets the locale used to report JavaScript and TypeScript errors. Default of `null` uses english."
-        },
-        "tsserver.typingsCacheLocation": {
-          "type": "string",
-          "default": "",
-          "description": "Folder path for cache typings"
         },
         "tsserver.formatOnType": {
           "type": "boolean",

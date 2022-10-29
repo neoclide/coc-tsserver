@@ -116,7 +116,6 @@ for guide of coc.nvim's configuration.
 - `tsserver.locale`:Locale of tsserver, default: `""`
 - `tsserver.ignoreLocalTsserver`:Always use tsserver module from tsserver.tsdk
   or coc-tsserver extension.
-- `tsserver.typingsCacheLocation`:Folder path for cache typings, default: `""`
 - `tsserver.formatOnType`:Run format on type special characters., default:
   `true`
 - `tsserver.enableJavascript`:Use tsserver for javascript files, default: `true`
@@ -275,6 +274,7 @@ for guide of coc.nvim's configuration.
   Enable/disable suggestion to complete JSDoc comments. default: `true`
 
 ### Added on 1.10.1
+
 - `typescript.suggest.objectLiteralMethodSnippets.enabled`
   `javascript.suggest.objectLiteralMethodSnippets.enabled`:
   Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace
