@@ -134,29 +134,22 @@
           "default": null,
           "description": "Sets the locale used to report JavaScript and TypeScript errors. Default of `null` uses english."
         },
-        "tsserver.formatOnType": {
-          "type": "boolean",
-          "default": true,
-          "description": "Run format on type special characters."
-        },
-        "tsserver.enableJavascript": {
-          "type": "boolean",
-          "default": true,
-          "description": "Use tsserver for javascript files"
-        },
         "tsserver.ignoreLocalTsserver": {
           "type": "boolean",
           "default": false,
+          "scope": "resource",
           "description": "Always use tsserver module from tsserver.tsdk or tsserver extension."
         },
         "tsserver.maxTsServerMemory": {
           "type": "number",
           "default": 0,
+          "scope": "application",
           "description": "Set the maximum amount of memory to allocate to the TypeScript server process"
         },
         "tsserver.watchOptions": {
           "type": "object",
           "description": "Configure which watching strategies should be used to keep track of files and directories. Requires using TypeScript 3.8+ in the workspace.",
+          "scope": "application",
           "properties": {
             "watchFile": {
               "type": "string",
@@ -198,7 +191,8 @@
         "tsserver.tsdk": {
           "type": "string",
           "default": "",
-          "description": "Directory contains tsserver.js,"
+          "description": "Directory in typescript module that contains tsserver.js",
+          "scope": "application"
         },
         "tsserver.npm": {
           "type": "string",
@@ -215,6 +209,7 @@
             "verbose",
             "off"
           ],
+          "scope": "application",
           "description": "Log level of tsserver"
         },
         "tsserver.trace.server": {
@@ -225,6 +220,7 @@
             "messages",
             "verbose"
           ],
+          "scope": "application",
           "description": "Trace level of tsserver"
         },
         "tsserver.enableTracing": {
@@ -239,31 +235,31 @@
           "items": {
             "type": "string"
           },
+          "scope": "window",
           "description": "Folders contains tsserver plugins"
         },
         "tsserver.reportStyleChecksAsWarnings": {
           "type": "boolean",
+          "scope": "window",
           "default": true
         },
         "tsserver.implicitProjectConfig.checkJs": {
           "type": "boolean",
           "default": false,
+          "scope": "window",
           "description": "Enable checkJs for implicit project"
         },
         "tsserver.implicitProjectConfig.experimentalDecorators": {
           "type": "boolean",
           "default": false,
+          "scope": "window",
           "description": "Enable experimentalDecorators for implicit project"
         },
         "tsserver.disableAutomaticTypeAcquisition": {
           "type": "boolean",
           "default": false,
+          "scope": "window",
           "description": "Disable download of typings"
-        },
-        "tsserver.useBatchedBufferSync": {
-          "type": "boolean",
-          "default": true,
-          "description": "Use batched buffer sync support."
         },
         "typescript.check.npmIsInstalled": {
           "type": "boolean",
@@ -274,25 +270,30 @@
         "typescript.showUnused": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Show unused variable hint."
         },
         "typescript.showDeprecated": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Show deprecated variable hint."
         },
         "typescript.updateImportsOnFileMove.enable": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Enable update imports on file move."
         },
         "typescript.implementationsCodeLens.enable": {
           "type": "boolean",
+          "scope": "window",
           "default": true,
           "description": "Enable codeLens for implementations"
         },
         "typescript.referencesCodeLens.enable": {
           "type": "boolean",
+          "scope": "window",
           "default": true,
           "description": "Enable codeLens for references"
         },
@@ -305,6 +306,7 @@
         "typescript.preferences.importModuleSpecifier": {
           "type": "string",
           "default": "shortest",
+          "scope": "window",
           "description": "Preferred path style for auto imports.",
           "enumDescriptions": [
             "Prefers a non-relative import only if one is available that has fewer path segments than a relative import",
@@ -370,45 +372,53 @@
             "auto",
             "single",
             "double"
-          ]
+          ],
+          "scope": "language-overridable"
         },
         "typescript.preferences.useAliasesForRenames": {
           "type": "boolean",
           "default": true,
           "description": "Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace.",
-          "scope": "resource"
+          "scope": "language-overridable"
         },
         "typescript.suggestionActions.enabled": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace."
         },
         "typescript.validate.enable": {
           "type": "boolean",
           "default": true,
+          "scope": "window",
           "description": "Enable/disable TypeScript validation."
         },
         "typescript.suggest.enabled": {
           "type": "boolean",
-          "default": true
+          "default": true,
+          "scope": "language-overridable"
         },
         "typescript.suggest.paths": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable/disable suggest paths in import statement and require calls"
         },
         "typescript.suggest.importStatements": {
           "type": "boolean",
+          "scope": "language-overridable",
           "default": true
         },
         "typescript.suggest.autoImports": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable/disable auto import suggests."
         },
         "typescript.suggest.completeFunctionCalls": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable snippet for method suggestion"
         },
         "typescript.suggest.includeCompletionsForImportStatements": {
@@ -433,75 +443,92 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable/disable generating `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in the workspace.",
-          "scope": "resource"
+          "scope": "language-overridable"
         },
         "typescript.format.enabled": {
           "type": "boolean",
           "default": true,
+          "scope": "window",
           "description": "Enable format for typescript."
         },
         "typescript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "typescript.format.insertSpaceAfterConstructor": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterSemicolonInForStatements": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "typescript.format.insertSpaceBeforeAndAfterBinaryOperators": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "typescript.format.insertSpaceBeforeFunctionParenthesis": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.insertSpaceAfterTypeAssertion": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.placeOpenBraceOnNewLineForFunctions": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.placeOpenBraceOnNewLineForControlBlocks": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "typescript.format.semicolons": {
@@ -519,7 +546,7 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled.",
-          "scope": "resource"
+          "scope": "language-overridable"
         },
         "typescript.workspaceSymbols.scope": {
           "type": "string",
@@ -533,28 +560,34 @@
         "typescript.autoClosingTags": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable/disable automatic closing of JSX tags."
         },
         "javascript.showUnused": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Show unused variable hint."
         },
         "javascript.showDeprecated": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Show deprecated variable hint."
         },
         "javascript.updateImportsOnFileMove.enable": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "javascript.implementationsCodeLens.enable": {
           "type": "boolean",
+          "scope": "window",
           "default": true
         },
         "javascript.referencesCodeLens.enable": {
           "type": "boolean",
+          "scope": "window",
           "default": true
         },
         "javascript.referencesCodeLens.showOnAllFunctions": {
@@ -567,6 +600,7 @@
           "type": "string",
           "default": "shortest",
           "description": "Preferred path style for auto imports.",
+          "scope": "language-overridable",
           "enumDescriptions": [
             "Prefers a non-relative import only if one is available that has fewer path segments than a relative import",
             "Prefers a relative path to the imported file location",
@@ -588,9 +622,9 @@
             "index",
             "js"
           ],
+          "scope": "language-overridable",
           "default": "auto",
-          "description": "Preferred path ending for auto imports.",
-          "scope": "resource"
+          "description": "Preferred path ending for auto imports."
         },
         "javascript.preferences.jsxAttributeCompletionStyle": {
           "type": "string",
@@ -606,11 +640,12 @@
           ],
           "default": "auto",
           "description": "Preferred style for JSX attribute completions.",
-          "scope": "resource"
+          "scope": "language-overridable"
         },
         "javascript.preferences.quoteStyle": {
           "type": "string",
           "default": "auto",
+          "scope": "language-overridable",
           "enum": [
             "auto",
             "single",
@@ -621,39 +656,46 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace.",
-          "scope": "resource"
+          "scope": "language-overridable"
         },
         "javascript.validate.enable": {
           "type": "boolean",
           "default": true,
+          "scope": "window",
           "description": "Enable/disable JavaScript validation."
         },
         "javascript.suggestionActions.enabled": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace."
         },
         "javascript.suggest.names": {
           "type": "boolean",
+          "scope": "language-overridable",
           "default": true
         },
         "javascript.suggest.enabled": {
           "type": "boolean",
+          "scope": "language-overridable",
           "default": true
         },
         "javascript.suggest.paths": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable/disable suggest paths in import statement and require calls"
         },
         "javascript.suggest.autoImports": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable/disable auto import suggests."
         },
         "javascript.suggest.completeFunctionCalls": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable snippet for method suggestion"
         },
         "javascript.suggest.includeCompletionsForImportStatements": {
@@ -672,75 +714,92 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable/disable generating `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in the workspace.",
-          "scope": "resource"
+          "scope": "language-overridable"
         },
         "javascript.format.enabled": {
           "type": "boolean",
           "default": true,
+          "scope": "window",
           "description": "Enable format for javascript."
         },
         "javascript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "javascript.format.insertSpaceAfterConstructor": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterSemicolonInForStatements": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "javascript.format.insertSpaceBeforeAndAfterBinaryOperators": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "javascript.format.insertSpaceAfterKeywordsInControlFlowStatements": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": {
           "type": "boolean",
+          "scope": "resource",
           "default": true
         },
         "javascript.format.insertSpaceBeforeFunctionParenthesis": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.insertSpaceAfterTypeAssertion": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.placeOpenBraceOnNewLineForFunctions": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.format.placeOpenBraceOnNewLineForControlBlocks": {
           "type": "boolean",
+          "scope": "resource",
           "default": false
         },
         "javascript.suggest.includeAutomaticOptionalChainCompletions": {
@@ -856,6 +915,7 @@
         "javascript.autoClosingTags": {
           "type": "boolean",
           "default": true,
+          "scope": "language-overridable",
           "description": "Enable/disable automatic closing of JSX tags."
         },
         "javascript.format.semicolons": {
@@ -872,12 +932,14 @@
         "javascript.suggest.completeJSDocs": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable suggestion to complete JSDoc comments."
+          "description": "Enable/disable suggestion to complete JSDoc comments.",
+          "scope": "language-overridable"
         },
         "typescript.suggest.completeJSDocs": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable suggestion to complete JSDoc comments."
+          "description": "Enable/disable suggestion to complete JSDoc comments.",
+          "scope": "language-overridable"
         },
         "javascript.suggest.objectLiteralMethodSnippets.enabled": {
           "type": "boolean",
@@ -916,7 +978,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^14.14",
-    "coc.nvim": "^0.0.82",
+    "coc.nvim": "^0.0.83-next.8",
     "esbuild": "^0.15.7",
     "semver": "^7.3.7",
     "vscode-languageserver-protocol": "^3.17.2",

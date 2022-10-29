@@ -116,9 +116,6 @@ for guide of coc.nvim's configuration.
 - `tsserver.locale`:Locale of tsserver, default: `""`
 - `tsserver.ignoreLocalTsserver`:Always use tsserver module from tsserver.tsdk
   or coc-tsserver extension.
-- `tsserver.formatOnType`:Run format on type special characters., default:
-  `true`
-- `tsserver.enableJavascript`:Use tsserver for javascript files, default: `true`
 - `tsserver.maxTsServerMemory`:Set the maximum amount of memory to allocate to
   the TypeScript server process
 - `tsserver.tsdk`:Directory contains tsserver.js,, default: `""`
@@ -136,7 +133,6 @@ for guide of coc.nvim's configuration.
   experimentalDecorators for implicit project, default: `false`
 - `tsserver.disableAutomaticTypeAcquisition`:Disable download of typings,
   default: `false`
-- `tsserver.useBatchedBufferSync`: use batched buffer synchronize support, default: `true`
 - `tsserver.enableTracing`: Enables tracing TS server performance to a
   directory. These trace files can be used to diagnose TS Server performance
   issues. The log may contain file paths, source code, and other potentially

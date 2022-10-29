@@ -117,16 +117,11 @@ export default class FileConfigurationManager {
     return config.get<boolean>('enabled')
   }
 
-  public enableJavascript(): boolean {
-    const config = workspace.getConfiguration('tsserver')
-    return !!config.get<boolean>('enableJavascript')
-  }
-
   private getFileOptions(options: FormatOptions, document: TextDocument): FileConfiguration {
     const lang = this.isTypeScriptDocument(document.languageId) ? 'typescript' : 'javascript'
     return {
       formatOptions: this.getFormatOptions(options, lang, document.uri),
-      preferences: this.getPreferences(lang, document.uri)
+      preferences: this.getPreferences(lang, document)
     }
   }
 
@@ -159,33 +154,14 @@ export default class FileConfigurationManager {
     }
   }
 
-  public getCompleteOptions(languageId: string): SuggestOptions {
-    const lang = this.isTypeScriptDocument(languageId) ? 'typescript' : 'javascript'
-    const config = workspace.getConfiguration(`${lang}.suggest`)
-    return {
-      enabled: config.get<boolean>('enabled', true),
-      names: config.get<boolean>('names', true),
-      paths: config.get<boolean>('paths', true),
-      completeFunctionCalls: config.get<boolean>('completeFunctionCalls', true),
-      autoImports: config.get<boolean>('autoImports', true),
-      includeCompletionsWithObjectLiteralMethodSnippets: config.get<boolean>('suggest.objectLiteralMethodSnippets.enabled', true),
-      generateReturnInDocTemplate: config.get<boolean>('jsdoc.generateReturns', true),
-      importStatementSuggestions: config.get<boolean>('importStatements', true),
-      includeCompletionsForImportStatements: config.get<boolean>('includeCompletionsForImportStatements', true),
-      includeCompletionsWithSnippetText: config.get<boolean>('includeCompletionsWithSnippetText', true),
-      includeCompletionsWithClassMemberSnippets: config.get<boolean>('classMemberSnippets.enabled', true),
-      includeAutomaticOptionalChainCompletions: config.get<boolean>('includeAutomaticOptionalChainCompletions', true)
-    }
-  }
-
-  public getPreferences(language: string, uri: string): Proto.UserPreferences {
+  public getPreferences(language: string, doc: TextDocument): Proto.UserPreferences {
     if (this.client.apiVersion.lt(API.v290)) {
       return {}
     }
-    const config = workspace.getConfiguration(language, uri)
-    const preferencesConfig = workspace.getConfiguration(`${language}.preferences`, uri)
-    const suggestConfig = this.getCompleteOptions(language)
-    // getImportModuleSpecifierEndingPreference available on ts 2.9.0
+    let { uri } = doc
+    const config = workspace.getConfiguration(language, doc)
+    const preferencesConfig = workspace.getConfiguration(`${language}.preferences`, doc)
+
     const preferences: Proto.UserPreferences = {
       quotePreference: this.getQuoteStyle(preferencesConfig),
       importModuleSpecifierPreference: getImportModuleSpecifier(preferencesConfig) as any,
@@ -193,15 +169,14 @@ export default class FileConfigurationManager {
       jsxAttributeCompletionStyle: getJsxAttributeCompletionStyle(preferencesConfig),
       allowTextChangesInNewFiles: uri.startsWith('file:'),
       allowRenameOfImportPath: true,
-      // can't support it with coc.nvim by now.
-      provideRefactorNotApplicableReason: false,
+      provideRefactorNotApplicableReason: true,
       providePrefixAndSuffixTextForRename: preferencesConfig.get<boolean>('renameShorthandProperties', true) === false ? false : preferencesConfig.get<boolean>('useAliasesForRenames', true),
-      generateReturnInDocTemplate: suggestConfig.generateReturnInDocTemplate,
-      includeCompletionsForImportStatements: suggestConfig.includeCompletionsForImportStatements,
-      includeCompletionsWithClassMemberSnippets: suggestConfig.includeCompletionsWithClassMemberSnippets,
-      includeCompletionsWithSnippetText: suggestConfig.includeCompletionsWithSnippetText,
-      includeCompletionsWithObjectLiteralMethodSnippets: suggestConfig.includeCompletionsWithObjectLiteralMethodSnippets,
-      includeAutomaticOptionalChainCompletions: suggestConfig.includeAutomaticOptionalChainCompletions,
+      includeAutomaticOptionalChainCompletions: config.get<boolean>('suggest.includeAutomaticOptionalChainCompletions', true),
+      generateReturnInDocTemplate: config.get<boolean>('suggest.jsdoc.generateReturns', true),
+      includeCompletionsForImportStatements: config.get<boolean>('suggest.includeCompletionsForImportStatements', true),
+      includeCompletionsWithSnippetText: config.get<boolean>('suggest.includeCompletionsWithSnippetText', true),
+      includeCompletionsWithClassMemberSnippets: config.get<boolean>('suggest.classMemberSnippets.enabled', true),
+      includeCompletionsWithObjectLiteralMethodSnippets: config.get<boolean>('suggest.objectLiteralMethodSnippets.enabled', true),
       useLabelDetailsInCompletionEntries: true,
       allowIncompleteCompletions: true,
       displayPartsForJSDoc: true,

@@ -14,7 +14,7 @@ import * as Previewer from '../utils/previewer'
 import SnippetString from '../utils/SnippetString'
 import * as typeConverters from '../utils/typeConverters'
 import TypingsStatus from '../utils/typingsStatus'
-import FileConfigurationManager, { SuggestOptions } from './fileConfigurationManager'
+import FileConfigurationManager from './fileConfigurationManager'
 
 // command center
 export interface CommandItem {
@@ -47,31 +47,53 @@ class ApplyCompletionCodeActionCommand implements CommandItem {
   }
 }
 
+interface CompletionConfiguration {
+  readonly useCodeSnippetsOnMethodSuggest: boolean
+  readonly nameSuggestions: boolean
+  readonly pathSuggestions: boolean
+  readonly autoImportSuggestions: boolean
+  readonly importStatementSuggestions: boolean
+}
+
+namespace CompletionConfiguration {
+  export const useCodeSnippetsOnMethodSuggest = 'suggest.completeFunctionCalls'
+  export const nameSuggestions = 'suggest.names'
+  export const pathSuggestions = 'suggest.paths'
+  export const autoImportSuggestions = 'suggest.autoImports'
+  export const importStatementSuggestions = 'suggest.importStatements'
+
+  export function getConfigurationForResource(
+    modeId: string,
+    resource: string
+  ): CompletionConfiguration {
+    const config = workspace.getConfiguration(modeId, resource)
+    return {
+      useCodeSnippetsOnMethodSuggest: config.get<boolean>(CompletionConfiguration.useCodeSnippetsOnMethodSuggest, false),
+      pathSuggestions: config.get<boolean>(CompletionConfiguration.pathSuggestions, true),
+      autoImportSuggestions: config.get<boolean>(CompletionConfiguration.autoImportSuggestions, true),
+      nameSuggestions: config.get<boolean>(CompletionConfiguration.nameSuggestions, true),
+      importStatementSuggestions: config.get<boolean>(CompletionConfiguration.importStatementSuggestions, true),
+    }
+  }
+}
+
+
 export default class TypeScriptCompletionItemProvider implements CompletionItemProvider {
 
   public static readonly triggerCharacters = ['.', '"', '\'', '`', '/', '@', '<', '#', ' ']
-  private completeOption: SuggestOptions
   private currentLine = ''
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly typingsStatus: TypingsStatus,
     private readonly fileConfigurationManager: FileConfigurationManager,
-    languageId: string
+    private lang: string
   ) {
 
-    this.setCompleteOption(languageId)
     commands.registerCommand(ApplyCompletionCodeActionCommand.ID, async (codeActions) => {
       let cmd = new ApplyCompletionCodeActionCommand(this.client)
       await cmd.execute(codeActions)
     })
-    workspace.onDidChangeConfiguration(_e => {
-      this.setCompleteOption(languageId)
-    })
-  }
-
-  private setCompleteOption(languageId: string): void {
-    this.completeOption = this.fileConfigurationManager.getCompleteOptions(languageId)
   }
 
   /**
@@ -107,20 +129,19 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       end: position
     })
     let { triggerCharacter, option } = context as any
+    const completionConfiguration = CompletionConfiguration.getConfigurationForResource(this.lang, document.uri)
 
-    if (!this.shouldTrigger(triggerCharacter, preText, option)) {
+    if (!this.shouldTrigger(triggerCharacter, preText, option, completionConfiguration)) {
       return null
     }
     this.currentLine = document.lines[position.line]
 
     await this.client.interruptGetErr(() => this.fileConfigurationManager.ensureConfigurationForDocument(document, token))
-    const { completeOption } = this
-    const args: Proto.CompletionsRequestArgs & { includeAutomaticOptionalChainCompletions?: boolean } = {
+    const args: Proto.CompletionsRequestArgs = {
       ...typeConverters.Position.toFileLocationRequestArgs(file, position),
-      includeExternalModuleExports: completeOption.autoImports,
+      includeExternalModuleExports: completionConfiguration.autoImportSuggestions,
       includeInsertTextCompletions: true,
       triggerCharacter: this.getTsTriggerCharacter(context),
-      includeAutomaticOptionalChainCompletions: completeOption.includeAutomaticOptionalChainCompletions
     }
 
     let entries: ReadonlyArray<Proto.CompletionEntry> | undefined
@@ -168,7 +189,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
     const completionItems: CompletionItem[] = []
     for (const element of entries) {
-      if (shouldExcludeCompletionEntry(element, completeOption)) {
+      if (shouldExcludeCompletionEntry(element, completionConfiguration)) {
         continue
       }
       const item = convertCompletionEntry(
@@ -178,7 +199,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         {
           isNewIdentifierLocation,
           isMemberCompletion,
-          enableCallCompletions: completeOption.completeFunctionCalls,
+          enableCallCompletions: completionConfiguration.useCodeSnippetsOnMethodSuggest,
           isInValidCommitCharacterContext,
           dotAccessorContext,
         }
@@ -324,7 +345,8 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
   private shouldTrigger(
     triggerCharacter: string,
     pre: string,
-    option: any
+    option: any,
+    configuration: CompletionConfiguration
   ): boolean {
     if (triggerCharacter && this.client.apiVersion.lt(API.v290)) {
       if (triggerCharacter === '@') {
@@ -342,7 +364,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     }
 
     if (triggerCharacter === ' ') {
-      if (!this.completeOption.importStatementSuggestions || !this.client.apiVersion.lt(API.v430)) {
+      if (!configuration.importStatementSuggestions || !this.client.apiVersion.lt(API.v430)) {
         return false
       }
       return pre === 'import '
@@ -443,13 +465,13 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
 function shouldExcludeCompletionEntry(
   element: Proto.CompletionEntry,
-  completionConfiguration: SuggestOptions
+  completionConfiguration: CompletionConfiguration
 ): boolean {
   return (
-    (!completionConfiguration.names && element.kind === PConst.Kind.warning)
-    || (!completionConfiguration.paths &&
+    (!completionConfiguration.nameSuggestions && element.kind === PConst.Kind.warning)
+    || (!completionConfiguration.pathSuggestions &&
       (element.kind === PConst.Kind.directory || element.kind === PConst.Kind.script || element.kind === PConst.Kind.externalModuleName))
-    || (!completionConfiguration.autoImports && element.hasAction)
+    || (!completionConfiguration.autoImportSuggestions && element.hasAction)
   )
 }
 

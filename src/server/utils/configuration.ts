@@ -49,6 +49,12 @@ export class TypeScriptServiceConfiguration {
       this._configuration = workspace.getConfiguration('tsserver')
       this._includePackageJsonAutoImports = workspace.getConfiguration('typescript').get<'auto' | 'on' | 'off'>('preferences.includePackageJsonAutoImports')
     })
+    workspace.onDidChangeWorkspaceFolders(e => {
+      if (e.added.length > 0) {
+        this._configuration = workspace.getConfiguration('tsserver')
+        this._includePackageJsonAutoImports = workspace.getConfiguration('typescript').get<'auto' | 'on' | 'off'>('preferences.includePackageJsonAutoImports')
+      }
+    })
   }
 
   public get enableTsServerTracing(): boolean {
@@ -94,10 +100,6 @@ export class TypeScriptServiceConfiguration {
 
   public get disableAutomaticTypeAcquisition(): boolean {
     return this._configuration.get<boolean>('disableAutomaticTypeAcquisition', false)
-  }
-
-  public get formatOnType(): boolean {
-    return this._configuration.get<boolean>('formatOnType', false)
   }
 
   public get maxTsServerMemory(): number {

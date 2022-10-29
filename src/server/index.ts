@@ -22,10 +22,9 @@ export default class TsserverService implements IServiceProvider {
 
   constructor(private pluginManager: PluginManager, private readonly subscriptions: Disposable[]) {
     const config = workspace.getConfiguration('tsserver')
-    const enableJavascript = config.get<boolean>('enableJavascript', true)
     this.enable = config.get<boolean>('enable')
     this.descriptions = standardLanguageDescriptions.filter(o => {
-      return enableJavascript ? true : o.id != 'javascript'
+      return true
     })
     workspace.onDidChangeConfiguration(e => {
       if (e.affectsConfiguration('tsserver')) {

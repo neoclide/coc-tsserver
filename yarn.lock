@@ -12,10 +12,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.29.tgz#a0c58d67a42f8953c13d32f0acda47ed26dfce40"
   integrity sha512-LhF+9fbIX4iPzhsRLpK5H7iPdvW8L4IwGciXQIOEcuF62+9nw/VQVsOViAOOGxY3OlOKGLFv0sWwJXdwQeTn6A==
 
-coc.nvim@^0.0.82:
-  version "0.0.82"
-  resolved "https://registry.yarnpkg.com/coc.nvim/-/coc.nvim-0.0.82.tgz#5230e2eb17e8499a60a97b46d844f2d08c593b29"
-  integrity sha512-+70ap6FH8FSdaQ0CPijaasQzg6ue84j4/LkX6ZSpALX7YKBcGGDkCcd6adgaC/86b/ZqT3iTTEbMh3mdaI5qPA==
+coc.nvim@^0.0.83-next.8:
+  version "0.0.83-next.8"
+  resolved "https://registry.yarnpkg.com/coc.nvim/-/coc.nvim-0.0.83-next.8.tgz#98478b703d70de0941731e0b1fdac4c0f9fe5f44"
+  integrity sha512-ngYyjDnrMfQTffHQeEyvWoLCKEMTx+Z/7GSphyzQ/b3+l0jDHfZJY0lt3e+Vl53og8Ylpa9rF32zjVUmztmxYQ==
 
 esbuild-android-64@0.15.7:
   version "0.15.7"

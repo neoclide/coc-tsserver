@@ -90,7 +90,7 @@ export default class TypeScriptServiceClient implements ITypeScriptServiceClient
     this.versionProvider = new TypeScriptVersionProvider(this._configuration)
     this._apiVersion = API.defaultVersion
     this.tracer = new Tracer(this.logger)
-    this.versionStatus = new VersionStatus(this.normalizePath.bind(this), this.fileConfigurationManager.enableJavascript())
+    this.versionStatus = new VersionStatus(this.normalizePath.bind(this))
     pluginManager.onDidUpdateConfig(update => {
       this.configurePlugin(update.pluginId, update.config)
     }, null, this.disposables)

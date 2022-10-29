@@ -8,8 +8,7 @@ export default class VersionStatus {
   private _versionString = ''
 
   constructor(
-    private readonly _normalizePath: (resource: Uri) => string | null,
-    private readonly enableJavascript: boolean
+    private readonly _normalizePath: (resource: Uri) => string | null
   ) {
     this._versionBarEntry = window.createStatusBarItem(99)
     this._onChangeEditorSub = events.on('BufEnter', this.onBufEnter, this)
@@ -35,10 +34,7 @@ export default class VersionStatus {
   }
 
   private checkFiletype(filetype: string): boolean {
-    if (filetype.startsWith('javascript') && this.enableJavascript) {
-      return true
-    }
-    return filetype.startsWith('typescript')
+    return filetype.startsWith('typescript') || filetype.startsWith('javascript')
   }
 
   private async onBufEnter(bufnr: number): Promise<void> {
