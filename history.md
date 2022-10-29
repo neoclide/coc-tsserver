@@ -3,6 +3,7 @@
 - Disable snippet function completion when following character is `(`.
 - Remove configuration `tsserver.typingsCacheLocation`.
 - Remove configuration `tsserver.formatOnType`.
+- Remove configuration `tsserver.enableJavascript`.
 - Remove configuration `tsserver.useBatchedBufferSync`.
 - Support preference tsserver `provideRefactorNotApplicableReason`.
 - Added `scope` for configurations, support some language-overridable
