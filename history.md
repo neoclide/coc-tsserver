@@ -5,6 +5,8 @@
 - Remove configuration `tsserver.formatOnType`.
 - Remove configuration `tsserver.useBatchedBufferSync`.
 - Support preference tsserver `provideRefactorNotApplicableReason`.
+- Added `scope` for configurations, support some language-overridable
+  configurations.
 
 # 1.11.0
 
