@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { commands, CompletionItemProvider, TextDocument, CompletionList, CompletionItem, window, workspace } from 'coc.nvim'
+import { commands, CompletionItemProvider, TextDocument, CompletionList, CompletionItem, window, workspace, LinesTextDocument } from 'coc.nvim'
 import { CancellationToken, Command, CompletionContext, InsertTextFormat, MarkupContent, MarkupKind, Position, Range, TextEdit } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import * as PConst from '../protocol.const'
@@ -51,6 +51,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
 
   public static readonly triggerCharacters = ['.', '"', '\'', '`', '/', '@', '<', '#', ' ']
   private completeOption: SuggestOptions
+  private currentLine = ''
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
@@ -84,7 +85,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
    * @returns {Promise<CompletionItem[]>}
    */
   public async provideCompletionItems(
-    document: TextDocument,
+    document: LinesTextDocument,
     position: Position,
     token: CancellationToken,
     context: CompletionContext,
@@ -110,6 +111,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     if (!this.shouldTrigger(triggerCharacter, preText, option)) {
       return null
     }
+    this.currentLine = document.lines[position.line]
 
     await this.client.interruptGetErr(() => this.fileConfigurationManager.ensureConfigurationForDocument(document, token))
     const { completeOption } = this
@@ -399,23 +401,25 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     try {
       const args: Proto.FileLocationRequestArgs = typeConverters.Position.toFileLocationRequestArgs(filepath, position)
       const response = await this.client.execute('quickinfo', args, token)
-      if (response.type !== 'response') {
-        return true
+      if (response.type === 'response' && response.body) {
+        const { body } = response
+        switch (body && body.kind) {
+          case 'var':
+          case 'let':
+          case 'const':
+          case 'alias':
+            return false
+        }
       }
 
-      const { body } = response
-      switch (body && body.kind) {
-        case 'var':
-        case 'let':
-        case 'const':
-        case 'alias':
-          return false
-        default:
-          return true
-      }
     } catch (e) {
-      return true
+      // Noop
     }
+
+    // Don't complete function call if there is already something that looks like a function call
+    // https://github.com/microsoft/vscode/issues/18131
+    const after = this.currentLine.slice(position.character)
+    return after.match(/^[a-z_$0-9]*\s*\(/gi) === null
   }
 
   private isInValidCommitCharacterContext(

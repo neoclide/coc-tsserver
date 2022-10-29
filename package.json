@@ -205,7 +205,8 @@
         "tsserver.npm": {
           "type": "string",
           "default": "",
-          "description": "Executable path of npm for download typings"
+          "description": "Executable path of npm for download typings",
+          "scope": "application"
         },
         "tsserver.log": {
           "type": "string",
