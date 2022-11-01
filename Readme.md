@@ -33,13 +33,6 @@ unnecessary files in your jsconfig.json/tsconfig.json.
 
 **Note:** if you're using WSL, copy you project files from mounted dirs to linux home otherwise tsserver will not work properly.
 
-## Supporting
-
-If you like my extension, consider supporting me on Patreon or PayPal:
-
-<a href="https://www.patreon.com/chemzqm"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Patreon donate button" /> </a>
-<a href="https://www.paypal.com/paypalme/chezqm"><img src="https://werwolv.net/assets/paypal_banner.png" alt="PayPal donate button" /> </a>
-
 ## Install
 
 In your vim/neovim, run command:
@@ -105,6 +98,11 @@ Almost the same as VSCode.
 Tsserver module first resolved from your local workspace. If it's not found, use
 tsserver from `tsserver.tsdk` configuration or use bundled tsserver with this
 extension.
+
+**Important note:** from v2.0.0, tsserver module resolved first from global
+configuration `tsserver.tsdk` and use bundled module when not found, if
+`tsserver.useLocalTsdk` is enabled in workspace folder configuration, typescript
+module inside current workspace folder would be used when exists.
 
 ## Configuration options
 
@@ -302,6 +300,13 @@ Configurations are the same as with VSCode. Install
 
 If you find any issues, please [create an
 issue](https://github.com/neoclide/coc-tsserver/issues/new).
+
+## Sponsoring
+
+If you like coc-tsserver, consider supporting me on Patreon or PayPal:
+
+<a href="https://www.patreon.com/chemzqm"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Patreon donate button" /> </a>
+<a href="https://www.paypal.com/paypalme/chezqm"><img src="https://werwolv.net/assets/paypal_banner.png" alt="PayPal donate button" /> </a>
 
 ## License
 

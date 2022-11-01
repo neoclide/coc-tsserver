@@ -86,5 +86,5 @@ export enum EventName {
   typesInstallerInitializationFailed = 'typesInstallerInitializationFailed',
   surveyReady = 'surveyReady',
   projectLoadingStart = 'projectLoadingStart',
-  projectLoadingFinish = 'projectLoadingFinish'
+  projectLoadingFinish = 'projectLoadingFinish',
 }

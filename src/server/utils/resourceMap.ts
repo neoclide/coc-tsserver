@@ -23,7 +23,7 @@ export class ResourceMap<T> {
 
   constructor(
     protected readonly _normalizePath: (uri: string) => string | null = defaultPathNormalizer
-  ) { }
+  ) {}
 
   public get size() {
     return this._map.size

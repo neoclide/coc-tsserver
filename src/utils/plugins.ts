@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { extensions, disposeAll } from 'coc.nvim'
+import { Disposable, Emitter, extensions, disposeAll } from 'coc.nvim'
 import * as arrays from './arrays'
-import { Disposable, Emitter } from 'vscode-languageserver-protocol'
 
 export interface TypeScriptServerPlugin {
   readonly path: string

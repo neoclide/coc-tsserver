@@ -1,27 +1,19 @@
-import { events, StatusBarItem, Uri, window, workspace } from 'coc.nvim'
-import { Disposable } from 'vscode-languageserver-protocol'
-import { TypeScriptVersion } from './versionProvider'
+import { Disposable, StatusBarItem, TextEditor, window } from 'coc.nvim'
+import { TypeScriptVersion } from '../tsServer/versionProvider'
 
-export default class VersionStatus {
-  private readonly _onChangeEditorSub: Disposable
+export class VersionStatus {
+  private readonly _onChangeEditor: Disposable
   private readonly _versionBarEntry: StatusBarItem
   private _versionString = ''
 
-  constructor(
-    private readonly _normalizePath: (resource: Uri) => string | null
-  ) {
+  constructor() {
     this._versionBarEntry = window.createStatusBarItem(99)
-    this._onChangeEditorSub = events.on('BufEnter', this.onBufEnter, this)
+    this._onChangeEditor = window.onDidChangeActiveTextEditor(this.onChangeEditor, this)
     this._versionBarEntry.show()
   }
 
-  public dispose(): void {
-    this._versionBarEntry.dispose()
-    this._onChangeEditorSub.dispose()
-  }
-
   public onDidChangeTypeScriptVersion(version: TypeScriptVersion): void {
-    this._versionString = version.versionString
+    this._versionString = version.version.displayName
   }
 
   public set loading(isLoading: boolean) {
@@ -37,12 +29,16 @@ export default class VersionStatus {
     return filetype.startsWith('typescript') || filetype.startsWith('javascript')
   }
 
-  private async onBufEnter(bufnr: number): Promise<void> {
-    let filetype = await workspace.nvim.call('getbufvar', [bufnr, '&filetype', ''])
-    if (this.checkFiletype(filetype)) {
+  private async onChangeEditor(editor: TextEditor): Promise<void> {
+    if (this.checkFiletype(editor.document.filetype)) {
       this._versionBarEntry.show()
     } else {
       this._versionBarEntry.hide()
     }
+  }
+
+  public dispose(): void {
+    this._versionBarEntry.dispose()
+    this._onChangeEditor.dispose()
   }
 }

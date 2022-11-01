@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as Proto from './protocol'
+import type * as Proto from '../protocol'
 
 export enum RequestQueueingType {
-	/**
-	 * Normal request that is executed in order.
-	 */
+  /**
+   * Normal request that is executed in order.
+   */
   Normal = 1,
 
-	/**
-	 * Request that normal requests jump in front of in the queue.
-	 */
+  /**
+   * Request that normal requests jump in front of in the queue.
+   */
   LowPriority = 2,
 
-	/**
-	 * A fence that blocks request reordering.
-	 *
-	 * Fences are not reordered. Unlike a normal request, a fence will never jump in front of a low priority request
-	 * in the request queue.
-	 */
+  /**
+   * A fence that blocks request reordering.
+   *
+   * Fences are not reordered. Unlike a normal request, a fence will never jump in front of a low priority request
+   * in the request queue.
+   */
   Fence = 3,
 }
 
@@ -33,8 +33,8 @@ export interface RequestItem {
 }
 
 export class RequestQueue {
-  private readonly queue: RequestItem[] = []
-  private sequenceNumber = 0
+  private readonly queue: RequestItem[] = [];
+  private sequenceNumber: number = 0;
 
   public get length(): number {
     return this.queue.length
@@ -74,7 +74,7 @@ export class RequestQueue {
     return {
       seq: this.sequenceNumber++,
       type: 'request',
-      command,
+      command: command,
       arguments: args
     }
   }

@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as Proto from './protocol'
-import { ServerResponse } from './typescriptService'
+import type * as Proto from '../protocol'
+import { ServerResponse } from '../typescriptService'
 
 export interface CallbackItem<R> {
   readonly onSuccess: (value: R) => void
   readonly onError: (err: Error) => void
-  readonly startTime: number
+  readonly queuingStartTime: number
   readonly isAsync: boolean
 }
 
 export class CallbackMap<R extends Proto.Response> {
-  private readonly _callbacks = new Map<number, CallbackItem<ServerResponse.Response<R> | undefined>>()
-  private readonly _asyncCallbacks = new Map<number, CallbackItem<ServerResponse.Response<R> | undefined>>()
+  private readonly _callbacks = new Map<number, CallbackItem<ServerResponse.Response<R> | undefined>>();
+  private readonly _asyncCallbacks = new Map<number, CallbackItem<ServerResponse.Response<R> | undefined>>();
 
   public destroy(cause: string): void {
     const cancellation = new ServerResponse.Cancelled(cause)
@@ -29,7 +29,7 @@ export class CallbackMap<R extends Proto.Response> {
     this._asyncCallbacks.clear()
   }
 
-  public add(seq: number, callback: CallbackItem<ServerResponse.Response<R> | undefined>, isAsync: boolean): void {
+  public add(seq: number, callback: CallbackItem<ServerResponse.Response<R> | undefined>, isAsync: boolean) {
     if (isAsync) {
       this._asyncCallbacks.set(seq, callback)
     } else {
@@ -43,7 +43,7 @@ export class CallbackMap<R extends Proto.Response> {
     return callback
   }
 
-  private delete(seq: number): void {
+  private delete(seq: number) {
     if (!this._callbacks.delete(seq)) {
       this._asyncCallbacks.delete(seq)
     }

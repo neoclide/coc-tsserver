@@ -134,15 +134,15 @@
           "default": null,
           "description": "Sets the locale used to report JavaScript and TypeScript errors. Default of `null` uses english."
         },
-        "tsserver.ignoreLocalTsserver": {
+        "tsserver.useLocalTsdk": {
           "type": "boolean",
           "default": false,
           "scope": "resource",
-          "description": "Always use tsserver module from tsserver.tsdk or tsserver extension."
+          "description": "Use tsserver from typescript module in workspace folder, ignore tsserver.tsdk configuration."
         },
         "tsserver.maxTsServerMemory": {
           "type": "number",
-          "default": 0,
+          "default": 3072,
           "scope": "application",
           "description": "Set the maximum amount of memory to allocate to the TypeScript server process"
         },
@@ -241,7 +241,8 @@
         "tsserver.reportStyleChecksAsWarnings": {
           "type": "boolean",
           "scope": "window",
-          "default": true
+          "default": true,
+          "description": "Report style checks as warnings."
         },
         "tsserver.implicitProjectConfig.checkJs": {
           "type": "boolean",
@@ -260,6 +261,31 @@
           "default": false,
           "scope": "window",
           "description": "Disable download of typings"
+        },
+        "tsserver.useSyntaxServer": {
+          "type": "string",
+          "scope": "window",
+          "description": "Controls if TypeScript launches a dedicated server to more quickly handle syntax related operations, such as computing code folding.",
+          "default": "auto",
+          "enum": [
+            "always",
+            "never",
+            "auto"
+          ],
+          "enumDescriptions": [
+            "Use a lighter weight syntax server to handle all IntelliSense operations. This syntax server can only provide IntelliSense for opened files.",
+            "Don't use a dedicated syntax server. Use a single server to handle all IntelliSense operations.",
+            "Spawn both a full server and a lighter weight server dedicated to syntax operations. The syntax server is used to speed up syntax operations and provide IntelliSense while projects are loading."
+          ]
+        },
+        "tsserver.experimental.enableProjectDiagnostics": {
+          "type": "boolean",
+          "default": false,
+          "description": "(Experimental) Enables project wide error reporting.",
+          "scope": "window",
+          "tags": [
+            "experimental"
+          ]
         },
         "typescript.check.npmIsInstalled": {
           "type": "boolean",
@@ -396,6 +422,7 @@
         "typescript.suggest.enabled": {
           "type": "boolean",
           "default": true,
+          "description": "Enabled/disable autocomplete suggestions.",
           "scope": "language-overridable"
         },
         "typescript.suggest.paths": {
@@ -403,11 +430,6 @@
           "default": true,
           "scope": "language-overridable",
           "description": "Enable/disable suggest paths in import statement and require calls"
-        },
-        "typescript.suggest.importStatements": {
-          "type": "boolean",
-          "scope": "language-overridable",
-          "default": true
         },
         "typescript.suggest.autoImports": {
           "type": "boolean",
@@ -454,81 +476,97 @@
         "typescript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after a comma delimiter.",
           "default": true
         },
         "typescript.format.insertSpaceAfterConstructor": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after the constructor keyword.",
           "default": false
         },
         "typescript.format.insertSpaceAfterSemicolonInForStatements": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after a semicolon in a for statement.",
           "default": true
         },
         "typescript.format.insertSpaceBeforeAndAfterBinaryOperators": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after a binary operator.",
           "default": true
         },
         "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after keywords in a control flow statement.",
           "default": true
         },
         "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after function keyword for anonymous functions.",
           "default": true
         },
         "typescript.format.insertSpaceBeforeFunctionParenthesis": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling before function argument parentheses.",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after opening and before closing non-empty parenthesis.",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after opening and before closing non-empty brackets.",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after opening and before closing empty braces.",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after opening and before closing non-empty braces.",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after opening and before closing template string braces.",
           "default": false
         },
         "typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after opening and before closing JSX expression braces.",
           "default": false
         },
         "typescript.format.insertSpaceAfterTypeAssertion": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines space handling after type assertions in TypeScript.",
           "default": false
         },
         "typescript.format.placeOpenBraceOnNewLineForFunctions": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines whether an open brace is put onto a new line for functions or not.",
           "default": false
         },
         "typescript.format.placeOpenBraceOnNewLineForControlBlocks": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Defines whether an open brace is put onto a new line for control blocks or not.",
           "default": false
         },
         "typescript.format.semicolons": {
@@ -550,9 +588,14 @@
         },
         "typescript.workspaceSymbols.scope": {
           "type": "string",
+          "description": "Controls which files are searched by [go to symbol in workspace](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name).",
           "enum": [
             "allOpenProjects",
             "currentProject"
+          ],
+          "enumDescriptions": [
+            "Search all open JavaScript or TypeScript projects for symbols. Requires using TypeScript 3.9 or newer in the workspace.",
+            "Only search for symbols in the current JavaScript or TypeScript project."
           ],
           "default": "allOpenProjects",
           "scope": "window"
@@ -578,6 +621,7 @@
         "javascript.updateImportsOnFileMove.enable": {
           "type": "boolean",
           "scope": "resource",
+          "description": "Enable/disable automatic updating of import paths when you rename or move a file in VS Code.",
           "default": true
         },
         "javascript.implementationsCodeLens.enable": {
@@ -985,6 +1029,6 @@
     "which": "^2.0.2"
   },
   "dependencies": {
-    "typescript": "^4.8.3"
+    "typescript": "^4.8.4"
   }
 }

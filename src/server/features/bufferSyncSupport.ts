@@ -11,7 +11,7 @@ import API from '../utils/api'
 import { Delayer } from '../utils/async'
 import * as typeConverters from '../utils/typeConverters'
 import { mode2ScriptKind } from '../utils/languageModeIds'
-import { ResourceMap } from './resourceMap'
+import { ResourceMap } from '../utils/resourceMap'
 
 const enum BufferKind {
   TypeScript = 1,
@@ -62,10 +62,11 @@ class SyncedBuffer {
   ) {}
 
   public open(): void {
+    let folder = workspace.getWorkspaceFolder(this.document.uri)
     const args: Proto.OpenRequestArgs = {
       file: this.filepath,
       fileContent: this.document.getText(),
-      projectRootPath: this.client.getProjectRootPath(this.document.uri),
+      projectRootPath: folder ? Uri.parse(folder.uri).fsPath : undefined
     }
     const scriptKind = mode2ScriptKind(this.document.languageId)
     if (scriptKind) {
@@ -285,7 +286,7 @@ class GetErrRequest {
     private readonly _token: CancellationTokenSource,
     onDone: () => void
   ) {
-    let files = uris.map(uri => client.normalizePath(uri))
+    let files = uris.map(uri => client.normalizedPath(uri))
     const args: Proto.GeterrRequestArgs = {
       delay: 0,
       files
@@ -413,7 +414,7 @@ export default class BufferSyncSupport {
       return false
     }
     const resource = document.uri
-    const filepath = this.client.normalizePath(Uri.parse(resource))
+    const filepath = this.client.normalizedPath(Uri.parse(resource))
     if (!filepath) {
       return false
     }
@@ -465,7 +466,7 @@ export default class BufferSyncSupport {
     this.synchronizer.beforeCommand(command)
   }
 
-  public interuptGetErr<R>(f: () => R): R {
+  public interruptGetErr<R>(f: () => R): R {
     if (!this.pendingGetErr) {
       return f()
     }

@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CodeActionProvider, CodeActionProviderMetadata, TextDocument, workspace } from 'coc.nvim'
-import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range, TextEdit, WorkspaceEdit } from 'vscode-languageserver-protocol'
+import { CodeActionProvider, CodeActionProviderMetadata, TextDocument, workspace, CancellationToken, CodeActionContext, CodeActionKind, Range, TextEdit, WorkspaceEdit } from 'coc.nvim'
+import { CodeAction } from 'vscode-languageserver-protocol'
 import TsserverService from '../server'
 import { Command } from './commands'
 import FileConfigurationManager from './features/fileConfigurationManager'

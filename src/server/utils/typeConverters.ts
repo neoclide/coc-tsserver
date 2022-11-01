@@ -114,6 +114,26 @@ export namespace WorkspaceEdit {
     }
     return { documentChanges }
   }
+
+  export function withFileCodeEdits(
+    workspaceEdit: language.WorkspaceEdit,
+    client: ITypeScriptServiceClient,
+    edits: Iterable<Proto.FileCodeEdits>
+  ): language.WorkspaceEdit {
+    let changes: { [uri: string]: language.TextEdit[] } = workspaceEdit.changes ?? {}
+    for (const edit of edits) {
+      const resource = client.toResource(edit.fileName)
+      let arr = changes[resource] ?? []
+      let edits = edit.textChanges.map(change => {
+        return TextEdit.fromCodeEdit(change)
+      })
+      arr.push(...edits)
+      changes[resource] = arr
+    }
+    workspaceEdit.changes = changes
+    return workspaceEdit
+  }
+
 }
 
 export namespace SymbolKind {

@@ -3,58 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, DocumentRangeSemanticTokensProvider, DocumentSemanticTokensProvider, Range, SemanticTokens, SemanticTokensBuilder, TextDocument, workspace } from 'coc.nvim'
-import { SemanticTokensLegend } from 'vscode-languageserver-protocol'
+import { CancellationError, CancellationToken, DocumentRangeSemanticTokensProvider, DocumentSemanticTokensProvider, LinesTextDocument, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument } from 'coc.nvim'
 import * as Proto from '../protocol'
-import { ExecConfig, ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
-import API from '../utils/api'
+import { ITypeScriptServiceClient } from '../typescriptService'
 
 // as we don't do deltas, for performance reasons, don't compute semantic tokens for documents above that limit
 const CONTENT_LENGTH_LIMIT = 100000
 
-/**
- * Prototype of a DocumentSemanticTokensProvider, relying on the experimental `encodedSemanticClassifications-full` request from the TypeScript server.
- * As the results retured by the TypeScript server are limited, we also add a Typescript plugin (typescript-vscode-sh-plugin) to enrich the returned token.
- * See https://github.com/aeschli/typescript-vscode-sh-plugin.
- */
-export default class TypeScriptDocumentSemanticTokensProvider implements DocumentSemanticTokensProvider, DocumentRangeSemanticTokensProvider {
-  public static readonly minVersion = API.v370
+export class TypeScriptDocumentSemanticTokensProvider implements DocumentSemanticTokensProvider, DocumentRangeSemanticTokensProvider {
 
   constructor(private readonly client: ITypeScriptServiceClient) {}
 
-  getLegend(): SemanticTokensLegend {
+  public getLegend(): SemanticTokensLegend {
     return {
       tokenTypes,
       tokenModifiers
     }
   }
 
-  private logIgnored(uri: string): void {
-    this.client.logger.warn(`${uri} content length exceed limit 100000`)
-  }
-
-  async provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): Promise<SemanticTokens | null> {
+  public async provideDocumentSemanticTokens(document: LinesTextDocument, token: CancellationToken): Promise<SemanticTokens | null> {
     const file = this.client.toOpenedFilePath(document.uri)
     if (!file || document.getText().length > CONTENT_LENGTH_LIMIT) {
-      this.logIgnored(document.uri)
       return null
     }
-    return this._provideSemanticTokens(document, { file, start: 0, length: document.getText().length }, token)
+    return this.provideSemanticTokens(document, { file, start: 0, length: document.getText().length }, token)
   }
 
-  async provideDocumentRangeSemanticTokens(document: TextDocument, range: Range, token: CancellationToken): Promise<SemanticTokens | null> {
+  public async provideDocumentRangeSemanticTokens(document: LinesTextDocument, range: Range, token: CancellationToken): Promise<SemanticTokens | null> {
     const file = this.client.toOpenedFilePath(document.uri)
     if (!file || (document.offsetAt(range.end) - document.offsetAt(range.start) > CONTENT_LENGTH_LIMIT)) {
-      this.logIgnored(document.uri)
       return null
     }
 
     const start = document.offsetAt(range.start)
     const length = document.offsetAt(range.end) - start
-    return this._provideSemanticTokens(document, { file, start, length }, token)
+    return this.provideSemanticTokens(document, { file, start, length }, token)
   }
 
-  async _provideSemanticTokens(document: TextDocument, requestArg: Proto.EncodedSemanticClassificationsRequestArgs, token: CancellationToken): Promise<SemanticTokens | null> {
+  private async provideSemanticTokens(document: LinesTextDocument, requestArg: Proto.EncodedSemanticClassificationsRequestArgs, token: CancellationToken): Promise<SemanticTokens | null> {
     const file = this.client.toOpenedFilePath(document.uri)
     if (!file) {
       return null
@@ -62,9 +48,7 @@ export default class TypeScriptDocumentSemanticTokensProvider implements Documen
 
     const versionBeforeRequest = document.version
 
-    requestArg.format = '2020'
-
-    const response = await (this.client as ExperimentalProtocol.IExtendedTypeScriptServiceClient).execute('encodedSemanticClassifications-full', requestArg, token, {
+    const response = await this.client.execute('encodedSemanticClassifications-full', { ...requestArg, format: '2020' }, token, {
       cancelOnResourceChange: document.uri
     })
     if (response.type !== 'response' || !response.body) {
@@ -72,8 +56,9 @@ export default class TypeScriptDocumentSemanticTokensProvider implements Documen
     }
 
     const versionAfterRequest = document.version
+
     if (versionBeforeRequest !== versionAfterRequest) {
-      // cannot convert result's offsets to (linecol) values correctly
+      // cannot convert result's offsets to (line;col) values correctly
       // a new request will come in soon...
       //
       // here we cannot return null, because returning null would remove all semantic tokens.
@@ -82,69 +67,54 @@ export default class TypeScriptDocumentSemanticTokensProvider implements Documen
 
       // as the new request will come in right after our response, we first wait for the document activity to stop
       await waitForDocumentChangesToEnd(document)
-
-      throw new Error('Canceled')
+      if (typeof CancellationError !== 'undefined') {
+        throw new CancellationError()
+      }
     }
 
-    const doc = workspace.getDocument(document.uri)
     const tokenSpan = response.body.spans
 
     const builder = new SemanticTokensBuilder()
-    let i = 0
-    while (i < tokenSpan.length) {
+    for (let i = 0; i < tokenSpan.length;) {
       const offset = tokenSpan[i++]
       const length = tokenSpan[i++]
       const tsClassification = tokenSpan[i++]
 
-      let tokenModifiers = 0
-      let tokenType = getTokenTypeFromClassification(tsClassification)
-      if (tokenType !== undefined) {
-        // it's a classification as returned by the typescript-vscode-sh-plugin
-        tokenModifiers = getTokenModifierFromClassification(tsClassification)
-      } else {
-        // typescript-vscode-sh-plugin is not present
-        tokenType = tokenTypeMap[tsClassification]
-        if (tokenType === undefined) {
-          continue
-        }
+      const tokenType = getTokenTypeFromClassification(tsClassification)
+      if (tokenType === undefined) {
+        continue
       }
+
+      const tokenModifiers = getTokenModifierFromClassification(tsClassification)
 
       // we can use the document's range conversion methods because the result is at the same version as the document
       const startPos = document.positionAt(offset)
       const endPos = document.positionAt(offset + length)
+
       for (let line = startPos.line; line <= endPos.line; line++) {
         const startCharacter = (line === startPos.line ? startPos.character : 0)
-        const endCharacter = (line === endPos.line ? endPos.character : doc.getline(line).length)
+        const endCharacter = (line === endPos.line ? endPos.character : (document.lines[line] ?? '').length)
         builder.push(line, startCharacter, endCharacter - startCharacter, tokenType, tokenModifiers)
       }
     }
+
     return builder.build()
   }
 }
 
 function waitForDocumentChangesToEnd(document: TextDocument) {
   let version = document.version
-  return new Promise<void>((s) => {
+  return new Promise<void>((resolve) => {
     const iv = setInterval(_ => {
       if (document.version === version) {
         clearInterval(iv)
-        s()
+        resolve()
       }
       version = document.version
     }, 400)
   })
 }
 
-function getTokenTypeFromClassification(tsClassification: number): number | undefined {
-  if (tsClassification > TokenEncodingConsts.modifierMask) {
-    return (tsClassification >> TokenEncodingConsts.typeOffset) - 1
-  }
-  return undefined
-}
-
-function getTokenModifierFromClassification(tsClassification: number) {
-  return tsClassification & TokenEncodingConsts.modifierMask
-}
 
 // typescript encodes type and modifiers in the classification:
 // TSClassification = (TokenType + 1) << 8 + TokenModifier
@@ -164,6 +134,7 @@ const enum TokenType {
   method = 11,
   _ = 12
 }
+
 const enum TokenModifier {
   declaration = 0,
   static = 1,
@@ -173,9 +144,21 @@ const enum TokenModifier {
   local = 5,
   _ = 6
 }
+
 const enum TokenEncodingConsts {
   typeOffset = 8,
   modifierMask = 255
+}
+
+function getTokenTypeFromClassification(tsClassification: number): number | undefined {
+  if (tsClassification > TokenEncodingConsts.modifierMask) {
+    return (tsClassification >> TokenEncodingConsts.typeOffset) - 1
+  }
+  return undefined
+}
+
+function getTokenModifierFromClassification(tsClassification: number) {
+  return tsClassification & TokenEncodingConsts.modifierMask
 }
 
 const tokenTypes: string[] = []
@@ -199,96 +182,3 @@ tokenModifiers[TokenModifier.readonly] = 'readonly'
 tokenModifiers[TokenModifier.static] = 'static'
 tokenModifiers[TokenModifier.local] = 'local'
 tokenModifiers[TokenModifier.defaultLibrary] = 'defaultLibrary'
-
-export namespace ExperimentalProtocol {
-
-  export interface IExtendedTypeScriptServiceClient {
-    execute<K extends keyof ExperimentalProtocol.ExtendedTsServerRequests>(
-      command: K,
-      args: ExperimentalProtocol.ExtendedTsServerRequests[K][0],
-      token: CancellationToken,
-      config?: ExecConfig
-    ): Promise<ServerResponse.Response<ExperimentalProtocol.ExtendedTsServerRequests[K][1]>>
-  }
-
-  /**
-   * A request to get encoded semantic classifications for a span in the file
-   */
-  export interface EncodedSemanticClassificationsRequest extends Proto.FileRequest {
-    arguments: EncodedSemanticClassificationsRequestArgs
-  }
-
-  /**
-   * Arguments for EncodedSemanticClassificationsRequest request.
-   */
-  export interface EncodedSemanticClassificationsRequestArgs extends Proto.FileRequestArgs {
-    /**
-     * Start position of the span.
-     */
-    start: number
-    /**
-     * Length of the span.
-     */
-    length: number
-  }
-
-  export const enum EndOfLineState {
-    None,
-    InMultiLineCommentTrivia,
-    InSingleQuoteStringLiteral,
-    InDoubleQuoteStringLiteral,
-    InTemplateHeadOrNoSubstitutionTemplate,
-    InTemplateMiddleOrTail,
-    InTemplateSubstitutionPosition,
-  }
-
-  export const enum ClassificationType {
-    comment = 1,
-    identifier = 2,
-    keyword = 3,
-    numericLiteral = 4,
-    operator = 5,
-    stringLiteral = 6,
-    regularExpressionLiteral = 7,
-    whiteSpace = 8,
-    text = 9,
-    punctuation = 10,
-    className = 11,
-    enumName = 12,
-    interfaceName = 13,
-    moduleName = 14,
-    typeParameterName = 15,
-    typeAliasName = 16,
-    parameterName = 17,
-    docCommentTagName = 18,
-    jsxOpenTagName = 19,
-    jsxCloseTagName = 20,
-    jsxSelfClosingTagName = 21,
-    jsxAttribute = 22,
-    jsxText = 23,
-    jsxAttributeStringLiteralValue = 24,
-    bigintLiteral = 25,
-  }
-
-  export interface EncodedSemanticClassificationsResponse extends Proto.Response {
-    body?: {
-      endOfLineState: EndOfLineState
-      spans: number[]
-    }
-  }
-
-  export interface ExtendedTsServerRequests {
-    'encodedSemanticClassifications-full': [ExperimentalProtocol.EncodedSemanticClassificationsRequestArgs, ExperimentalProtocol.EncodedSemanticClassificationsResponse]
-  }
-}
-
-// mapping for the original ExperimentalProtocol.ClassificationType from TypeScript (only used when plugin is not available)
-const tokenTypeMap: number[] = []
-tokenTypeMap[ExperimentalProtocol.ClassificationType.className] = TokenType.class
-tokenTypeMap[ExperimentalProtocol.ClassificationType.enumName] = TokenType.enum
-tokenTypeMap[ExperimentalProtocol.ClassificationType.interfaceName] = TokenType.interface
-tokenTypeMap[ExperimentalProtocol.ClassificationType.moduleName] = TokenType.namespace
-tokenTypeMap[ExperimentalProtocol.ClassificationType.typeParameterName] = TokenType.typeParameter
-tokenTypeMap[ExperimentalProtocol.ClassificationType.typeAliasName] = TokenType.type
-tokenTypeMap[ExperimentalProtocol.ClassificationType.parameterName] = TokenType.parameter
-

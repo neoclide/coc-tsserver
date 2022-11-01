@@ -1,12 +1,12 @@
-import { Uri, window, workspace } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { Uri, window, workspace } from 'coc.nvim'
 import fs from 'fs'
 import path from 'path'
-import API from './api'
-import { TypeScriptServiceConfiguration } from './configuration'
+import API from '../utils/api'
+import { TypeScriptServiceConfiguration } from '../utils/configuration'
 
 export class TypeScriptVersion {
   private _api: API | null | undefined
@@ -37,12 +37,6 @@ export class TypeScriptVersion {
     if (this._api) return this._api
     let api = this._api = this.getTypeScriptVersion(this.tsServerPath)
     return api
-  }
-
-  public get versionString(): string | null {
-    const version = this.version
-    return version ? version.versionString : null
-
   }
 
   private getTypeScriptVersion(serverPath: string): API | undefined {
@@ -87,9 +81,7 @@ export class TypeScriptVersionProvider {
 
   public constructor(private configuration: TypeScriptServiceConfiguration) {}
 
-  public updateConfiguration(
-    configuration: TypeScriptServiceConfiguration
-  ): void {
+  public updateConfiguration(configuration: TypeScriptServiceConfiguration): void {
     this.configuration = configuration
   }
 

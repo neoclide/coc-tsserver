@@ -1,5 +1,9 @@
 import { workspace, WorkspaceConfiguration } from 'coc.nvim'
 import which from 'which'
+import path from 'path'
+import * as objects from '../utils/objects'
+import os from 'os'
+import * as Proto from '../protocol'
 
 export enum TsServerLogLevel {
   Off,
@@ -7,6 +11,41 @@ export enum TsServerLogLevel {
   Terse,
   Verbose
 }
+
+export const enum SyntaxServerConfiguration {
+  Never,
+  Always,
+  /** Use a single syntax server for every request, even on desktop */
+  Auto,
+}
+
+export interface TypeScriptServiceConfiguration {
+  readonly enable: boolean
+  readonly useWorkspaceTsdk: boolean
+  readonly locale: string | null
+  readonly globalTsdk: string | null
+  readonly localTsdk: string | null
+  readonly npmLocation: string | null
+  readonly tsServerLogLevel: TsServerLogLevel
+  readonly tsServerPluginPaths: readonly string[]
+  readonly implicitProjectConfiguration: ImplicitProjectConfiguration
+  readonly disableAutomaticTypeAcquisition: boolean
+  readonly useSyntaxServer: SyntaxServerConfiguration
+  readonly enableProjectDiagnostics: boolean
+  readonly maxTsServerMemory: number
+  readonly watchOptions: Proto.WatchOptions | undefined
+  readonly includePackageJsonAutoImports: 'auto' | 'on' | 'off' | undefined
+  readonly enableTsServerTracing: boolean
+}
+
+export function areServiceConfigurationsEqual(a: TypeScriptServiceConfiguration, b: TypeScriptServiceConfiguration): boolean {
+  return objects.equals(a, b)
+}
+
+export interface ServiceConfigurationProvider {
+  loadFromWorkspace(): TypeScriptServiceConfiguration
+}
+
 
 export namespace TsServerLogLevel {
   export function fromString(value: string): TsServerLogLevel {
@@ -38,86 +77,173 @@ export namespace TsServerLogLevel {
   }
 }
 
-export class TypeScriptServiceConfiguration {
-  private _configuration: WorkspaceConfiguration
-  private _includePackageJsonAutoImports: 'auto' | 'on' | 'off'
-  private constructor() {
-    this._configuration = workspace.getConfiguration('tsserver')
-    this._includePackageJsonAutoImports = workspace.getConfiguration('typescript').get<'auto' | 'on' | 'off'>('preferences.includePackageJsonAutoImports')
+export class ImplicitProjectConfiguration {
 
-    workspace.onDidChangeConfiguration(() => {
-      this._configuration = workspace.getConfiguration('tsserver')
-      this._includePackageJsonAutoImports = workspace.getConfiguration('typescript').get<'auto' | 'on' | 'off'>('preferences.includePackageJsonAutoImports')
-    })
-    workspace.onDidChangeWorkspaceFolders(e => {
-      if (e.added.length > 0) {
-        this._configuration = workspace.getConfiguration('tsserver')
-        this._includePackageJsonAutoImports = workspace.getConfiguration('typescript').get<'auto' | 'on' | 'off'>('preferences.includePackageJsonAutoImports')
-      }
-    })
+  public readonly target: string | undefined
+  public readonly module: string | undefined
+  public readonly checkJs: boolean
+  public readonly experimentalDecorators: boolean
+  public readonly strictNullChecks: boolean
+  public readonly strictFunctionTypes: boolean
+
+  constructor(configuration: WorkspaceConfiguration) {
+    this.target = ImplicitProjectConfiguration.readTarget(configuration)
+    this.module = ImplicitProjectConfiguration.readModule(configuration)
+    this.checkJs = ImplicitProjectConfiguration.readCheckJs(configuration)
+    this.experimentalDecorators = ImplicitProjectConfiguration.readExperimentalDecorators(configuration)
+    this.strictNullChecks = ImplicitProjectConfiguration.readImplicitStrictNullChecks(configuration)
+    this.strictFunctionTypes = ImplicitProjectConfiguration.readImplicitStrictFunctionTypes(configuration)
   }
 
-  public get enableTsServerTracing(): boolean {
-    return this._configuration.get<boolean>('enableTracing', false)
+  public isEqualTo(other: ImplicitProjectConfiguration): boolean {
+    return objects.equals(this, other)
   }
 
-  public get includePackageJsonAutoImports(): 'auto' | 'on' | 'off' {
-    return this._includePackageJsonAutoImports
+  private static readTarget(configuration: WorkspaceConfiguration): string | undefined {
+    return configuration.get<string>('js/ts.implicitProjectConfig.target')
   }
 
-  public get locale(): string | null {
-    return this._configuration.get<string | null>('locale', null)
+  private static readModule(configuration: WorkspaceConfiguration): string | undefined {
+    return configuration.get<string>('js/ts.implicitProjectConfig.module')
   }
 
-  public get globalTsdk(): string | null {
-    return this._configuration.get<string | null>('tsdk', null)
+  private static readCheckJs(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('js/ts.implicitProjectConfig.checkJs')
+      ?? configuration.get<boolean>('tsserver.implicitProjectConfig.checkJs', false)
   }
 
-  public get ignoreLocalTsserver(): boolean {
-    return this._configuration.get<boolean>('ignoreLocalTsserver', false)
+  private static readExperimentalDecorators(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('js/ts.implicitProjectConfig.experimentalDecorators')
+      ?? configuration.get<boolean>('tsserver.implicitProjectConfig.experimentalDecorators', false)
   }
 
-  public get tsServerLogLevel(): TsServerLogLevel {
-    return TsServerLogLevel.fromString(this._configuration.get<string | null>('log', null))
+  private static readImplicitStrictNullChecks(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('js/ts.implicitProjectConfig.strictNullChecks', true)
   }
 
-  // public readonly watchOptions: protocol.WatchOptions | undefined;
-  public get watchOptions(): protocol.WatchOptions | undefined {
-    return this._configuration.get<protocol.WatchOptions>('watchOptions')
+  private static readImplicitStrictFunctionTypes(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('js/ts.implicitProjectConfig.strictFunctionTypes', true)
   }
+}
 
-  public get tsServerPluginPaths(): string[] {
-    return this._configuration.get<string[]>('pluginPaths', [])
-  }
+export class ServiceConfigurationProvider implements ServiceConfigurationProvider {
 
-  public get checkJs(): boolean {
-    return this._configuration.get<boolean>('implicitProjectConfig.checkJs', false)
-  }
-
-  public get experimentalDecorators(): boolean {
-    return this._configuration.get<boolean>('implicitProjectConfig.experimentalDecorators', false)
-  }
-
-  public get disableAutomaticTypeAcquisition(): boolean {
-    return this._configuration.get<boolean>('disableAutomaticTypeAcquisition', false)
-  }
-
-  public get maxTsServerMemory(): number {
-    return this._configuration.get<number>('maxTsServerMemory', 0)
-  }
-
-  public get npmLocation(): string | null {
-    let path = this._configuration.get<string>('npm', '')
-    if (path) return workspace.expand(path)
-    try {
-      path = which.sync('npm')
-    } catch (e) {
-      return null
+  public loadFromWorkspace(): TypeScriptServiceConfiguration {
+    const configuration = workspace.getConfiguration()
+    return {
+      enable: this.readEnable(configuration),
+      locale: this.readLocale(configuration),
+      useWorkspaceTsdk: this.readUseWorkspace(configuration),
+      globalTsdk: this.readGlobalTsdk(configuration),
+      localTsdk: this.readLocalTsdk(configuration),
+      npmLocation: this.readNpmLocation(configuration),
+      tsServerLogLevel: this.readTsServerLogLevel(configuration),
+      tsServerPluginPaths: this.readTsServerPluginPaths(configuration),
+      implicitProjectConfiguration: new ImplicitProjectConfiguration(configuration),
+      disableAutomaticTypeAcquisition: this.readDisableAutomaticTypeAcquisition(configuration),
+      useSyntaxServer: this.readUseSyntaxServer(configuration),
+      enableProjectDiagnostics: this.readEnableProjectDiagnostics(configuration),
+      maxTsServerMemory: this.readMaxTsServerMemory(configuration),
+      watchOptions: this.readWatchOptions(configuration),
+      includePackageJsonAutoImports: this.readIncludePackageJsonAutoImports(configuration),
+      enableTsServerTracing: this.readEnableTsServerTracing(configuration),
     }
-    return path
   }
 
-  public static loadFromWorkspace(): TypeScriptServiceConfiguration {
-    return new TypeScriptServiceConfiguration()
+  protected readGlobalTsdk(configuration: WorkspaceConfiguration): string | null {
+    const inspect = configuration.inspect('tsserver.tsdk')
+    if (inspect && typeof inspect.globalValue === 'string') {
+      return this.fixPathPrefixes(inspect.globalValue)
+    }
+    return null
+  }
+
+  protected readLocalTsdk(configuration: WorkspaceConfiguration): string | null {
+    const inspect = configuration.inspect('tsserver.tsdk')
+    if (inspect && typeof inspect.workspaceFolderValue === 'string') {
+      return this.fixPathPrefixes(inspect.workspaceFolderValue)
+    }
+    return null
+  }
+
+  protected readUseWorkspace(configuration: WorkspaceConfiguration): boolean {
+    const inspect = configuration.inspect('tsserver.useLocalTsdk')
+    if (inspect && typeof inspect.workspaceFolderValue === 'boolean') {
+      return inspect.workspaceFolderValue
+    }
+    return false
+  }
+
+
+  private fixPathPrefixes(inspectValue: string): string {
+    const pathPrefixes = ['~' + path.sep]
+    for (const pathPrefix of pathPrefixes) {
+      if (inspectValue.startsWith(pathPrefix)) {
+        return path.join(os.homedir(), inspectValue.slice(pathPrefix.length))
+      }
+    }
+    return inspectValue
+  }
+
+  protected readTsServerLogLevel(configuration: WorkspaceConfiguration): TsServerLogLevel {
+    const setting = configuration.get<string>('tsserver.log', 'off')
+    return TsServerLogLevel.fromString(setting)
+  }
+
+  protected readTsServerPluginPaths(configuration: WorkspaceConfiguration): string[] {
+    return configuration.get<string[]>('tsserver.pluginPaths', [])
+  }
+
+  protected readNpmLocation(configuration: WorkspaceConfiguration): string | null {
+    return configuration.get<string>('tsserver.npm', null)
+  }
+
+  protected readDisableAutomaticTypeAcquisition(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('tsserver.disableAutomaticTypeAcquisition', false)
+  }
+
+  protected readEnable(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('tsserver.enable', true)
+  }
+
+  protected readLocale(configuration: WorkspaceConfiguration): string | null {
+    const value = configuration.get<string>('tsserver.locale', 'auto')
+    return !value || value === 'auto' ? null : value
+  }
+
+  protected readUseSyntaxServer(configuration: WorkspaceConfiguration): SyntaxServerConfiguration {
+    const value = configuration.get<string>('tsserver.useSyntaxServer')
+    switch (value) {
+      case 'never': return SyntaxServerConfiguration.Never
+      case 'always': return SyntaxServerConfiguration.Always
+      case 'auto': return SyntaxServerConfiguration.Auto
+    }
+    return SyntaxServerConfiguration.Auto
+  }
+
+  protected readEnableProjectDiagnostics(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('tsserver.experimental.enableProjectDiagnostics', false)
+  }
+
+  protected readWatchOptions(configuration: WorkspaceConfiguration): Proto.WatchOptions | undefined {
+    return configuration.get<Proto.WatchOptions>('tsserver.watchOptions')
+  }
+
+  protected readIncludePackageJsonAutoImports(configuration: WorkspaceConfiguration): 'auto' | 'on' | 'off' | undefined {
+    return configuration.get<'auto' | 'on' | 'off'>('typescript.preferences.includePackageJsonAutoImports')
+  }
+
+  protected readMaxTsServerMemory(configuration: WorkspaceConfiguration): number {
+    const defaultMaxMemory = 3072
+    const minimumMaxMemory = 128
+    const memoryInMB = configuration.get<number>('tsserver.maxTsServerMemory', defaultMaxMemory)
+    if (!Number.isSafeInteger(memoryInMB)) {
+      return defaultMaxMemory
+    }
+    return Math.max(memoryInMB, minimumMaxMemory)
+  }
+
+  protected readEnableTsServerTracing(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('tsserver.enableTracing', false)
   }
 }

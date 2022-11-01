@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { ConfigurationChangeEvent, disposeAll, languages, TextDocument, Uri, workspace } from 'coc.nvim'
-import { CancellationToken, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, Position, Range } from 'vscode-languageserver-protocol'
+import { CancellationToken, ConfigurationChangeEvent, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, disposeAll, ExtensionContext, languages, Position, Range, TextDocument, Uri, workspace } from 'coc.nvim'
 import { flatten } from '../utils/arrays'
 import { PluginManager } from '../utils/plugins'
 import { DiagnosticKind } from './features/diagnostics'
@@ -12,21 +11,26 @@ import WorkspaceSymbolProvider from './features/workspaceSymbols'
 import LanguageProvider from './languageProvider'
 import * as Proto from './protocol'
 import * as PConst from './protocol.const'
-import TypeScriptServiceClient from './typescriptServiceClient'
+import { nodeRequestCancellerFactory } from './tsServer/cancellation'
+import { NodeLogDirectoryProvider } from './tsServer/logDirectoryProvider'
+import { ServiceProcessFactory } from './tsServer/serverProcess'
+import TypeScriptServiceClient, { IClientServices } from './typescriptServiceClient'
+import * as errorCodes from './utils/errorCodes'
 import { DiagnosticLanguage, LanguageDescription } from './utils/languageDescription'
 import * as typeConverters from './utils/typeConverters'
 import TypingsStatus, { AtaProgressReporter } from './utils/typingsStatus'
 
 // Style check diagnostics that can be reported as warnings
-const styleCheckDiagnostics = [
-  6133, // variable is declared but never used
-  6138, // property is declared but its value is never read
-  6192, // allImportsAreUnused
-  7027, // unreachable code detected
-  7028, // unused label
-  7029, // fall through case in switch
-  7030 // not all code paths return a value
-]
+const styleCheckDiagnostics = new Set([
+  ...errorCodes.variableDeclaredButNeverUsed,
+  ...errorCodes.propertyDeclaretedButNeverUsed,
+  ...errorCodes.allImportsAreUnused,
+  ...errorCodes.unreachableCode,
+  ...errorCodes.unusedLabel,
+  ...errorCodes.fallThroughCaseInSwitch,
+  ...errorCodes.notAllCodePathsReturnAValue,
+])
+
 
 export default class TypeScriptServiceClientHost implements Disposable {
   private readonly ataProgressReporter: AtaProgressReporter
@@ -37,7 +41,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
   private readonly fileConfigurationManager: FileConfigurationManager
   private reportStyleCheckAsWarnings = true
 
-  constructor(descriptions: LanguageDescription[], pluginManager: PluginManager, tscPath: string | null) {
+  constructor(descriptions: LanguageDescription[], pluginManager: PluginManager, tscPath: string | null, context: ExtensionContext) {
     let timer: NodeJS.Timer
     const handleProjectChange = () => {
       if (timer) clearTimeout(timer)
@@ -54,15 +58,22 @@ export default class TypeScriptServiceClientHost implements Disposable {
     const packageFileWatcher = workspace.createFileSystemWatcher('**/package.json')
     packageFileWatcher.onDidCreate(this.reloadProjects, this, this.disposables)
     packageFileWatcher.onDidChange(handleProjectChange, this, this.disposables)
+    const services: IClientServices = {
+      pluginManager,
+      logDirectoryProvider: new NodeLogDirectoryProvider(context),
+      processFactory: new ServiceProcessFactory(),
+      cancellerFactory: nodeRequestCancellerFactory
+    }
 
     const allModeIds = this.getAllModeIds(descriptions, pluginManager)
-    this.client = new TypeScriptServiceClient(pluginManager, allModeIds, tscPath)
+    this.client = new TypeScriptServiceClient(context, allModeIds, services, tscPath)
     this.disposables.push(this.client)
     this.client.onDiagnosticsReceived(({ kind, resource, diagnostics }) => {
       this.diagnosticsReceived(kind, resource, diagnostics).catch(e => {
         console.error(e)
       })
     }, null, this.disposables)
+    this.client.onResendModelsRequested(() => this.populateService(), null, this.disposables)
 
     // features
     this.disposables.push(languages.registerWorkspaceSymbolProvider(new WorkspaceSymbolProvider(this.client, allModeIds)))
@@ -70,22 +81,22 @@ export default class TypeScriptServiceClientHost implements Disposable {
       let { body } = diag
       if (body) {
         let { configFile, diagnostics } = body
-        let uri = Uri.file(configFile)
+        let uri = Uri.file(configFile).toString()
         if (diagnostics.length == 0) {
-          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), [])
+          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri, [])
         } else {
-          let diagnosticList = diagnostics.map(o => {
-            let { text, code, category, start, end } = o
+          let diagnosticList = diagnostics.map(diag => {
+            let { text, code, start, end } = diag
             let range: Range
             if (!start || !end) {
-              range = Range.create(Position.create(0, 0), Position.create(0, 1))
+              range = Range.create(0, 0, 0, 1)
             } else {
               range = Range.create(start.line - 1, start.offset - 1, end.line - 1, end.offset - 1)
             }
-            let severity = category == 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
+            let severity = this.getDiagnosticSeverity(diag)
             return Diagnostic.create(range, text, severity, code)
           })
-          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri.toString(), diagnosticList)
+          this.client.diagnosticsManager.configFileDiagnosticsReceived(uri, diagnosticList)
         }
       }
     }, null, this.disposables)
@@ -205,12 +216,20 @@ export default class TypeScriptServiceClientHost implements Disposable {
     }
   }
 
+  private populateService(): void {
+    this.fileConfigurationManager.reset()
+
+    for (const language of this.languagePerId.values()) {
+      language.reInitialize()
+    }
+  }
+
   private async diagnosticsReceived(
     kind: DiagnosticKind,
-    resource: Uri,
+    resource: string,
     diagnostics: Proto.Diagnostic[]
   ): Promise<void> {
-    const language = await this.findLanguage(resource.toString())
+    const language = await this.findLanguage(resource)
     if (language) {
       language.diagnosticsReceived(
         kind,
@@ -256,7 +275,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
       severity: this.getDiagnosticSeverity(diagnostic),
       reportDeprecated: diagnostic.reportsDeprecated,
       reportUnnecessary: diagnostic.reportsUnnecessary,
-      source: diagnostic.source || 'tsserver',
+      source: diagnostic.source,
       relatedInformation
     }
   }
@@ -278,7 +297,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
         return DiagnosticSeverity.Warning
 
       case PConst.DiagnosticCategory.suggestion:
-        return DiagnosticSeverity.Information
+        return DiagnosticSeverity.Hint
 
       default:
         return DiagnosticSeverity.Error
@@ -286,7 +305,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
   }
 
   private isStyleCheckDiagnostic(code: number | undefined): boolean {
-    return code ? styleCheckDiagnostics.indexOf(code) !== -1 : false
+    return typeof code === 'number' && styleCheckDiagnostics.has(code)
   }
 
   private getAllModeIds(descriptions: LanguageDescription[], pluginManager: PluginManager): string[] {

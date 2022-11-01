@@ -2,9 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { disposeAll } from 'coc.nvim'
+import { Disposable, Emitter, disposeAll } from 'coc.nvim'
 import stream from 'stream'
-import { Disposable, Emitter } from 'vscode-languageserver-protocol'
 
 const DefaultSize = 8192
 const ContentLength = 'Content-Length: '

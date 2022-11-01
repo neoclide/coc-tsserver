@@ -10,6 +10,7 @@ import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { applyCodeActionCommands, getEditForCodeAction } from '../utils/codeAction'
 import * as typeConverters from '../utils/typeConverters'
+import { DiagnosticsManager } from './diagnostics'
 import FileConfigurationManager from './fileConfigurationManager'
 
 class ApplyCodeActionCommand implements Command {
@@ -18,7 +19,6 @@ class ApplyCodeActionCommand implements Command {
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
-    private readonly formattingConfigurationManager: FileConfigurationManager
   ) {}
 
   public async execute(action: Proto.CodeFixAction): Promise<boolean> {
@@ -144,9 +144,10 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
-    private readonly formattingConfigurationManager: FileConfigurationManager
+    private readonly formattingConfigurationManager: FileConfigurationManager,
+    private readonly diagnosticsManager: DiagnosticsManager
   ) {
-    registCommand(new ApplyCodeActionCommand(client, formattingConfigurationManager))
+    registCommand(new ApplyCodeActionCommand(client))
     registCommand(new ApplyFixAllCodeAction(client, formattingConfigurationManager))
     this.supportedCodeActionProvider = new SupportedCodeActionProvider(client)
   }
@@ -266,7 +267,7 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
     }
 
     // Make sure there are multiple diagnostics of the same type in the file
-    if (!this.client.diagnosticsManager
+    if (!this.diagnosticsManager
       .getDiagnostics(document.uri)
       .some(x => x.code === diagnostic.code && x !== diagnostic)) {
       return

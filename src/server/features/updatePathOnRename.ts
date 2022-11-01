@@ -1,9 +1,8 @@
-import { disposeAll, TextDocument, Uri, window, workspace } from 'coc.nvim'
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, Disposable, WorkspaceEdit } from 'vscode-languageserver-protocol'
+import { disposeAll, CancellationToken, Disposable, WorkspaceEdit, TextDocument, Uri, window, workspace } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { Mutex } from '../utils/mutex'
@@ -36,7 +35,7 @@ export default class UpdateImportsOnFileRenameHandler {
         await this.doRename(e.oldUri, e.newUri)
         release()
       } catch (e) {
-        this.client.logger.error('Error on rename:', e)
+        window.showErrorMessage(`Error on rename ${e.message}`)
         release()
       }
     }, null, this.disposables)

@@ -1,5 +1,4 @@
-import { commands, disposeAll, DocumentSelector, IServiceProvider, ServiceStat, workspace, WorkspaceConfiguration } from 'coc.nvim'
-import { Disposable, Emitter, Event } from 'vscode-languageserver-protocol'
+import { Disposable, Emitter, Event, commands, disposeAll, DocumentSelector, ExtensionContext, IServiceProvider, ServiceStat, wait, workspace, WorkspaceConfiguration } from 'coc.nvim'
 import { PluginManager } from '../utils/plugins'
 import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ReloadProjectsCommand, SourceDefinitionCommand, TypeScriptGoToProjectConfigCommand } from './commands'
 import { OrganizeImportsCommand, SourceImportsCommand } from './organizeImports'
@@ -20,7 +19,7 @@ export default class TsserverService implements IServiceProvider {
   private readonly disposables: Disposable[] = []
   private descriptions: LanguageDescription[] = []
 
-  constructor(private pluginManager: PluginManager, private readonly subscriptions: Disposable[]) {
+  constructor(private pluginManager: PluginManager, private readonly subscriptions: Disposable[], private readonly context: ExtensionContext) {
     const config = workspace.getConfiguration('tsserver')
     this.enable = config.get<boolean>('enable')
     this.descriptions = standardLanguageDescriptions.filter(o => {
@@ -113,11 +112,11 @@ export default class TsserverService implements IServiceProvider {
     this._state = ServiceStat.Starting
     if (this.clientHost) {
       let client = this.clientHost.serviceClient
-      client.restartTsServer()
+      client.restartTsServer(true)
       return
     }
-    let tscPath = await workspace.nvim.getVar('Tsserver_path') as string | null
-    this.clientHost = new TypeScriptServiceClientHost(this.descriptions, this.pluginManager, tscPath)
+    let tscPath = await workspace.nvim.getVar('Coc_tsserver_path') as string | null
+    this.clientHost = new TypeScriptServiceClientHost(this.descriptions, this.pluginManager, tscPath, this.context)
     let client = this.clientHost.serviceClient
     await new Promise(resolve => {
       client.onReady(() => {
@@ -136,7 +135,8 @@ export default class TsserverService implements IServiceProvider {
   public async stop(): Promise<void> {
     if (!this.clientHost) return
     let client = this.clientHost.serviceClient
-    await client.stop()
+    client.stop()
+    await wait(30)
     this.clientHost?.dispose()
     this.clientHost = null
     this._state = ServiceStat.Stopped

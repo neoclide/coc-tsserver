@@ -1,4 +1,17 @@
-# 1.2.0
+# 2.0.0
+
+- Global `tsserver.tsdk` would be used when exists by default.
+- Remove configuration `tsserver.ignoreLocalTsserver`.
+- Add configuration `tsserver.useLocalTsdk`.
+- Add configuration `tsserver.useSyntaxServer`, default to `auto`, same as
+  VSCode configuration `typescript.useSyntaxServer`.
+- Add configuration `tsserver.experimental.enableProjectDiagnostics`, not used
+  yet.
+- Remove configuration `typescript.suggest.importStatements`, always `true`.
+- Add `TypeScriptAutoFixProvider`
+- Fix action with `notApplicableReason` not disabled.
+
+# 1.12.0
 
 - Disable snippet function completion when following character is `(`.
 - Remove configuration `tsserver.typingsCacheLocation`.

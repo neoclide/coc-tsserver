@@ -7,14 +7,9 @@ import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range
 import { Command, registCommand } from '../commands'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
+import API from '../utils/api'
 import * as typeConverters from '../utils/typeConverters'
 import FormattingOptionsManager from './fileConfigurationManager'
-
-namespace Experimental {
-  export interface RefactorActionInfo extends Proto.RefactorActionInfo {
-    readonly notApplicableReason?: string
-  }
-}
 
 class ApplyRefactoringCommand implements Command {
   public static readonly ID = '_typescript.applyRefactoring'
@@ -155,8 +150,16 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
       document,
       file,
       range,
-      context.only && context.only.some(v => v.includes(CodeActionKind.Refactor))
-    )
+      context.only && context.only.some(v => v.includes(CodeActionKind.Refactor))).filter(action => {
+        if (this.client.apiVersion.lt(API.v430)) {
+          // Don't show 'infer return type' refactoring unless it has been explicitly requested
+          // https://github.com/microsoft/TypeScript/issues/42993
+          if (!context.only && action.kind === 'refactor.rewrite.function.returnType') {
+            return false
+          }
+        }
+        return true
+      })
   }
 
   private convertApplicableRefactors(
@@ -169,8 +172,9 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
     const actions: CodeAction[] = []
     for (const info of body) {
       // ignore not refactor that not applicable
-      if ((info as Experimental.RefactorActionInfo).notApplicableReason) continue
-      if (!info.inlineable) {
+      // if ((info as Experimental.RefactorActionInfo).notApplicableReason) continue
+      if (info.inlineable === false) {
+        // info.actions.
         const codeAction: CodeAction = {
           title: info.description,
           kind: CodeActionKind.Refactor
@@ -184,6 +188,9 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
       } else {
         for (const action of info.actions) {
           let codeAction = this.refactorActionToCodeAction(action, document, file, info, rangeOrSelection)
+          if (action.notApplicableReason) {
+            codeAction.disabled = { reason: action.notApplicableReason }
+          }
           if (setPrefrred) {
             codeAction.isPreferred = TypeScriptRefactorProvider.isPreferred(action, info.actions)
           }

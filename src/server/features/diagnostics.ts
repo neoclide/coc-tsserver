@@ -2,102 +2,197 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DiagnosticCollection, Uri, languages, workspace } from 'coc.nvim'
-import { Diagnostic, DiagnosticTag } from 'vscode-languageserver-protocol'
-import { ResourceMap } from './resourceMap'
 
-export class DiagnosticSet {
-  private _map = new ResourceMap<Diagnostic[]>()
+import { Diagnostic, DiagnosticCollection, DiagnosticTag, languages } from 'coc.nvim'
+import * as arrays from '../utils/arrays'
+import * as objects from '../utils/objects'
+import { Disposable } from '../utils/dispose'
+import { DiagnosticLanguage } from '../utils/languageDescription'
+import { ResourceMap } from '../utils/resourceMap'
 
-  public set(uri: string, diagnostics: Diagnostic[]): void {
-    this._map.set(uri, diagnostics)
-  }
-
-  public get(uri: string): Diagnostic[] {
-    return this._map.get(uri) || []
-  }
-
-  public clear(): void {
-    this._map = new ResourceMap<Diagnostic[]>()
-  }
+function diagnosticsEquals(a: Diagnostic, b: Diagnostic): boolean {
+  if (a === b) return true
+  return objects.equals(a, b)
 }
 
-export enum DiagnosticKind {
+export const enum DiagnosticKind {
   Syntax,
   Semantic,
-  Suggestion
+  Suggestion,
 }
 
-const allDiagnosticKinds = [
-  DiagnosticKind.Syntax,
-  DiagnosticKind.Semantic,
-  DiagnosticKind.Suggestion
-]
+class FileDiagnostics {
+  private readonly _diagnostics = new Map<DiagnosticKind, ReadonlyArray<Diagnostic>>()
 
-export class DiagnosticsManager {
-  private readonly _diagnostics = new Map<DiagnosticKind, DiagnosticSet>()
-  private readonly _currentDiagnostics: DiagnosticCollection
-  private _pendingUpdates = new ResourceMap<any>()
-  private _enableJavascriptSuggestions = true
-  private _enableTypescriptSuggestions = true
+  constructor(
+    public readonly file: string,
+    public language: DiagnosticLanguage
+  ) {}
 
-  private readonly updateDelay = 200
-
-  constructor() {
-    for (const kind of allDiagnosticKinds) {
-      this._diagnostics.set(kind, new DiagnosticSet())
+  public updateDiagnostics(
+    language: DiagnosticLanguage,
+    kind: DiagnosticKind,
+    diagnostics: ReadonlyArray<Diagnostic>
+  ): boolean {
+    if (language !== this.language) {
+      this._diagnostics.clear()
+      this.language = language
     }
-    this._currentDiagnostics = languages.createDiagnosticCollection('tsserver')
+
+    const existing = this._diagnostics.get(kind)
+    if (arrays.equals(existing || arrays.empty, diagnostics, diagnosticsEquals)) {
+      // No need to update
+      return false
+    }
+
+    this._diagnostics.set(kind, diagnostics)
+    return true
   }
 
-  public dispose(): void {
-    this._currentDiagnostics.dispose()
+  public getDiagnostics(settings: DiagnosticSettings): Diagnostic[] {
+    if (!settings.getValidate(this.language)) {
+      return []
+    }
+
+    return [
+      ...this.get(DiagnosticKind.Syntax),
+      ...this.get(DiagnosticKind.Semantic),
+      ...this.getSuggestionDiagnostics(settings),
+    ]
+  }
+
+  private getSuggestionDiagnostics(settings: DiagnosticSettings) {
+    const enableSuggestions = settings.getEnableSuggestions(this.language)
+    return this.get(DiagnosticKind.Suggestion).filter(x => {
+      if (!enableSuggestions) {
+        // Still show unused
+        return x.tags && (x.tags.includes(DiagnosticTag.Unnecessary) || x.tags.includes(DiagnosticTag.Deprecated))
+      }
+      return true
+    })
+  }
+
+  private get(kind: DiagnosticKind): ReadonlyArray<Diagnostic> {
+    return this._diagnostics.get(kind) || []
+  }
+}
+
+interface LanguageDiagnosticSettings {
+  readonly validate: boolean
+  readonly enableSuggestions: boolean
+}
+
+function areLanguageDiagnosticSettingsEqual(currentSettings: LanguageDiagnosticSettings, newSettings: LanguageDiagnosticSettings): boolean {
+  return currentSettings.validate === newSettings.validate
+    && currentSettings.enableSuggestions && currentSettings.enableSuggestions
+}
+
+class DiagnosticSettings {
+  private static readonly defaultSettings: LanguageDiagnosticSettings = {
+    validate: true,
+    enableSuggestions: true
+  };
+
+  private readonly _languageSettings = new Map<DiagnosticLanguage, LanguageDiagnosticSettings>();
+
+  public getValidate(language: DiagnosticLanguage): boolean {
+    return this.get(language).validate
+  }
+
+  public setValidate(language: DiagnosticLanguage, value: boolean): boolean {
+    return this.update(language, settings => ({
+      validate: value,
+      enableSuggestions: settings.enableSuggestions,
+    }))
+  }
+
+  public getEnableSuggestions(language: DiagnosticLanguage): boolean {
+    return this.get(language).enableSuggestions
+  }
+
+  public setEnableSuggestions(language: DiagnosticLanguage, value: boolean): boolean {
+    return this.update(language, settings => ({
+      validate: settings.validate,
+      enableSuggestions: value
+    }))
+  }
+
+  private get(language: DiagnosticLanguage): LanguageDiagnosticSettings {
+    return this._languageSettings.get(language) || DiagnosticSettings.defaultSettings
+  }
+
+  private update(language: DiagnosticLanguage, f: (x: LanguageDiagnosticSettings) => LanguageDiagnosticSettings): boolean {
+    const currentSettings = this.get(language)
+    const newSettings = f(currentSettings)
+    this._languageSettings.set(language, newSettings)
+    return !areLanguageDiagnosticSettingsEqual(currentSettings, newSettings)
+  }
+}
+
+export class DiagnosticsManager extends Disposable {
+  private readonly _diagnostics: ResourceMap<FileDiagnostics>
+  private readonly _settings = new DiagnosticSettings();
+  private readonly _currentDiagnostics: DiagnosticCollection
+  private readonly _pendingUpdates: ResourceMap<any>
+
+  private readonly _updateDelay = 50;
+
+  constructor() {
+    super()
+    this._diagnostics = new ResourceMap<FileDiagnostics>(undefined)
+    this._pendingUpdates = new ResourceMap<any>(undefined)
+
+    this._currentDiagnostics = this._register(languages.createDiagnosticCollection('tsserver'))
+  }
+
+  public override dispose() {
+    super.dispose()
+
     for (const value of this._pendingUpdates.values) {
       clearTimeout(value)
     }
-    this._pendingUpdates = new ResourceMap<any>()
+    this._pendingUpdates.clear()
   }
 
   public reInitialize(): void {
     this._currentDiagnostics.clear()
-    for (const diagnosticSet of this._diagnostics.values()) {
-      diagnosticSet.clear()
+    this._diagnostics.clear()
+  }
+
+  public setValidate(language: DiagnosticLanguage, value: boolean) {
+    const didUpdate = this._settings.setValidate(language, value)
+    if (didUpdate) {
+      this.rebuild()
     }
   }
 
-  public setEnableSuggestions(languageId: string, value: boolean): void {
-    let curr = languageId == 'javascript' ? this._enableJavascriptSuggestions : this._enableTypescriptSuggestions
-    if (curr == value) {
-      return
-    }
-    if (languageId == 'javascript') {
-      this._enableJavascriptSuggestions = value
-    } else {
-      this._enableTypescriptSuggestions = value
+  public setEnableSuggestions(language: DiagnosticLanguage, value: boolean) {
+    const didUpdate = this._settings.setEnableSuggestions(language, value)
+    if (didUpdate) {
+      this.rebuild()
     }
   }
 
-  public diagnosticsReceived(
-    kind: DiagnosticKind,
+  public updateDiagnostics(
     uri: string,
-    diagnostics: Diagnostic[]
+    language: DiagnosticLanguage,
+    kind: DiagnosticKind,
+    diagnostics: ReadonlyArray<Diagnostic>
   ): void {
-    const collection = this._diagnostics.get(kind)
-    if (!collection) return
-    let doc = workspace.getDocument(uri)
-    if (doc) uri = doc.uri
-
-    if (diagnostics.length === 0) {
-      const existing = collection.get(uri)
-      if (existing.length === 0) {
-        // No need to update
-        return
-      }
+    let didUpdate = false
+    const entry = this._diagnostics.get(uri)
+    if (entry) {
+      didUpdate = entry.updateDiagnostics(language, kind, diagnostics)
+    } else if (diagnostics.length) {
+      const fileDiagnostics = new FileDiagnostics(uri, language)
+      fileDiagnostics.updateDiagnostics(language, kind, diagnostics)
+      this._diagnostics.set(uri, fileDiagnostics)
+      didUpdate = true
     }
 
-    collection.set(uri, diagnostics)
-
-    this.scheduleDiagnosticsUpdate(uri)
+    if (didUpdate) {
+      this.scheduleDiagnosticsUpdate(uri)
+    }
   }
 
   public configFileDiagnosticsReceived(
@@ -107,60 +202,35 @@ export class DiagnosticsManager {
     this._currentDiagnostics.set(uri, diagnostics)
   }
 
-  public delete(uri: string): void {
-    this._currentDiagnostics.delete(uri)
+  public delete(resource: string): void {
+    this._currentDiagnostics.delete(resource)
+    this._diagnostics.delete(resource)
   }
 
-  public getDiagnostics(uri: string): Diagnostic[] {
-    return this._currentDiagnostics.get(uri) || []
-    return []
+  public getDiagnostics(resource: string): ReadonlyArray<Diagnostic> {
+    return this._currentDiagnostics.get(resource) || []
   }
 
-  private scheduleDiagnosticsUpdate(uri: string): void {
-    if (!this._pendingUpdates.has(uri)) {
-      this._pendingUpdates.set(
-        uri,
-        setTimeout(() => this.updateCurrentDiagnostics(uri), this.updateDelay)
-      )
+  private scheduleDiagnosticsUpdate(resource: string) {
+    if (!this._pendingUpdates.has(resource)) {
+      this._pendingUpdates.set(resource, setTimeout(() => this.updateCurrentDiagnostics(resource), this._updateDelay))
     }
   }
 
-  private updateCurrentDiagnostics(uri: string): void {
-    if (this._pendingUpdates.has(uri)) {
-      clearTimeout(this._pendingUpdates.get(uri))
-      this._pendingUpdates.delete(uri)
+  private updateCurrentDiagnostics(resource: string): void {
+    if (this._pendingUpdates.has(resource)) {
+      clearTimeout(this._pendingUpdates.get(resource))
+      this._pendingUpdates.delete(resource)
     }
 
-    const allDiagnostics = [
-      ...this._diagnostics.get(DiagnosticKind.Syntax)!.get(uri),
-      ...this._diagnostics.get(DiagnosticKind.Semantic)!.get(uri),
-      ...this.getSuggestionDiagnostics(uri)
-    ]
-    this._currentDiagnostics.set(uri, allDiagnostics)
+    const fileDiagnostics = this._diagnostics.get(resource)
+    this._currentDiagnostics.set(resource, fileDiagnostics ? fileDiagnostics.getDiagnostics(this._settings) : [])
   }
 
-  private getSuggestionDiagnostics(uri: string): Diagnostic[] {
-    const enabled = this.suggestionsEnabled(uri)
-    return this._diagnostics
-      .get(DiagnosticKind.Suggestion)!
-      .get(uri)
-      .filter(x => {
-        if (!enabled) {
-          return x.tags && (x.tags.includes(DiagnosticTag.Unnecessary) || x.tags.includes(DiagnosticTag.Deprecated))
-        }
-        return enabled
-      })
-  }
-
-  private suggestionsEnabled(uri: string): boolean {
-    let doc = workspace.getDocument(uri)
-    if (!doc) return false
-    if (doc.filetype.startsWith('javascript')) {
-      return this._enableJavascriptSuggestions
+  private rebuild(): void {
+    this._currentDiagnostics.clear()
+    for (const fileDiagnostic of this._diagnostics.values) {
+      this._currentDiagnostics.set(fileDiagnostic.file, fileDiagnostic.getDiagnostics(this._settings))
     }
-    if (doc.filetype.startsWith('typescript')) {
-      return this._enableTypescriptSuggestions
-    }
-    return true
   }
 }

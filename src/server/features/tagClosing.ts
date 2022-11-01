@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationTokenSource, Disposable, disposeAll, Position, Range, snippetManager, events, workspace, InsertChange } from 'coc.nvim'
+import { CancellationTokenSource, window, Disposable, disposeAll, Position, Range, snippetManager, events, workspace, InsertChange, TextEditor } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import SnippetString from '../utils/SnippetString'
@@ -18,18 +18,34 @@ export default class TagClosing implements Disposable {
   private _disposed = false
   private _timeout: NodeJS.Timer | undefined = undefined
   private _cancel: CancellationTokenSource | undefined = undefined
+  private _enable = true
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly descriptionLanguageId: string
   ) {
+    this.checkConfig(window.activeTextEditor)
     events.on('TextInsert', this.onInsertChange, this, this._disposables)
+    window.onDidChangeActiveTextEditor(e => {
+      this.checkConfig(e)
+    }, null, this._disposables)
+  }
+
+  private checkConfig(editor: TextEditor | undefined): void {
+    if (!editor) return
+    let { languageId, uri } = editor.document
+    let id = TagClosing._configurationLanguages[languageId]
+    if (!id || id !== this.descriptionLanguageId) {
+      this._enable = false
+      return
+    }
+    this._enable = workspace.getConfiguration(undefined, uri).get<boolean>(`${id}.autoClosingTags`, true)
   }
 
   private async onInsertChange(bufnr: number, change: InsertChange, lastInsert: string): Promise<void> {
     let doc = workspace.getDocument((bufnr))
     if (!doc || !doc.attached) return
-    let enabled = this.isEnabled(doc.filetype, doc.uri)
+    let enabled = this.isEnabled(doc.filetype)
     if (!enabled) return
     let { pre, changedtick, lnum } = change
     if (lastInsert !== '/' && lastInsert != '>') return
@@ -75,12 +91,12 @@ export default class TagClosing implements Disposable {
     }, 30)
   }
 
-  private isEnabled(languageId: string, uri: string): boolean {
+  private isEnabled(languageId: string): boolean {
     const configLang = TagClosing._configurationLanguages[languageId]
     if (!configLang || configLang !== this.descriptionLanguageId) {
       return false
     }
-    if (!workspace.getConfiguration(undefined, uri).get<boolean>(`${configLang}.autoClosingTags`)) {
+    if (!this._enable) {
       return false
     }
     return true
