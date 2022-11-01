@@ -33,6 +33,11 @@ unnecessary files in your jsconfig.json/tsconfig.json.
 
 **Note:** if you're using WSL, copy you project files from mounted dirs to linux home otherwise tsserver will not work properly.
 
+**Important note:** from v2.0.0, tsserver module resolved first from global
+configuration `tsserver.tsdk` and use bundled module when not found, if
+`tsserver.useLocalTsdk` is enabled in workspace folder configuration, typescript
+module inside current workspace folder would be used when exists.
+
 ## Install
 
 In your vim/neovim, run command:
@@ -95,14 +100,9 @@ Almost the same as VSCode.
   - Enabled by options starts with `typescript.inlayHints` or
     `javascript.inlayHints`.
 
-Tsserver module first resolved from your local workspace. If it's not found, use
+~Tsserver module first resolved from your local workspace. If it's not found, use
 tsserver from `tsserver.tsdk` configuration or use bundled tsserver with this
-extension.
-
-**Important note:** from v2.0.0, tsserver module resolved first from global
-configuration `tsserver.tsdk` and use bundled module when not found, if
-`tsserver.useLocalTsdk` is enabled in workspace folder configuration, typescript
-module inside current workspace folder would be used when exists.
+extension.~
 
 ## Configuration options
 
