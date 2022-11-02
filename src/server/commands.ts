@@ -104,7 +104,7 @@ export class AutoFixCommand implements Command {
     }
     let client = await this.service.getClientHost()
     let document = await workspace.document
-    let handles = await client.handles(document.textDocument)
+    let handles = await client.handles(document.uri)
     if (!handles) {
       throw new Error(`Document ${document.uri} is not handled by tsserver.`)
       return

@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, ConfigurationChangeEvent, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, disposeAll, ExtensionContext, languages, Position, Range, TextDocument, Uri, workspace } from 'coc.nvim'
+import { CancellationToken, ConfigurationChangeEvent, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, disposeAll, ExtensionContext, languages, Range, Uri, workspace } from 'coc.nvim'
 import { flatten } from '../utils/arrays'
 import { PluginManager } from '../utils/plugins'
 import { DiagnosticKind } from './features/diagnostics'
@@ -30,7 +30,6 @@ const styleCheckDiagnostics = new Set([
   ...errorCodes.fallThroughCaseInSwitch,
   ...errorCodes.notAllCodePathsReturnAValue,
 ])
-
 
 export default class TypeScriptServiceClientHost implements Disposable {
   private readonly ataProgressReporter: AtaProgressReporter
@@ -77,6 +76,10 @@ export default class TypeScriptServiceClientHost implements Disposable {
 
     // features
     this.disposables.push(languages.registerWorkspaceSymbolProvider(new WorkspaceSymbolProvider(this.client, allModeIds)))
+    import('./features/updatePathOnRename').then(module => {
+      this.disposables.push(module.register(this.client, this.fileConfigurationManager, uri => this.handles(uri)))
+    })
+
     this.client.onConfigDiagnosticsReceived(diag => {
       let { body } = diag
       if (body) {
@@ -203,11 +206,10 @@ export default class TypeScriptServiceClientHost implements Disposable {
     }
   }
 
-  public async handles(doc: TextDocument): Promise<boolean> {
-    let languages = Array.from(this.languagePerId.values())
-    let idx = languages.findIndex(language => language.handles(doc.uri, doc))
-    if (idx != -1) return true
-    return this.client.bufferSyncSupport.handles(doc.uri)
+  public async handles(uri: string): Promise<boolean> {
+    const provider = await this.findLanguage(uri)
+    if (provider) return true
+    return this.client.bufferSyncSupport.handles(uri)
   }
 
   private triggerAllDiagnostics(): void {

@@ -100,29 +100,29 @@ export class ImplicitProjectConfiguration {
   }
 
   private static readTarget(configuration: WorkspaceConfiguration): string | undefined {
-    return configuration.get<string>('js/ts.implicitProjectConfig.target')
+    return configuration.get<string>('tsserver.implicitProjectConfig.target')
   }
 
   private static readModule(configuration: WorkspaceConfiguration): string | undefined {
-    return configuration.get<string>('js/ts.implicitProjectConfig.module')
+    return configuration.get<string>('tsserver.implicitProjectConfig.module')
   }
 
   private static readCheckJs(configuration: WorkspaceConfiguration): boolean {
-    return configuration.get<boolean>('js/ts.implicitProjectConfig.checkJs')
+    return configuration.get<boolean>('tsserver.implicitProjectConfig.checkJs')
       ?? configuration.get<boolean>('tsserver.implicitProjectConfig.checkJs', false)
   }
 
   private static readExperimentalDecorators(configuration: WorkspaceConfiguration): boolean {
-    return configuration.get<boolean>('js/ts.implicitProjectConfig.experimentalDecorators')
+    return configuration.get<boolean>('tsserver.implicitProjectConfig.experimentalDecorators')
       ?? configuration.get<boolean>('tsserver.implicitProjectConfig.experimentalDecorators', false)
   }
 
   private static readImplicitStrictNullChecks(configuration: WorkspaceConfiguration): boolean {
-    return configuration.get<boolean>('js/ts.implicitProjectConfig.strictNullChecks', true)
+    return configuration.get<boolean>('tsserver.implicitProjectConfig.strictNullChecks', true)
   }
 
   private static readImplicitStrictFunctionTypes(configuration: WorkspaceConfiguration): boolean {
-    return configuration.get<boolean>('js/ts.implicitProjectConfig.strictFunctionTypes', true)
+    return configuration.get<boolean>('tsserver.implicitProjectConfig.strictFunctionTypes', true)
   }
 }
 

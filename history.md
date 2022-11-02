@@ -1,15 +1,34 @@
 # 2.0.0
 
 - Global `tsserver.tsdk` would be used when exists by default.
-- Remove configuration `tsserver.ignoreLocalTsserver`.
-- Add configuration `tsserver.useLocalTsdk`.
-- Add configuration `tsserver.useSyntaxServer`, default to `auto`, same as
-  VSCode configuration `typescript.useSyntaxServer`.
-- Add configuration `tsserver.experimental.enableProjectDiagnostics`, not used
-  yet.
-- Remove configuration `typescript.suggest.importStatements`, always `true`.
-- Add `TypeScriptAutoFixProvider`
 - Fix action with `notApplicableReason` not disabled.
+- Add `TypeScriptAutoFixProvider` for provide source actions.
+- Add configurations:
+  - `tsserver.useLocalTsdk`
+  - `typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName`
+  - `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`
+  - `typescript.preferences.autoImportFileExcludePatterns`
+  - `javascript.preferences.autoImportFileExcludePatterns`
+  - `tsserver.useSyntaxServer`
+  - `tsserver.experimental.enableProjectDiagnostics` not works yet.
+  - `tsserver.implicitProjectConfig.module`
+  - `tsserver.implicitProjectConfig.target`
+  - `tsserver.implicitProjectConfig.strictNullChecks`
+  - `tsserver.implicitProjectConfig.strictFunctionTypes`
+- Renamed configurations:
+  - `javascript.updateImportsOnFileMove.enable` => `javascript.updateImportsOnFileMove.enabled`
+  - `typescript.updateImportsOnFileMove.enable` => `typescript.updateImportsOnFileMove.enabled`
+  - `javascript.referencesCodeLens.enable` => `javascript.referencesCodeLens.enabled`
+  - `typescript.referencesCodeLens.enable` => `typescript.referencesCodeLens.enabled`
+  - `javascript.implementationsCodeLens.enable` => `javascript.implementationsCodeLens.enabled`
+  - `typescript.format.enabled` => `typescript.format.enable`
+  - `javascript.format.enabled` => `javascript.format.enable`
+  - `typescript.implementationsCodeLens.enable` => `typescript.implementationsCodeLens.enabled`
+- `referencesCodeLens` and `implementationsCodeLens` changed to disabled by default.
+- Remove configuration `typescript.suggest.importStatements`, always `true`.
+- Remove configuration `tsserver.ignoreLocalTsserver`, local tsserver not used
+  by default, use `tsserver.useLocalTsdk` to enable tsserver from workspace
+  folder.
 
 # 1.12.0
 

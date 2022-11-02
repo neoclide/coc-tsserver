@@ -2,10 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { workspace, WorkspaceConfiguration, disposeAll } from 'coc.nvim'
+import { workspace, window, WorkspaceConfiguration, disposeAll, FormattingOptions, Uri } from 'coc.nvim'
 import { CancellationToken, Disposable } from 'vscode-languageserver-protocol'
 import { TextDocument } from 'coc.nvim'
 import Proto from '../protocol'
+import path from 'path'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 
@@ -87,6 +88,31 @@ export default class FileConfigurationManager {
     }
   }
 
+  private getFormattingOptions(
+    document: TextDocument
+  ): FormattingOptions | undefined {
+    const editor = window.visibleTextEditors.find(editor => editor.document.uri === document.uri)
+    return editor
+      ? {
+        tabSize: editor.options.tabSize,
+        insertSpaces: editor.options.insertSpaces
+      } as FormattingOptions
+      : undefined
+  }
+
+  public async setGlobalConfigurationFromDocument(
+    document: TextDocument,
+    token: CancellationToken,
+  ): Promise<void> {
+    const formattingOptions = this.getFormattingOptions(document)
+    if (!formattingOptions) return
+    const args: Proto.ConfigureRequestArguments = {
+      file: undefined /*global*/,
+      ...this.getFileOptions(formattingOptions, document),
+    }
+    await this.client.execute('configure', args, token)
+  }
+
   public async ensureConfigurationForDocument(document: TextDocument, token: CancellationToken): Promise<void> {
     let opts: { insertSpaces: boolean, tabSize: number }
     let cached = this.cachedMap.get(document.uri)
@@ -111,10 +137,10 @@ export default class FileConfigurationManager {
   }
 
   public formatEnabled(document: TextDocument): boolean {
-    let { languageId, uri } = document
+    let { languageId } = document
     let language = languageId.startsWith('typescript') ? 'typescript' : 'javascript'
-    const config = workspace.getConfiguration(`${language}.format`, uri)
-    return config.get<boolean>('enabled')
+    const config = workspace.getConfiguration(`${language}.format`, document)
+    return config.get<boolean>('enable')
   }
 
   private getFileOptions(options: FormatOptions, document: TextDocument): FileConfiguration {
@@ -177,6 +203,7 @@ export default class FileConfigurationManager {
       includeCompletionsWithSnippetText: config.get<boolean>('suggest.includeCompletionsWithSnippetText', true),
       includeCompletionsWithClassMemberSnippets: config.get<boolean>('suggest.classMemberSnippets.enabled', true),
       includeCompletionsWithObjectLiteralMethodSnippets: config.get<boolean>('suggest.objectLiteralMethodSnippets.enabled', true),
+      autoImportFileExcludePatterns: this.getAutoImportFileExcludePatternsPreference(preferencesConfig, workspace.getWorkspaceFolder(uri)?.uri),
       useLabelDetailsInCompletionEntries: true,
       allowIncompleteCompletions: true,
       displayPartsForJSDoc: true,
@@ -189,6 +216,19 @@ export default class FileConfigurationManager {
     let quoteStyle = config.get<'single' | 'double' | 'auto'>('quoteStyle', 'auto')
     if (this.client.apiVersion.gte(API.v333) || quoteStyle != 'auto') return quoteStyle
     return 'single'
+  }
+
+  private getAutoImportFileExcludePatternsPreference(config: WorkspaceConfiguration, workspaceFolder: string | undefined): string[] | undefined {
+    let folder = workspaceFolder ? Uri.parse(workspaceFolder).fsPath : workspace.root
+    return workspaceFolder && config.get<string[]>('autoImportFileExcludePatterns')?.map(p => {
+      // Normalization rules: https://github.com/microsoft/TypeScript/pull/49578
+      const slashNormalized = p.replace(/\\/g, '/')
+      const isRelative = /^\.\.?($|\/)/.test(slashNormalized)
+      return path.isAbsolute(p) ? p :
+        p.startsWith('*') ? '/' + slashNormalized :
+          isRelative ? path.join(folder, p) :
+            '/**/' + slashNormalized
+    })
   }
 
   public dispose(): void {
@@ -235,6 +275,7 @@ export class InlayHintSettingNames {
   static readonly variableTypesEnabled = 'inlayHints.variableTypes.enabled'
   static readonly propertyDeclarationTypesEnabled = 'inlayHints.propertyDeclarationTypes.enabled'
   static readonly functionLikeReturnTypesEnabled = 'inlayHints.functionLikeReturnTypes.enabled'
+  static readonly variableTypesSuppressWhenTypeMatchesName = 'inlayHints.variableTypes.suppressWhenTypeMatchesName';
   static readonly enumMemberValuesEnabled = 'inlayHints.enumMemberValues.enabled'
 }
 
@@ -242,6 +283,7 @@ export function getInlayHintsPreferences(config: WorkspaceConfiguration) {
   return {
     includeInlayParameterNameHints: getInlayParameterNameHintsPreference(config),
     includeInlayParameterNameHintsWhenArgumentMatchesName: !config.get<boolean>(InlayHintSettingNames.parameterNamesSuppressWhenArgumentMatchesName, true),
+    includeInlayVariableTypeHintsWhenTypeMatchesName: !config.get<boolean>(InlayHintSettingNames.variableTypesSuppressWhenTypeMatchesName, true),
     includeInlayFunctionParameterTypeHints: config.get<boolean>(InlayHintSettingNames.parameterNamesEnabled, false),
     includeInlayVariableTypeHints: config.get<boolean>(InlayHintSettingNames.variableTypesEnabled, false),
     includeInlayPropertyDeclarationTypeHints: config.get<boolean>(InlayHintSettingNames.propertyDeclarationTypesEnabled, false),

@@ -172,12 +172,6 @@ export default class LanguageProvider {
 
     let { fileConfigurationManager } = this
     let conf = fileConfigurationManager.getLanguageConfiguration(this.id)
-    if (['javascript', 'typescript'].includes(this.id)) {
-      if (this.client.apiVersion.gte(API.v290) && conf.get<boolean>('updateImportsOnFileMove.enable')) {
-        this._register(new UpdateImportsOnFileRenameHandler(client, this.fileConfigurationManager, this.id))
-      }
-    }
-
     if (this.client.apiVersion.gte(API.v280)) {
       this._register(languages.registerFoldingRangeProvider(documentSelector.syntax, new Folding(this.client)))
       if (hasSemantic) {
@@ -216,10 +210,10 @@ export default class LanguageProvider {
 
     if (hasSemantic) {
       let cachedResponse = new CachedNavTreeResponse()
-      if (this.client.apiVersion.gte(API.v206) && conf.get<boolean>('referencesCodeLens.enable')) {
+      if (this.client.apiVersion.gte(API.v206) && conf.get<boolean>('referencesCodeLens.enabled')) {
         this._register(languages.registerCodeLensProvider(documentSelector.semantic, new ReferencesCodeLensProvider(client, cachedResponse, this.description.id)))
       }
-      if (this.client.apiVersion.gte(API.v220) && conf.get<boolean>('implementationsCodeLens.enable')) {
+      if (this.client.apiVersion.gte(API.v220) && conf.get<boolean>('implementationsCodeLens.enabled')) {
         this._register(languages.registerCodeLensProvider(documentSelector.semantic, new ImplementationsCodeLensProvider(client, cachedResponse, this.description.id)))
       }
     }

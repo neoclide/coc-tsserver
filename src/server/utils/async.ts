@@ -5,10 +5,11 @@
 export type ITask<T> = () => T
 
 export class Delayer<T> {
+
   public defaultDelay: number
   private timeout: any // Timer
-  private completionPromise: Promise<T | null> | null
-  private onSuccess: ((value?: T | Thenable<T>) => void) | null
+  private completionPromise: Promise<T | undefined> | null
+  private onSuccess: ((value: T | PromiseLike<T> | undefined) => void) | null
   private task: ITask<T> | null
 
   constructor(defaultDelay: number) {
@@ -19,22 +20,19 @@ export class Delayer<T> {
     this.task = null
   }
 
-  public trigger(
-    task: ITask<T>,
-    delay: number = this.defaultDelay
-  ): Promise<T | null> {
+  public trigger(task: ITask<T>, delay: number = this.defaultDelay): Promise<T | undefined> {
     this.task = task
     if (delay >= 0) {
       this.cancelTimeout()
     }
 
     if (!this.completionPromise) {
-      this.completionPromise = new Promise<T>(resolve => {
+      this.completionPromise = new Promise<T | undefined>((resolve) => {
         this.onSuccess = resolve
       }).then(() => {
         this.completionPromise = null
         this.onSuccess = null
-        let result = this.task && this.task()
+        const result = this.task?.()
         this.task = null
         return result
       })
@@ -43,16 +41,14 @@ export class Delayer<T> {
     if (delay >= 0 || this.timeout === null) {
       this.timeout = setTimeout(() => {
         this.timeout = null
-        if (this.onSuccess) {
-          this.onSuccess(undefined)
-        }
+        this.onSuccess?.(undefined)
       }, delay >= 0 ? delay : this.defaultDelay)
     }
 
     return this.completionPromise
   }
 
-  private cancelTimeout(): void {
+  public cancelTimeout(): void {
     if (this.timeout !== null) {
       clearTimeout(this.timeout)
       this.timeout = null
