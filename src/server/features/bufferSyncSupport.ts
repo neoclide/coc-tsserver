@@ -6,7 +6,7 @@ import { Uri, disposeAll, DidChangeTextDocumentParams, workspace } from 'coc.nvi
 import { CancellationTokenSource, CancellationToken, Emitter, Event, Disposable, TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol'
 import { TextDocument } from 'coc.nvim'
 import Proto from '../protocol'
-import { ITypeScriptServiceClient } from '../typescriptService'
+import { ClientCapability, ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { Delayer } from '../utils/async'
 import * as typeConverters from '../utils/typeConverters'
@@ -281,25 +281,40 @@ class GetErrRequest {
   private _done = false
 
   private constructor(
-    client: ITypeScriptServiceClient,
+    private client: ITypeScriptServiceClient,
     public readonly uris: Uri[],
     private readonly _token: CancellationTokenSource,
     onDone: () => void
   ) {
-    let files = uris.map(uri => client.normalizedPath(uri))
-    const args: Proto.GeterrRequestArgs = {
-      delay: 0,
-      files
-    }
-    const done = () => {
-      if (this._done) {
-        return
-      }
+    if (!this.isErrorReportingEnabled()) {
       this._done = true
-      onDone()
+      setImmediate(onDone)
+      return
     }
 
-    client.executeAsync('geterr', args, _token.token).then(done, done)
+    const supportsSyntaxGetErr = this.client.apiVersion.gte(API.v440)
+    const allFiles = uris
+      .filter(entry => supportsSyntaxGetErr || client.hasCapabilityForResource(entry, ClientCapability.Semantic))
+      .map(entry => client.normalizedPath(entry))
+
+    if (!allFiles.length) {
+      this._done = true
+      setImmediate(onDone)
+    } else {
+      const request = this.areProjectDiagnosticsEnabled()
+        // Note that geterrForProject is almost certainly not the api we want here as it ends up computing far
+        // too many diagnostics
+        ? client.executeAsync('geterrForProject', { delay: 0, file: allFiles[0] }, this._token.token)
+        : client.executeAsync('geterr', { delay: 0, files: allFiles }, this._token.token)
+
+      request.finally(() => {
+        if (this._done) {
+          return
+        }
+        this._done = true
+        onDone()
+      })
+    }
   }
 
   public cancel(): any {
@@ -308,6 +323,19 @@ class GetErrRequest {
     }
 
     this._token.dispose()
+  }
+
+  private areProjectDiagnosticsEnabled() {
+    return this.client.configuration.enableProjectDiagnostics && this.client.capabilities.has(ClientCapability.Semantic)
+  }
+
+  private isErrorReportingEnabled() {
+    if (this.client.apiVersion.gte(API.v440)) {
+      return true
+    } else {
+      // Older TS versions only support `getErr` on semantic server
+      return this.client.capabilities.has(ClientCapability.Semantic)
+    }
   }
 }
 

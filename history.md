@@ -2,15 +2,15 @@
 
 - Global `tsserver.tsdk` would be used when exists by default.
 - Fix action with `notApplicableReason` not disabled.
-- Add `TypeScriptAutoFixProvider` for provide source actions.
-- Add configurations:
+- Added `TypeScriptAutoFixProvider` for provide source actions.
+- Added configurations:
   - `tsserver.useLocalTsdk`
   - `typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName`
   - `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`
   - `typescript.preferences.autoImportFileExcludePatterns`
   - `javascript.preferences.autoImportFileExcludePatterns`
   - `tsserver.useSyntaxServer`
-  - `tsserver.experimental.enableProjectDiagnostics` not works yet.
+  - `tsserver.experimental.enableProjectDiagnostics`
   - `tsserver.implicitProjectConfig.module`
   - `tsserver.implicitProjectConfig.target`
   - `tsserver.implicitProjectConfig.strictNullChecks`
