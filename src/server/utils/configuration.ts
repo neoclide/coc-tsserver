@@ -160,16 +160,18 @@ export class ServiceConfigurationProvider implements ServiceConfigurationProvide
 
   protected readLocalTsdk(configuration: WorkspaceConfiguration): string | null {
     const inspect = configuration.inspect('tsserver.tsdk')
-    if (inspect && typeof inspect.workspaceFolderValue === 'string') {
-      return this.fixPathPrefixes(inspect.workspaceFolderValue)
+    let value = inspect.workspaceValue ?? inspect.workspaceFolderValue
+    if (inspect && typeof value === 'string') {
+      return this.fixPathPrefixes(value)
     }
     return null
   }
 
   protected readUseWorkspace(configuration: WorkspaceConfiguration): boolean {
     const inspect = configuration.inspect('tsserver.useLocalTsdk')
-    if (inspect && typeof inspect.workspaceFolderValue === 'boolean') {
-      return inspect.workspaceFolderValue
+    let value = inspect.workspaceValue ?? inspect.workspaceFolderValue
+    if (inspect && typeof value === 'boolean') {
+      return value
     }
     return false
   }

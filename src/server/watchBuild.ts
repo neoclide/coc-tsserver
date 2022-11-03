@@ -1,6 +1,11 @@
-import { Disposable, disposeAll, StatusBarItem, TaskOptions, Uri, window, workspace } from 'coc.nvim'
+import { CancellationToken, Disposable, disposeAll, Logger, StatusBarItem, TaskOptions, Uri, window, workspace } from 'coc.nvim'
 import path from 'path'
+import type * as Proto from './protocol'
 import type TsserverService from '../server'
+import { TypeScriptVersion } from './tsServer/versionProvider'
+import fs from 'fs'
+import { ServerResponse } from './typescriptService'
+import TypeScriptServiceClient from './typescriptServiceClient'
 
 const countRegex = /Found\s+(\d+)\s+error/
 const errorRegex = /^(.+)\((\d+),(\d+)\):\s(\w+)\sTS(\d+):\s*(.+)$/
@@ -14,7 +19,8 @@ export default class WatchProject implements Disposable {
   private options: TaskOptions
 
   public constructor(
-    private readonly service: TsserverService
+    private readonly service: TsserverService,
+    private readonly logger: Logger
   ) {
     this.statusItem = window.createStatusBarItem(1, { progress: true })
     this.disposables.push(this.statusItem)
@@ -102,29 +108,69 @@ export default class WatchProject implements Disposable {
   }
 
   public async getOptions(): Promise<TaskOptions> {
-    let client = await this.service.getClientHost()
-    let { tscPath } = client.serviceClient
-    if (!tscPath) {
-      window.showErrorMessage(`Local & global tsc not found`)
+    let doc = await workspace.document
+    let resource = Uri.parse(doc.uri)
+    const client = await this.service.getClientHost()
+    let { serviceClient } = client
+    const file = serviceClient.toPath(resource.toString())
+    if (!file) {
+      window.showWarningMessage('Could not determine TypeScript or JavaScript project. Current file should be javascript or typescript file.')
       return
     }
-    let doc = await workspace.document
-    const tsconfigPath = workspace.getConfiguration('tsserver', doc.uri).get<string>('tsconfigPath', 'tsconfig.json')
-    let find = await workspace.findUp([tsconfigPath])
-    if (!find) {
-      window.showErrorMessage(`${tsconfigPath} not found!`)
+    let version: TypeScriptVersion
+    const rootPath = serviceClient.getWorkspaceRootForResource(resource)
+    if (!rootPath) {
+      window.showWarningMessage(`Could not determine workspace folder for current file ${doc.uri}.`)
       return
+    }
+    version = serviceClient.versionProvider.getLocalVersionFromFolder(rootPath)
+    if (!version) version = serviceClient.versionProvider.getLocalVersion()
+    if (!version) version = serviceClient.versionManager.currentVersion
+    if (!version) {
+      window.showErrorMessage(`Unable to resolve typescript module from workspace folders`)
+      return
+    }
+    let tsconfigPath: string
+    let configFileName = await resolveConfigFile(serviceClient, file)
+    if (configFileName) {
+      tsconfigPath = path.relative(rootPath, configFileName)
+    } else {
+      this.logger.warn(`Unable to resolve config file from ${file}, try configuration`)
+      let inspect = workspace.getConfiguration('tsserver', doc.uri).inspect<string>('tsconfigPath')
+      let value = inspect ? inspect.workspaceFolderValue || inspect.workspaceValue || 'tsconfig.json' : 'tsconfig.json'
+      let fullpath = path.join(rootPath, value)
+      if (fs.existsSync(fullpath)) {
+        tsconfigPath = value
+      } else {
+        window.showWarningMessage(`Config file ${fullpath} not exists.`)
+        return
+      }
     }
 
-    let root = path.dirname(find)
     return {
-      cmd: tscPath,
+      cmd: version.tscPath,
       args: ['-p', tsconfigPath, '--watch', 'true', '--pretty', 'false'],
-      cwd: root
+      cwd: rootPath
     }
   }
 
   public dispose(): void {
     disposeAll(this.disposables)
   }
+}
+
+async function resolveConfigFile(client: TypeScriptServiceClient, file: string): Promise<string | undefined> {
+  let res: ServerResponse.Response<Proto.ProjectInfoResponse> | undefined
+  try {
+    res = await client.execute('projectInfo', { file, needFileNameList: false }, CancellationToken.None)
+  } catch {
+    // noop
+  }
+  if (res?.type !== 'response' || !res.body) {
+    return undefined
+  }
+  let { configFileName } = res.body
+  // inferred project
+  if (configFileName && configFileName.startsWith('/dev/null')) return undefined
+  return configFileName
 }

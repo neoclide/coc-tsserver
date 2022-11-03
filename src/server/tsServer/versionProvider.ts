@@ -111,16 +111,21 @@ export class TypeScriptVersionProvider {
     }
   }
 
+  public getLocalVersionFromFolder(workspaceRoot: string): TypeScriptVersion | undefined {
+    for (let folder of MODULE_FOLDERS) {
+      let libFolder = path.join(workspaceRoot, folder)
+      if (fs.existsSync(libFolder)) {
+        let version = new TypeScriptVersion(libFolder)
+        if (version.isValid) return version
+      }
+    }
+  }
+
   public getLocalVersion(): TypeScriptVersion | undefined {
     let folders = workspace.workspaceFolders.map(f => Uri.parse(f.uri).fsPath)
     for (let p of folders) {
-      for (let folder of MODULE_FOLDERS) {
-        let libFolder = path.join(p, folder)
-        if (fs.existsSync(libFolder)) {
-          let version = new TypeScriptVersion(libFolder)
-          if (version.isValid) return version
-        }
-      }
+      let version = this.getLocalVersionFromFolder(p)
+      if (version) return version
     }
     return null
   }

@@ -33,6 +33,9 @@ unnecessary files in your jsconfig.json/tsconfig.json.
 
 **Note:** if you're using WSL, copy you project files from mounted dirs to linux home otherwise tsserver will not work properly.
 
+**Note:** tsserver treat buffer without a disk file belongs to implicit project,
+some feature may not work as expected.
+
 **Important note:** from v2.0.0, tsserver module resolved first from global
 configuration `tsserver.tsdk` and use bundled module when not found, if
 `tsserver.useLocalTsdk` is enabled in workspace folder configuration, typescript

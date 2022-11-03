@@ -122,17 +122,17 @@ export default class TypeScriptServiceClient extends Disposable implements IType
   private readonly _onDidChangeCapabilities = this._register(new Emitter<void>())
   public readonly onDidChangeCapabilities = this._onDidChangeCapabilities.event
 
+  public readonly versionProvider: TypeScriptVersionProvider
   private pathSeparator: string
   private tracer: Tracer
   private _configuration: TypeScriptServiceConfiguration
-  private versionProvider: TypeScriptVersionProvider
   private versionStatus: VersionStatus
   private lastStart: number
   private numberRestarts: number
   private _onReady?: { promise: Promise<void>; resolve: () => void; reject: () => void }
 
   private readonly cancellerFactory: OngoingRequestCancellerFactory
-  private readonly versionManager: TypeScriptVersionManager
+  public readonly versionManager: TypeScriptVersionManager
   private readonly typescriptServerSpawner: TypeScriptServerSpawner
   private readonly pluginPathsProvider: TypeScriptPluginPathsProvider
   private readonly logDirectoryProvider: ILogDirectoryProvider

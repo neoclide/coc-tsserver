@@ -29,6 +29,7 @@
 - Remove configuration `tsserver.ignoreLocalTsserver`, local tsserver not used
   by default, use `tsserver.useLocalTsdk` to enable tsserver from workspace
   folder.
+- `watchBuild` use resolved config file returned from tsserver by default.
 
 # 1.12.0
 

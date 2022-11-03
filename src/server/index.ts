@@ -60,7 +60,7 @@ export default class TsserverService implements IServiceProvider {
       let { id, execute } = cmd
       subscriptions.push(commands.registerCommand(id as string, execute, cmd))
     }
-    let watchProject = new WatchProject(this)
+    let watchProject = new WatchProject(this, this.context.logger)
     subscriptions.push(watchProject)
     registCommand({
       id: WatchProject.id,
