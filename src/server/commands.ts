@@ -1,4 +1,4 @@
-import { commands, CancellationToken, Diagnostic, Disposable, ServiceStat, Uri as URI, window, workspace } from 'coc.nvim'
+import { commands, CancellationToken, Diagnostic, Disposable, ServiceStat, Uri as URI, window, workspace, QuickPickItem } from 'coc.nvim'
 import { Location, Position, Range, TextEdit } from 'vscode-languageserver-types'
 import TsserverService from '../server'
 import { PluginManager } from '../utils/plugins'
@@ -8,11 +8,97 @@ import API from './utils/api'
 import { nodeModules } from './utils/helper'
 import { installModules } from './utils/modules'
 import * as typeConverters from './utils/typeConverters'
+import { Resolver } from '../utils/resolver'
+import { TypeScriptVersion } from './tsServer/versionProvider'
 
 export interface Command {
   readonly id: string | string[]
   execute(...args: any[]): void | Promise<any>
 }
+
+interface PickItem extends QuickPickItem {
+  version: TypeScriptVersion
+}
+
+export class ChooseVersionCommand implements Command {
+  public readonly id = 'tsserver.chooseVersion'
+  private resolver = new Resolver()
+
+  public constructor(
+    private readonly service: TsserverService
+  ) {}
+
+  public async execute(): Promise<void> {
+    let client = await this.service.getClientHost()
+    let { versionProvider } = client.serviceClient
+    let { bundledVersion } = versionProvider
+
+    let npmServerPath: string
+    let yarnServerPath: string
+    await window.withProgress({
+      title: 'Resolving typescript module'
+    }, async () => {
+      npmServerPath = await this.resolver.resolveNpm()
+      yarnServerPath = await this.resolver.resolveYarn()
+    })
+    let currPath = client.serviceClient.versionManager.currentVersion?.path
+    let items: PickItem[] = []
+    items.push({
+      label: bundledVersion.version.displayName,
+      description: 'Bundled with coc-tsserver',
+      version: bundledVersion,
+      picked: bundledVersion.path == currPath
+    })
+    if (npmServerPath) {
+      let version = versionProvider.getVersionFromTscPath(npmServerPath)
+      if (version && version.isValid) {
+        items.push({
+          label: version.version.displayName,
+          description: 'From npm',
+          version: version,
+          picked: version.path == currPath
+        })
+      }
+    }
+    if (yarnServerPath) {
+      let version = versionProvider.getVersionFromTscPath(yarnServerPath)
+      if (version && version.isValid) {
+        items.push({
+          label: version.version.displayName,
+          description: 'From yarn',
+          version: version,
+          picked: version.path == currPath
+        })
+      }
+    }
+    let localVersion = versionProvider.getLocalVersion()
+    if (localVersion && localVersion.isValid) {
+      items.push({
+        label: localVersion.version.displayName,
+        description: 'Local version',
+        version: localVersion,
+        picked: localVersion.path == currPath
+      })
+    }
+    let res = await window.showQuickPick(items, { title: 'Choose typescript version', matchOnDescription: true })
+    if (!res || res.version.path == currPath) return
+    if (res.version.path == localVersion?.path) {
+      // workspace.root
+      let config = workspace.getConfiguration('tsserver', URI.file(workspace.root))
+      config.update('useLocalTsdk', true, 3 as any)
+      client.serviceClient.restartTsServer()
+    } else {
+      let config = workspace.getConfiguration('tsserver', URI.file(workspace.root))
+      if (config.inspect('useLocalTsdk').workspaceFolderValue !== undefined) {
+        config.update('useLocalTsdk', undefined, 3 as any)
+      }
+      let version = res.version
+      config.update('tsdk', version.path, true)
+      client.serviceClient.restartTsServer()
+    }
+  }
+}
+
 
 export class ReloadProjectsCommand implements Command {
   public readonly id = 'tsserver.reloadProjects'

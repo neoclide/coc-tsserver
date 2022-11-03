@@ -1,5 +1,4 @@
 import { workspace, WorkspaceConfiguration } from 'coc.nvim'
-import which from 'which'
 import path from 'path'
 import * as objects from '../utils/objects'
 import os from 'os'

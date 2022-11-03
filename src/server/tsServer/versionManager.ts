@@ -33,6 +33,14 @@ export class TypeScriptVersionManager {
 
   public updateConfiguration(nextConfiguration: TypeScriptServiceConfiguration) {
     this.configuration = nextConfiguration
+    if (this.useWorkspaceTsdkSetting) {
+      const localVersion = this.versionProvider.getLocalVersion()
+      if (localVersion) {
+        this._currentVersion = localVersion
+      }
+    } else {
+      this._currentVersion = this.versionProvider.getDefaultVersion()
+    }
   }
 
   public get currentVersion(): TypeScriptVersion {

@@ -1,6 +1,6 @@
 import { Disposable, Emitter, Event, commands, disposeAll, DocumentSelector, ExtensionContext, IServiceProvider, ServiceStat, wait, workspace, WorkspaceConfiguration } from 'coc.nvim'
 import { PluginManager } from '../utils/plugins'
-import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ReloadProjectsCommand, SourceDefinitionCommand, TypeScriptGoToProjectConfigCommand } from './commands'
+import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ChooseVersionCommand, ReloadProjectsCommand, SourceDefinitionCommand, TypeScriptGoToProjectConfigCommand } from './commands'
 import { OrganizeImportsCommand, SourceImportsCommand } from './organizeImports'
 import WatchProject from './watchBuild'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
@@ -19,7 +19,7 @@ export default class TsserverService implements IServiceProvider {
   private readonly disposables: Disposable[] = []
   private descriptions: LanguageDescription[] = []
 
-  constructor(private pluginManager: PluginManager, private readonly subscriptions: Disposable[], private readonly context: ExtensionContext) {
+  constructor(private pluginManager: PluginManager, private readonly context: ExtensionContext) {
     const config = workspace.getConfiguration('tsserver')
     this.enable = config.get<boolean>('enable')
     this.descriptions = standardLanguageDescriptions.filter(o => {
@@ -45,10 +45,15 @@ export default class TsserverService implements IServiceProvider {
     this.registCommands()
   }
 
+  private get subscriptions(): Disposable[] {
+    return this.context.subscriptions
+  }
+
   // public state = ServiceStat.Initial
 
   public get state(): ServiceStat {
     if (this.clientHost) {
+      // console.log(this.clientHost.serviceClient.state)
       return this.clientHost.serviceClient.state
     }
     return this._state
@@ -68,6 +73,7 @@ export default class TsserverService implements IServiceProvider {
         return watchProject.execute()
       }
     })
+    registCommand(new ChooseVersionCommand(this))
     registCommand(new ConfigurePluginCommand(this.pluginManager))
     registCommand(new AutoFixCommand(this))
     registCommand(new ReloadProjectsCommand(this))

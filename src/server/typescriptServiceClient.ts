@@ -192,6 +192,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
       const oldConfiguration = this._configuration
       this._configuration = this.serviceConfigurationProvider.loadFromWorkspace()
       this.versionProvider.updateConfiguration(this._configuration)
+      this.versionManager.updateConfiguration(this._configuration)
       this.pluginPathsProvider.updateConfiguration(this._configuration)
       this.tracer.updateConfiguration()
 
@@ -359,7 +360,6 @@ export default class TypeScriptServiceClient extends Disposable implements IType
     })
 
     handle.onExit((data: TypeScriptServerExitEvent) => {
-      this.state = ServiceStat.Stopped
       const { code, signal } = data
       this.error(`TSServer exited. Code: ${code}. Signal: ${signal}`)
 
@@ -379,6 +379,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
         // this is coming from an old process
         return
       }
+      this.state = ServiceStat.Stopped
 
       if (handle.tsServerLogFile) {
         this.info(`TSServer log file: ${handle.tsServerLogFile}`)

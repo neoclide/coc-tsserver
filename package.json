@@ -1,6 +1,6 @@
 {
   "name": "coc-tsserver",
-  "version": "1.12.0",
+  "version": "2.0.0",
   "description": "tsserver extension for coc.nvim",
   "main": "lib/index.js",
   "publisher": "chemzqm",
@@ -107,6 +107,11 @@
         "title": "Fix autofixable problems of current document.",
         "category": "TSServer",
         "command": "tsserver.executeAutofix"
+      },
+      {
+        "title": "Choose different typescript version",
+        "category": "TSServer",
+        "command": "tsserver.chooseVersion"
       }
     ],
     "configuration": {
@@ -1170,6 +1175,7 @@
     "which": "^2.0.2"
   },
   "dependencies": {
+    "strip-ansi": "^7.0.1",
     "typescript": "^4.8.4"
   }
 }

@@ -107,6 +107,20 @@ Almost the same as VSCode.
 tsserver from `tsserver.tsdk` configuration or use bundled tsserver with this
 extension.~
 
+## Commands
+
+Commands contributed to `:CocList commands`
+
+- `tsserver.reloadProjects` Reload current project
+- `tsserver.openTsServerLog` Open log file of tsserver.
+- `tsserver.goToProjectConfig` Open project config file.
+- `tsserver.restart` Restart tsserver
+- `tsserver.findAllFileReferences` Find File References
+- `tsserver.goToSourceDefinition` Go to Source Definition
+- `tsserver.watchBuild` Run `tsc --watch` for current project by use vim's job feature.
+- `tsserver.executeAutofix` Fix autofixable problems of current document.
+- `tsserver.chooseVersion` Choose different typescript version
+
 ## Configuration options
 
 Checkout [using the configuration
