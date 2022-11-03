@@ -5,12 +5,12 @@
 - Added `TypeScriptAutoFixProvider` for provide source actions.
 - Added configurations:
   - `tsserver.useLocalTsdk`
+  - `tsserver.useSyntaxServer`
+  - `tsserver.experimental.enableProjectDiagnostics` very experimental state
   - `typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName`
   - `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`
   - `typescript.preferences.autoImportFileExcludePatterns`
   - `javascript.preferences.autoImportFileExcludePatterns`
-  - `tsserver.useSyntaxServer`
-  - `tsserver.experimental.enableProjectDiagnostics`
   - `tsserver.implicitProjectConfig.module`
   - `tsserver.implicitProjectConfig.target`
   - `tsserver.implicitProjectConfig.strictNullChecks`
