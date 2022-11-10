@@ -9,17 +9,7 @@ import Proto from '../protocol'
 import path from 'path'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
-
-function objAreEqual<T>(a: T, b: T): boolean {
-  let keys = Object.keys(a)
-  for (let i = 0; i < keys.length; i++) { // tslint:disable-line
-    let key = keys[i]
-    if ((a as any)[key] !== (b as any)[key]) {
-      return false
-    }
-  }
-  return true
-}
+import { equals } from '../utils/objects'
 
 interface FormatOptions {
   tabSize: number
@@ -70,14 +60,13 @@ export default class FileConfigurationManager {
     let cachedOption = this.cachedMap.get(document.uri)
     const currentOptions = this.getFileOptions(options, document)
     if (cachedOption
-      && objAreEqual(cachedOption.formatOptions, currentOptions.formatOptions)
-      && objAreEqual(cachedOption.preferences, currentOptions.preferences)) return
+      && equals(cachedOption.formatOptions, currentOptions.formatOptions)
+      && equals(cachedOption.preferences, currentOptions.preferences)) return
     this.cachedMap.set(document.uri, currentOptions)
     const args: Proto.ConfigureRequestArguments = {
       file,
       ...currentOptions
     }
-    await this.client.execute('configure', args, CancellationToken.None)
     try {
       const response = await this.client.execute('configure', args, token)
       if (response.type !== 'response') {
