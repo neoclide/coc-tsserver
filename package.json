@@ -14,7 +14,8 @@
   "keywords": [
     "coc.nvim",
     "tsserver",
-    "typescript"
+    "typescript",
+    "javascript"
   ],
   "scripts": {
     "prepare": "node esbuild.js"

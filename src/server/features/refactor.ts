@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CodeActionProvider, Uri, CodeActionProviderMetadata, commands, TextDocument, window, workspace } from 'coc.nvim'
+import { CodeActionProvider, Uri, CodeActionProviderMetadata, commands, TextDocument, window, workspace, CodeActionTriggerKind } from 'coc.nvim'
 import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import { Command, registCommand } from '../commands'
 import Proto from '../protocol'
@@ -126,13 +126,18 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
     if (!this.shouldTrigger(context)) {
       return undefined
     }
+    // context.triggerKind
     const file = this.client.toPath(document.uri)
     if (!file) return undefined
     await this.formattingOptionsManager.ensureConfigurationForDocument(document, token)
-    const args: Proto.GetApplicableRefactorsRequestArgs = typeConverters.Range.toFileRangeRequestArgs(
-      file,
-      range
-    )
+    const args: Proto.GetApplicableRefactorsRequestArgs = {
+      ...typeConverters.Range.toFileRangeRequestArgs(
+        file,
+        range
+      ),
+      triggerReason: context.triggerKind === CodeActionTriggerKind.Invoked ? 'invoked' : 'implicit',
+      kind: Array.isArray(context.only) ? context.only[0] : undefined
+    }
     let response
     try {
       response = await this.client.interruptGetErr(() => {
