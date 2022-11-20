@@ -1,3 +1,7 @@
+# 2.0.3
+
+- Pass triggerReason and kind for refactor request.
+
 # 2.0.0
 
 - Global `tsserver.tsdk` would be used when exists by default.
