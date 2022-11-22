@@ -2,57 +2,20 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument } from 'coc.nvim'
-import { CodeLensProvider } from 'coc.nvim'
-import { CancellationToken, CodeLens, Emitter, Event, Range } from 'vscode-languageserver-protocol'
+import { CodeLensProvider, TextDocument } from 'coc.nvim'
+import { CancellationToken, CodeLens, Range } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
+import { CachedResponse } from '../tsServer/cachedResponse'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import { escapeRegExp } from '../utils/regexp'
 import * as typeConverters from '../utils/typeConverters'
 
-export class CachedNavTreeResponse {
-  private response?: Promise<Proto.NavTreeResponse>
-  private version = -1
-  private document = ''
-
-  public execute(document: TextDocument, f: () => Promise<Proto.NavTreeResponse>): Promise<Proto.NavTreeResponse> {
-    if (this.matches(document)) {
-      return this.response
-    }
-
-    return this.update(document, f())
-  }
-
-  private matches(document: TextDocument): boolean {
-    return (
-      this.version === document.version &&
-      this.document === document.uri.toString()
-    )
-  }
-
-  private update(
-    document: TextDocument,
-    response: Promise<Proto.NavTreeResponse>
-  ): Promise<Proto.NavTreeResponse> {
-    this.response = response
-    this.version = document.version
-    this.document = document.uri.toString()
-    return response
-  }
-}
-
 export abstract class TypeScriptBaseCodeLensProvider implements CodeLensProvider {
-  private onDidChangeCodeLensesEmitter = new Emitter<void>()
-
   public constructor(
     protected client: ITypeScriptServiceClient,
-    private cachedResponse: CachedNavTreeResponse,
+    private cachedResponse: CachedResponse<Proto.NavTreeResponse>,
     protected modeId: string
   ) {}
-
-  public get onDidChangeCodeLenses(): Event<void> {
-    return this.onDidChangeCodeLensesEmitter.event
-  }
 
   public async provideCodeLenses(
     document: TextDocument,
@@ -65,12 +28,11 @@ export abstract class TypeScriptBaseCodeLensProvider implements CodeLensProvider
 
     try {
       const response = await this.cachedResponse.execute(document, () =>
-        this.client.execute('navtree', { file: filepath }, token) as any
+        this.client.execute('navtree', { file: filepath }, token)
       )
-      if (!response) {
+      if (response.type !== 'response') {
         return []
       }
-
       const tree = response.body
       const referenceableSpans: Range[] = []
       if (tree && tree.childItems) {

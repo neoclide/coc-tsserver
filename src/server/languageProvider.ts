@@ -5,7 +5,6 @@
 import { CodeActionKind, Diagnostic, DiagnosticSeverity, Disposable, disposeAll, DocumentFilter, languages, TextDocument, Uri, workspace } from 'coc.nvim'
 import path from 'path'
 import * as fileSchemes from '../utils/fileSchemes'
-import { CachedNavTreeResponse } from './features/baseCodeLensProvider'
 import CallHierarchyProvider from './features/callHierarchy'
 import CompletionItemProvider from './features/completionItemProvider'
 import DefinitionProvider from './features/definitionProvider'
@@ -32,8 +31,8 @@ import { TypeScriptDocumentSemanticTokensProvider } from './features/semanticTok
 import SignatureHelpProvider from './features/signatureHelp'
 import SmartSelection from './features/smartSelect'
 import TagClosing from './features/tagClosing'
-import UpdateImportsOnFileRenameHandler from './features/updatePathOnRename'
 import { OrganizeImportsCodeActionProvider } from './organizeImports'
+import { CachedResponse } from './tsServer/cachedResponse'
 import { ClientCapability } from './typescriptService'
 import TypeScriptServiceClient from './typescriptServiceClient'
 import API from './utils/api'
@@ -209,7 +208,7 @@ export default class LanguageProvider {
         'tsserver', [CodeActionKind.QuickFix]))
 
     if (hasSemantic) {
-      let cachedResponse = new CachedNavTreeResponse()
+      let cachedResponse = new CachedResponse()
       if (this.client.apiVersion.gte(API.v206) && conf.get<boolean>('referencesCodeLens.enabled')) {
         this._register(languages.registerCodeLensProvider(documentSelector.semantic, new ReferencesCodeLensProvider(client, cachedResponse, this.description.id)))
       }
