@@ -25,7 +25,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
     if (response.type !== 'response' || !response.body) {
       codeLens.command = {
         title: response.type === 'cancelled'
-          ? 'cancelled'
+          ? ''
           : 'could not determine implementation',
         command: ''
       }

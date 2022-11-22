@@ -28,7 +28,7 @@ export default class TypeScriptReferencesCodeLensProvider extends TypeScriptBase
     if (!response || response.type != 'response' || !response.body) {
       codeLens.command = {
         title: response.type === 'cancelled'
-          ? 'cancelled'
+          ? ''
           : 'could not determine references',
         command: ''
       }
