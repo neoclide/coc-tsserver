@@ -1,3 +1,10 @@
+# 2.0.8
+
+- Upgrade typescript to 4.9.3.
+- Allow `tsserver.useLocalTsdk` to be global configuration.
+- Fix range of completionItem when triggered by `#`
+- Avoid cache cancelled response for code lens.
+
 # 2.0.3
 
 - Pass triggerReason and kind for refactor request.
