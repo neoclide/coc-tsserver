@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Range, CompletionItem, CompletionItemKind, InsertTextFormat, Position, TextEdit } from 'coc.nvim'
-import { CompletionItemTag } from 'vscode-languageserver-protocol'
+import { CompletionItemTag, InsertReplaceEdit } from 'vscode-languageserver-protocol'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
+import * as typeConverters from './typeConverters'
 
 interface ParamterListParts {
   readonly parts: ReadonlyArray<Proto.SymbolDisplayPart>
@@ -23,6 +24,8 @@ export interface CompletionContext {
   readonly isInValidCommitCharacterContext: boolean
   readonly enableCallCompletions: boolean
   readonly dotAccessorContext?: DotAccessorContext
+  readonly triggerCharacter?: string
+  readonly line: string
 }
 
 export function convertCompletionEntry(
@@ -65,14 +68,23 @@ export function convertCompletionEntry(
     insertTextFormat = InsertTextFormat.Snippet
   }
 
-  let textEdit: TextEdit | null = null
+  let textEdit: InsertReplaceEdit | TextEdit | null = null
   if (tsEntry.replacementSpan) {
-    let { start, end } = tsEntry.replacementSpan
-    if (start.line == end.line) {
-      textEdit = {
-        range: Range.create(start.line - 1, start.offset - 1, end.line - 1, end.offset - 1),
-        newText: tsEntry.insertText || label
-      }
+    let range = typeConverters.Range.fromTextSpan(tsEntry.replacementSpan)
+    if (range.start.line != range.end.line) {
+      range = Range.create(range.start, Position.create(range.start.line, context.line.length))
+    }
+    textEdit = {
+      insert: range,
+      replace: range,
+      newText: tsEntry.insertText ?? label
+    }
+  } else {
+    if (context.isMemberCompletion && context.line.endsWith('#')) {
+      // vim may not add # to iskeyword.
+      let len = context.line.length
+      let range = Range.create(position.line, len - 1, position.line, len)
+      textEdit = TextEdit.replace(range, tsEntry.insertText ?? label)
     }
   }
   if (tsEntry.kindModifiers) {

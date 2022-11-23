@@ -128,6 +128,7 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
       start: { line: position.line, character: 0 },
       end: position
     })
+    const line = document.lines[position.line]
     let { triggerCharacter, option } = context as any
     const completionConfiguration = CompletionConfiguration.getConfigurationForResource(this.lang, document.uri)
 
@@ -197,6 +198,8 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
         uri,
         position,
         {
+          line,
+          triggerCharacter,
           isNewIdentifierLocation,
           isMemberCompletion,
           enableCallCompletions: completionConfiguration.useCodeSnippetsOnMethodSuggest,
