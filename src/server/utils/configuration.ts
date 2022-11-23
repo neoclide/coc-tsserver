@@ -169,7 +169,11 @@ export class ServiceConfigurationProvider implements ServiceConfigurationProvide
   protected readUseWorkspace(configuration: WorkspaceConfiguration): boolean {
     const inspect = configuration.inspect('tsserver.useLocalTsdk')
     let value = inspect.workspaceValue ?? inspect.workspaceFolderValue
-    if (inspect && typeof value === 'boolean') {
+    if (typeof value === 'boolean') {
+      return value
+    }
+    value = inspect.globalValue
+    if (typeof value === 'boolean') {
       return value
     }
     return false

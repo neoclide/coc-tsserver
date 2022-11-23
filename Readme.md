@@ -38,8 +38,8 @@ some feature may not work as expected.
 
 **Important note:** from v2.0.0, tsserver module resolved first from global
 configuration `tsserver.tsdk` and use bundled module when not found, if
-`tsserver.useLocalTsdk` is enabled in workspace folder configuration, typescript
-module inside current workspace folder would be used when exists.
+`tsserver.useLocalTsdk` is enabled, typescript module inside current workspace
+folder would be used when exists.
 
 ## Install
 

@@ -154,7 +154,7 @@
           "type": "boolean",
           "default": false,
           "scope": "resource",
-          "description": "Use tsserver from typescript module in workspace folder, ignore tsserver.tsdk configuration, only works as workspace folder configuration."
+          "description": "Use tsserver from typescript module in workspace folder, ignore tsserver.tsdk configuration."
         },
         "tsserver.maxTsServerMemory": {
           "type": "number",
