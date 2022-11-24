@@ -122,6 +122,15 @@ export class TypeScriptVersionProvider {
   }
 
   public getLocalVersion(): TypeScriptVersion | undefined {
+    let localTsdk = this.configuration.localTsdk
+    if (localTsdk) {
+      let folder = workspace.expand(localTsdk)
+      if (!path.isAbsolute(folder)) {
+        folder = path.join(workspace.root, folder)
+      }
+      return new TypeScriptVersion(folder)
+    }
+
     let folders = workspace.workspaceFolders.map(f => Uri.parse(f.uri).fsPath)
     for (let p of folders) {
       let version = this.getLocalVersionFromFolder(p)
