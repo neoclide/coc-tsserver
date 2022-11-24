@@ -66,6 +66,10 @@ export class Resolver {
       let exists = fs.existsSync(folder)
       if (exists) this._yarnFolder = folder
       return exists ? folder : ''
+    }).catch(() => {
+      // yarn global had been removed since version 2
+      // if yarn global dir return error then its version >=2, just return empty
+      return ''
     })
   }
 
