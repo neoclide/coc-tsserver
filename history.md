@@ -1,13 +1,19 @@
+# 2.0.9
+
+- Support `tsserver.tsdk` as workspace folder value (should be path relative to
+  workspace folder), only used when `tsserver.useLocalTsdk` is `true`.
+
 # 2.0.8
 
 - Upgrade typescript to 4.9.3.
-- Allow `tsserver.useLocalTsdk` to be global configuration.
+- Support `tsserver.useLocalTsdk` as user configuration, not recommended since
+  the local typescript module could be outdated.
 - Fix range of completionItem when triggered by `#`
 - Avoid cache cancelled response for code lens.
 
 # 2.0.3
 
-- Pass triggerReason and kind for refactor request.
+- Pass `triggerReason` and kind for refactor request.
 
 # 2.0.0
 
