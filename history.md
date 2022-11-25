@@ -1,3 +1,7 @@
+# 2.1.0
+
+- Support "Remove Unused Imports" source action.
+
 # 2.0.9
 
 - Support `tsserver.tsdk` as workspace folder value (should be path relative to

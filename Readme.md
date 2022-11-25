@@ -59,6 +59,13 @@ Almost the same as VSCode.
 - Organize imports command.
 - Quickfix using code actions.
 - Code refactor using code actions.
+- Source code action, including:
+  - Fix all fixable JS/TS issues.
+  - Remove all unused code.
+  - Add all missing imports.
+  - Organize Imports.
+  - Sort Imports.
+  - Remove Unused Imports
 - Find references.
 - Signature help.
 - Call hierarchy.
