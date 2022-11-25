@@ -1,15 +1,16 @@
-import { commands, CancellationToken, Diagnostic, Disposable, ServiceStat, Uri as URI, window, workspace, QuickPickItem } from 'coc.nvim'
+import { CancellationToken, commands, Diagnostic, Disposable, QuickPickItem, ServiceStat, Uri as URI, window, workspace } from 'coc.nvim'
+import path from 'path'
 import { Location, Position, Range, TextEdit } from 'vscode-languageserver-types'
 import TsserverService from '../server'
 import { PluginManager } from '../utils/plugins'
+import { Resolver } from '../utils/resolver'
 import * as Proto from './protocol'
+import { TypeScriptVersion } from './tsServer/versionProvider'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import API from './utils/api'
 import { nodeModules } from './utils/helper'
 import { installModules } from './utils/modules'
 import * as typeConverters from './utils/typeConverters'
-import { Resolver } from '../utils/resolver'
-import { TypeScriptVersion } from './tsServer/versionProvider'
 
 export interface Command {
   readonly id: string | string[]
@@ -35,12 +36,16 @@ export class ChooseVersionCommand implements Command {
 
     let npmServerPath: string
     let yarnServerPath: string
-    await window.withProgress({
-      title: 'Resolving typescript module'
-    }, async () => {
-      npmServerPath = await this.resolver.resolveNpm()
-      yarnServerPath = await this.resolver.resolveYarn()
-    })
+    let config = workspace.getConfiguration('tsserver', URI.file(workspace.root))
+    if (config.inspect('useLocalTsdk').globalValue !== true) {
+      // not resolve when useLocalTsdk
+      await window.withProgress({
+        title: 'Resolving typescript module'
+      }, async () => {
+        npmServerPath = await this.resolver.resolveNpm()
+        yarnServerPath = await this.resolver.resolveYarn()
+      })
+    }
     let currPath = client.serviceClient.versionManager.currentVersion?.path
     let items: PickItem[] = []
     items.push({
@@ -72,7 +77,7 @@ export class ChooseVersionCommand implements Command {
       }
     }
     let localVersion = versionProvider.getLocalVersion()
-    if (localVersion && localVersion.isValid) {
+    if (localVersion) {
       items.push({
         label: localVersion.version.displayName,
         description: 'Local version',
@@ -80,20 +85,34 @@ export class ChooseVersionCommand implements Command {
         picked: localVersion.path == currPath
       })
     }
+    let workspaceVersion = versionProvider.getLocalVersionFromFolder(workspace.root)
+    if (workspaceVersion && workspaceVersion.tscPath != localVersion?.tscPath) {
+      items.push({
+        label: workspaceVersion.version.displayName,
+        description: 'Local workspace version',
+        version: workspaceVersion,
+        picked: workspaceVersion.path == currPath
+      })
+    }
+
     let res = await window.showQuickPick(items, { title: 'Choose typescript version', matchOnDescription: true })
+    // not changed
     if (!res || res.version.path == currPath) return
-    if (res.version.path == localVersion?.path) {
-      // workspace.root
-      let config = workspace.getConfiguration('tsserver', URI.file(workspace.root))
+    let libPath = path.relative(workspace.root, res.version.path)
+    let isLocal = !libPath.startsWith('..')
+    if (isLocal) {
       config.update('useLocalTsdk', true, 3 as any)
+      config.update('tsdk', '${workspaceFolder}/' + libPath.replace(/\\/g, '/'), 3 as any)
       client.serviceClient.restartTsServer()
     } else {
-      let config = workspace.getConfiguration('tsserver', URI.file(workspace.root))
       if (config.inspect('useLocalTsdk').workspaceFolderValue !== undefined) {
         config.update('useLocalTsdk', undefined, 3 as any)
       }
-      let version = res.version
-      config.update('tsdk', version.path, true)
+      if (config.inspect('tsdk').workspaceFolderValue !== undefined) {
+        config.update('tsdk', undefined, 3 as any)
+      }
+      config.update('tsdk', res.version.path, 1 as any)
+      void window.showInformationMessage(`Updated user configuration "tsserver.tsdk" to ${res.version.path}`)
       client.serviceClient.restartTsServer()
     }
   }

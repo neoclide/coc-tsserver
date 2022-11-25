@@ -1,45 +1,18 @@
 # coc-tsserver
 
-Tsserver language server extension for
-[coc.nvim](https://github.com/neoclide/coc.nvim).
+Tsserver language server extension for [coc.nvim](https://github.com/neoclide/coc.nvim).
 
 Tsserver is part of [TypeScript](https://github.com/microsoft/TypeScript) which
-provide rich features for javascript and typescript.
+provide rich language features for javascript and typescript.
 
 This extension is a fork of `typescript-language-features` extension which is
-bundled with VSCode.
-
-**Note:** for React to work as expected, you need your JSX filetype to be
-`javascript.jsx` or `javascriptreact` and your TSX filetype to be
-`typescript.jsx` or `typescript.tsx` or `typescriptreact`. In coc.nvim, these
-filetypes are mapped to `javascriptreact` and `typescriptreact` because that's
-what tsserver uses. For filetype like `typescript.javascript`, you need
-configure `g:coc_filetype_map` variable in vimrc.
-
-**Note** for javascript project, configure
-[jsconfig.json](https://code.visualstudio.com/docs/languages/jsconfig) to make
-tsserver understand your code.
-
-**Note:** for rename import on file rename, you have to install
-[watchman](https://facebook.github.io/watchman/) in your \$PATH.
-
-**Note:** for [nvm](https://github.com/creationix/nvm) users, you need configure
-`tsserver.npm` to your global npm path or configure
-`"tsserver.disableAutomaticTypeAcquisition": false` to disable automatic typings
-installation.
-
-**Note:** tsserver could be quite slow to initialize on big project, exclude
-unnecessary files in your jsconfig.json/tsconfig.json.
-
-**Note:** if you're using WSL, copy you project files from mounted dirs to linux home otherwise tsserver will not work properly.
-
-**Note:** tsserver treat buffer without a disk file belongs to implicit project,
-some feature may not work as expected.
+bundled with VSCode. File type detect and syntax highlight are not supported by
+this extension, use other vim plugin instead.
 
 **Important note:** from v2.0.0, tsserver module resolved first from global
 configuration `tsserver.tsdk` and use bundled module when not found, if
-`tsserver.useLocalTsdk` is enabled, typescript module inside current workspace
-folder would be used when exists.
+`tsserver.useLocalTsdk` is enabled, workspace folder configured `tsserver.tsdk`
+or typescript module inside current workspace folder would be used when exists.
 
 ## Install
 
@@ -119,167 +92,165 @@ Commands contributed to `:CocList commands`
 - `tsserver.goToSourceDefinition` Go to Source Definition
 - `tsserver.watchBuild` Run `tsc --watch` for current project by use vim's job feature.
 - `tsserver.executeAutofix` Fix autofixable problems of current document.
-- `tsserver.chooseVersion` Choose different typescript version
+- `tsserver.chooseVersion` Choose different typescript version for current project.
 
 ## Configuration options
 
-Checkout [using the configuration
-file](https://github.com/neoclide/coc.nvim/wiki/Using-the-configuration-file)
-for guide of coc.nvim's configuration.
+Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 
-- `tsserver.enable`: Enable running of tsserver. default: `true` (added by coc-tsserver)
-- `tsserver.useLocalTsdk`: Use tsserver from typescript module in workspace folder, ignore tsserver.tsdk configuration. default: `false` (added by coc-tsserver)
-- `tsserver.tsconfigPath`: Path to tsconfig file for the `tsserver.watchBuild` command. Defaults to `tsconfig.json`. default: `"tsconfig.json"` (added by coc-tsserver)
-- `tsserver.locale`: default: `"auto"`
+- `tsserver.enable`: Enable running of tsserver. Default: `true`
+- `tsserver.tsconfigPath`: Path to tsconfig file for the `tsserver.watchBuild` command. Default: `"tsconfig.json"`
+- `tsserver.locale`: Sets the locale used to report JavaScript and TypeScript errors. Defaults to use VS Code's locale. Default: `"auto"`
   Valid options: ["auto","de","es","en","fr","it","ja","ko","ru","zh-CN","zh-TW"]
-- `tsserver.maxTsServerMemory`: Set the maximum amount of memory to allocate to the TypeScript server process default: `3072`
+- `tsserver.useLocalTsdk`: Use tsserver from typescript module in workspace folder, ignore tsserver.tsdk configuration. Default: `false`
+- `tsserver.maxTsServerMemory`: Set the maximum amount of memory to allocate to the TypeScript server process Default: `3072`
 - `tsserver.watchOptions`: Configure which watching strategies should be used to keep track of files and directories. Requires using TypeScript 3.8+ in the workspace.
-- `tsserver.tsdk`: default: `""`
-- `tsserver.npm`: default: `""`
-- `tsserver.log`: Log level of tsserver default: `"off"`
+- `tsserver.tsdk`: Specifies the folder path to the tsserver and `lib*.d.ts` files under a TypeScript install to use for IntelliSense, for example: `./node_modules/typescript/lib`. - When specified as a user setting, the TypeScript version from `tsserver.tsdk` automatically replaces the built-in TypeScript version. - When specified as a workspace setting, the tsserver is used when `tsserver.useLocalTsdk` is true. Use command `:CocCommand tsserver.chooseVersion` to choose different typescript version. Default: `""`
+- `tsserver.npm`: Specifies the path to the npm executable used for [Automatic Type Acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition). Default: `""`
+- `tsserver.log`: Log level of tsserver Default: `"off"`
   Valid options: ["normal","terse","verbose","off"]
-- `tsserver.trace.server`: Trace level of tsserver default: `"off"`
+- `tsserver.trace.server`: Trace level of tsserver Default: `"off"`
   Valid options: ["off","messages","verbose"]
-- `tsserver.enableTracing`: Enables tracing TS server performance to a directory. These trace files can be used to diagnose TS Server performance issues. The log may contain file paths, source code, and other potentially sensitive information from your project. default: `false`
-- `tsserver.pluginPaths`: Additional paths to discover TypeScript Language Service plugins. default: `[]`
-- `tsserver.reportStyleChecksAsWarnings`: Report style checks as warnings. default: `true`
-- `tsserver.implicitProjectConfig.checkJs`: Enable checkJs for implicit project default: `false`
-- `tsserver.implicitProjectConfig.module`: default: `"ESNext"`
+- `tsserver.enableTracing`: Enables tracing TS server performance to a directory. These trace files can be used to diagnose TS Server performance issues. The log may contain file paths, source code, and other potentially sensitive information from your project. Default: `false`
+- `tsserver.pluginPaths`: Additional paths to discover TypeScript Language Service plugins. Default: `[]`
+- `tsserver.reportStyleChecksAsWarnings`: Report style checks as warnings. Default: `true`
+- `tsserver.implicitProjectConfig.checkJs`: Enable checkJs for implicit project Default: `false`
+- `tsserver.implicitProjectConfig.module`: Sets the module system for the program. See more: https://www.typescriptlang.org/tsconfig#module. Default: `"ESNext"`
   Valid options: ["CommonJS","AMD","System","UMD","ES6","ES2015","ES2020","ESNext","None","ES2022","Node12","NodeNext"]
-- `tsserver.implicitProjectConfig.target`: default: `"ES2020"`
+- `tsserver.implicitProjectConfig.target`: Set target JavaScript language version for emitted JavaScript and include library declarations. See more: https://www.typescriptlang.org/tsconfig#target. Default: `"ES2020"`
   Valid options: ["ES3","ES5","ES6","ES2015","ES2016","ES2017","ES2018","ES2019","ES2020","ES2021","ES2022","ESNext"]
-- `tsserver.implicitProjectConfig.strictNullChecks`: default: `true`
-- `tsserver.implicitProjectConfig.strictFunctionTypes`: default: `true`
-- `tsserver.implicitProjectConfig.experimentalDecorators`: Enable experimentalDecorators for implicit project default: `false`
-- `tsserver.disableAutomaticTypeAcquisition`: default: `false`
-- `tsserver.useSyntaxServer`: Controls if TypeScript launches a dedicated server to more quickly handle syntax related operations, such as computing code folding. default: `"auto"`
+- `tsserver.implicitProjectConfig.strictNullChecks`: Enable/disable [strict null checks](https://www.typescriptlang.org/tsconfig#strictNullChecks) in JavaScript and TypeScript files that are not part of a project. Existing `jsconfig.json` or `tsconfig.json` files override this setting. Default: `true`
+- `tsserver.implicitProjectConfig.strictFunctionTypes`: Enable/disable [strict function types](https://www.typescriptlang.org/tsconfig#strictFunctionTypes) in JavaScript and TypeScript files that are not part of a project. Existing `jsconfig.json` or `tsconfig.json` files override this setting. Default: `true`
+- `tsserver.implicitProjectConfig.experimentalDecorators`: Enable experimentalDecorators for implicit project Default: `false`
+- `tsserver.disableAutomaticTypeAcquisition`: Disables [automatic type acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition). Automatic type acquisition fetches `@types` packages from npm to improve IntelliSense for external libraries. Default: `false`
+- `tsserver.useSyntaxServer`: Controls if TypeScript launches a dedicated server to more quickly handle syntax related operations, such as computing code folding. Default: `"auto"`
   Valid options: ["always","never","auto"]
-- `tsserver.experimental.enableProjectDiagnostics`: (Experimental) Enables project wide error reporting. default: `false`
-- `typescript.check.npmIsInstalled`: default: `true`
-- `typescript.showUnused`: Show unused variable hint. default: `true`
-- `typescript.showDeprecated`: Show deprecated variable hint. default: `true`
-- `typescript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. default: `"prompt"`
+- `tsserver.experimental.enableProjectDiagnostics`: (Experimental) Enables project wide error reporting. Default: `false`
+- `typescript.check.npmIsInstalled`: Check if npm is installed for [Automatic Type Acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition). Default: `true`
+- `typescript.showUnused`: Show unused variable hint. Default: `true`
+- `typescript.showDeprecated`: Show deprecated variable hint. Default: `true`
+- `typescript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. Default: `"prompt"`
   Valid options: ["prompt","always","never"]
-- `typescript.implementationsCodeLens.enabled`: Enable codeLens for implementations default: `false`
-- `typescript.referencesCodeLens.enabled`: Enable codeLens for references default: `false`
-- `typescript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in typescript files. default: `false`
-- `typescript.preferences.importModuleSpecifier`: Preferred path style for auto imports. default: `"shortest"`
+- `typescript.implementationsCodeLens.enabled`: Enable codeLens for implementations Default: `false`
+- `typescript.referencesCodeLens.enabled`: Enable codeLens for references Default: `false`
+- `typescript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in typescript files. Default: `false`
+- `typescript.preferences.importModuleSpecifier`: Preferred path style for auto imports. Default: `"shortest"`
   Valid options: ["shortest","relative","non-relative","project-relative"]
-- `typescript.preferences.importModuleSpecifierEnding`: Preferred path ending for auto imports. default: `"auto"`
+- `typescript.preferences.importModuleSpecifierEnding`: Preferred path ending for auto imports. Default: `"auto"`
   Valid options: ["auto","minimal","index","js"]
-- `typescript.preferences.jsxAttributeCompletionStyle`: Preferred style for JSX attribute completions. default: `"auto"`
+- `typescript.preferences.jsxAttributeCompletionStyle`: Preferred style for JSX attribute completions. Default: `"auto"`
   Valid options: ["auto","braces","none"]
-- `typescript.preferences.includePackageJsonAutoImports`: default: `"auto"`
+- `typescript.preferences.includePackageJsonAutoImports`: Enable/disable searching `package.json` dependencies for available auto imports. Default: `"auto"`
   Valid options: ["auto","on","off"]
-- `typescript.preferences.quoteStyle`: default: `"auto"`
+- `typescript.preferences.quoteStyle`: Preferred quote style to use for quick fixes. Default: `"auto"`
   Valid options: ["auto","single","double"]
-- `typescript.preferences.useAliasesForRenames`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. default: `true`
-- `typescript.preferences.autoImportFileExcludePatterns`:
-- `typescript.preferences.renameShorthandProperties`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. default: `true`
-- `typescript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace. default: `true`
-- `typescript.validate.enable`: Enable/disable TypeScript validation. default: `true`
-- `typescript.suggest.enabled`: Enabled/disable autocomplete suggestions. default: `true`
-- `typescript.suggest.paths`: Enable/disable suggest paths in import statement and require calls default: `true`
-- `typescript.suggest.autoImports`: Enable/disable auto import suggests. default: `true`
-- `typescript.suggest.completeFunctionCalls`: Enable snippet for method suggestion default: `true`
-- `typescript.suggest.includeCompletionsForImportStatements`: Enable/disable auto-import-style completions on partially-typed import statements. Requires using TypeScript 4.3+ in the workspace. default: `true`
-- `typescript.suggest.includeCompletionsWithSnippetText`: Enable/disable snippet completions from TS Server. Requires using TypeScript 4.3+ in the workspace. default: `true`
-- `typescript.suggest.classMemberSnippets.enabled`: Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace default: `true`
-- `typescript.suggest.jsdoc.generateReturns`: default: `true`
-- `typescript.format.enable`: Enable format for typescript. default: `true`
-- `typescript.format.insertSpaceAfterCommaDelimiter`: Defines space handling after a comma delimiter. default: `true`
-- `typescript.format.insertSpaceAfterConstructor`: Defines space handling after the constructor keyword. default: `false`
-- `typescript.format.insertSpaceAfterSemicolonInForStatements`: Defines space handling after a semicolon in a for statement. default: `true`
-- `typescript.format.insertSpaceBeforeAndAfterBinaryOperators`: Defines space handling after a binary operator. default: `true`
-- `typescript.format.insertSpaceAfterKeywordsInControlFlowStatements`: Defines space handling after keywords in a control flow statement. default: `true`
-- `typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions`: Defines space handling after function keyword for anonymous functions. default: `true`
-- `typescript.format.insertSpaceBeforeFunctionParenthesis`: Defines space handling before function argument parentheses. default: `false`
-- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis`: Defines space handling after opening and before closing non-empty parenthesis. default: `false`
-- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets`: Defines space handling after opening and before closing non-empty brackets. default: `false`
-- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces`: Defines space handling after opening and before closing empty braces. default: `false`
-- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`: Defines space handling after opening and before closing non-empty braces. default: `false`
-- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces`: Defines space handling after opening and before closing template string braces. default: `false`
-- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces`: Defines space handling after opening and before closing JSX expression braces. default: `false`
-- `typescript.format.insertSpaceAfterTypeAssertion`: Defines space handling after type assertions in TypeScript. default: `false`
-- `typescript.format.placeOpenBraceOnNewLineForFunctions`: Defines whether an open brace is put onto a new line for functions or not. default: `false`
-- `typescript.format.placeOpenBraceOnNewLineForControlBlocks`: Defines whether an open brace is put onto a new line for control blocks or not. default: `false`
-- `typescript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. default: `"ignore"`
+- `typescript.preferences.useAliasesForRenames`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
+- `typescript.preferences.autoImportFileExcludePatterns`: Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.
+- `typescript.preferences.renameShorthandProperties`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
+- `typescript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace. Default: `true`
+- `typescript.validate.enable`: Enable/disable TypeScript validation. Default: `true`
+- `typescript.suggest.enabled`: Enabled/disable autocomplete suggestions. Default: `true`
+- `typescript.suggest.paths`: Enable/disable suggest paths in import statement and require calls Default: `true`
+- `typescript.suggest.autoImports`: Enable/disable auto import suggests. Default: `true`
+- `typescript.suggest.completeFunctionCalls`: Enable snippet for method suggestion Default: `true`
+- `typescript.suggest.includeCompletionsForImportStatements`: Enable/disable auto-import-style completions on partially-typed import statements. Requires using TypeScript 4.3+ in the workspace. Default: `true`
+- `typescript.suggest.includeCompletionsWithSnippetText`: Enable/disable snippet completions from TS Server. Requires using TypeScript 4.3+ in the workspace. Default: `true`
+- `typescript.suggest.classMemberSnippets.enabled`: Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace Default: `true`
+- `typescript.suggest.jsdoc.generateReturns`: Enable/disable generating `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in the workspace. Default: `true`
+- `typescript.format.enable`: Enable format for typescript. Default: `true`
+- `typescript.format.insertSpaceAfterCommaDelimiter`: Defines space handling after a comma delimiter. Default: `true`
+- `typescript.format.insertSpaceAfterConstructor`: Defines space handling after the constructor keyword. Default: `false`
+- `typescript.format.insertSpaceAfterSemicolonInForStatements`: Defines space handling after a semicolon in a for statement. Default: `true`
+- `typescript.format.insertSpaceBeforeAndAfterBinaryOperators`: Defines space handling after a binary operator. Default: `true`
+- `typescript.format.insertSpaceAfterKeywordsInControlFlowStatements`: Defines space handling after keywords in a control flow statement. Default: `true`
+- `typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions`: Defines space handling after function keyword for anonymous functions. Default: `true`
+- `typescript.format.insertSpaceBeforeFunctionParenthesis`: Defines space handling before function argument parentheses. Default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis`: Defines space handling after opening and before closing non-empty parenthesis. Default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets`: Defines space handling after opening and before closing non-empty brackets. Default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces`: Defines space handling after opening and before closing empty braces. Default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`: Defines space handling after opening and before closing non-empty braces. Default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces`: Defines space handling after opening and before closing template string braces. Default: `false`
+- `typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces`: Defines space handling after opening and before closing JSX expression braces. Default: `false`
+- `typescript.format.insertSpaceAfterTypeAssertion`: Defines space handling after type assertions in TypeScript. Default: `false`
+- `typescript.format.placeOpenBraceOnNewLineForFunctions`: Defines whether an open brace is put onto a new line for functions or not. Default: `false`
+- `typescript.format.placeOpenBraceOnNewLineForControlBlocks`: Defines whether an open brace is put onto a new line for control blocks or not. Default: `false`
+- `typescript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. Default: `"ignore"`
   Valid options: ["ignore","insert","remove"]
-- `typescript.suggest.includeAutomaticOptionalChainCompletions`: Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled. default: `true`
-- `typescript.workspaceSymbols.scope`: Controls which files are searched by [go to symbol in workspace](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name). default: `"allOpenProjects"`
+- `typescript.suggest.includeAutomaticOptionalChainCompletions`: Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled. Default: `true`
+- `typescript.workspaceSymbols.scope`: Controls which files are searched by [go to symbol in workspace](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name). Default: `"allOpenProjects"`
   Valid options: ["allOpenProjects","currentProject"]
-- `typescript.autoClosingTags`: Enable/disable automatic closing of JSX tags. default: `true`
-- `javascript.showUnused`: Show unused variable hint. default: `true`
-- `javascript.showDeprecated`: Show deprecated variable hint. default: `true`
-- `javascript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. default: `"prompt"`
+- `typescript.autoClosingTags`: Enable/disable automatic closing of JSX tags. Default: `true`
+- `javascript.showUnused`: Show unused variable hint. Default: `true`
+- `javascript.showDeprecated`: Show deprecated variable hint. Default: `true`
+- `javascript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. Default: `"prompt"`
   Valid options: ["prompt","always","never"]
-- `javascript.implementationsCodeLens.enabled`: Enable/disable implementations CodeLens. This CodeLens shows the implementers of an interface. default: `false`
-- `javascript.referencesCodeLens.enabled`: Enable/disable references CodeLens in JavaScript files. default: `false`
-- `javascript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in JavaScript files. default: `false`
-- `javascript.preferences.importModuleSpecifier`: Preferred path style for auto imports. default: `"shortest"`
+- `javascript.implementationsCodeLens.enabled`: Enable/disable implementations CodeLens. This CodeLens shows the implementers of an interface. Default: `false`
+- `javascript.referencesCodeLens.enabled`: Enable/disable references CodeLens in JavaScript files. Default: `false`
+- `javascript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in JavaScript files. Default: `false`
+- `javascript.preferences.importModuleSpecifier`: Preferred path style for auto imports. Default: `"shortest"`
   Valid options: ["shortest","relative","non-relative","project-relative"]
-- `javascript.preferences.importModuleSpecifierEnding`: Preferred path ending for auto imports. default: `"auto"`
+- `javascript.preferences.importModuleSpecifierEnding`: Preferred path ending for auto imports. Default: `"auto"`
   Valid options: ["auto","minimal","index","js"]
-- `javascript.preferences.jsxAttributeCompletionStyle`: Preferred style for JSX attribute completions. default: `"auto"`
+- `javascript.preferences.jsxAttributeCompletionStyle`: Preferred style for JSX attribute completions. Default: `"auto"`
   Valid options: ["auto","braces","none"]
-- `javascript.preferences.quoteStyle`: default: `"auto"`
+- `javascript.preferences.quoteStyle`: Preferred quote style to use for quick fixes. Default: `"auto"`
   Valid options: ["auto","single","double"]
-- `javascript.preferences.useAliasesForRenames`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. default: `true`
-- `javascript.preferences.autoImportFileExcludePatterns`:
-- `javascript.preferences.renameShorthandProperties`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. default: `true`
-- `javascript.validate.enable`: Enable/disable JavaScript validation. default: `true`
-- `javascript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace. default: `true`
-- `javascript.suggest.names`: default: `true`
-- `javascript.suggest.enabled`: Enabled/disable autocomplete suggestions. default: `true`
-- `javascript.suggest.paths`: Enable/disable suggest paths in import statement and require calls default: `true`
-- `javascript.suggest.autoImports`: Enable/disable auto import suggests. default: `true`
-- `javascript.suggest.completeFunctionCalls`: Enable snippet for method suggestion default: `true`
-- `javascript.suggest.includeCompletionsForImportStatements`: Enable/disable auto-import-style completions on partially-typed import statements. Requires using TypeScript 4.3+ in the workspace. default: `true`
-- `javascript.suggest.classMemberSnippets.enabled`: Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace default: `true`
-- `javascript.suggest.jsdoc.generateReturns`: default: `true`
-- `javascript.format.enable`: Enable format for javascript. default: `true`
-- `javascript.format.insertSpaceAfterCommaDelimiter`: default: `true`
-- `javascript.format.insertSpaceAfterConstructor`: default: `false`
-- `javascript.format.insertSpaceAfterSemicolonInForStatements`: default: `true`
-- `javascript.format.insertSpaceBeforeAndAfterBinaryOperators`: default: `true`
-- `javascript.format.insertSpaceAfterKeywordsInControlFlowStatements`: default: `true`
-- `javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions`: default: `true`
-- `javascript.format.insertSpaceBeforeFunctionParenthesis`: default: `false`
-- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis`: default: `false`
-- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets`: default: `false`
-- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces`: default: `false`
-- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`: default: `false`
-- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces`: default: `false`
-- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces`: default: `false`
-- `javascript.format.insertSpaceAfterTypeAssertion`: default: `false`
-- `javascript.format.placeOpenBraceOnNewLineForFunctions`: default: `false`
-- `javascript.format.placeOpenBraceOnNewLineForControlBlocks`: default: `false`
-- `javascript.suggest.includeAutomaticOptionalChainCompletions`: Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled. default: `true`
-- `typescript.inlayHints.parameterNames.enabled`: Enable/disable inlay hints of parameter names. default: `"none"`
+- `javascript.preferences.useAliasesForRenames`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
+- `javascript.preferences.autoImportFileExcludePatterns`: Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.
+- `javascript.preferences.renameShorthandProperties`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
+- `javascript.validate.enable`: Enable/disable JavaScript validation. Default: `true`
+- `javascript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace. Default: `true`
+- `javascript.suggest.names`: Enable/disable including unique names from the file in JavaScript suggestions. Note that name suggestions are always disabled in JavaScript code that is semantically checked using `@ts-check` or `checkJs`. Default: `true`
+- `javascript.suggest.enabled`: Enabled/disable autocomplete suggestions. Default: `true`
+- `javascript.suggest.paths`: Enable/disable suggest paths in import statement and require calls Default: `true`
+- `javascript.suggest.autoImports`: Enable/disable auto import suggests. Default: `true`
+- `javascript.suggest.completeFunctionCalls`: Enable snippet for method suggestion Default: `true`
+- `javascript.suggest.includeCompletionsForImportStatements`: Enable/disable auto-import-style completions on partially-typed import statements. Requires using TypeScript 4.3+ in the workspace. Default: `true`
+- `javascript.suggest.classMemberSnippets.enabled`: Enable/disable snippet completions for class members. Requires using TypeScript 4.5+ in the workspace Default: `true`
+- `javascript.suggest.jsdoc.generateReturns`: Enable/disable generating `@return` annotations for JSDoc templates. Requires using TypeScript 4.2+ in the workspace. Default: `true`
+- `javascript.format.enable`: Enable format for javascript. Default: `true`
+- `javascript.format.insertSpaceAfterCommaDelimiter`: Default: `true`
+- `javascript.format.insertSpaceAfterConstructor`: Default: `false`
+- `javascript.format.insertSpaceAfterSemicolonInForStatements`: Default: `true`
+- `javascript.format.insertSpaceBeforeAndAfterBinaryOperators`: Default: `true`
+- `javascript.format.insertSpaceAfterKeywordsInControlFlowStatements`: Default: `true`
+- `javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions`: Default: `true`
+- `javascript.format.insertSpaceBeforeFunctionParenthesis`: Default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis`: Default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets`: Default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces`: Default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`: Default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces`: Default: `false`
+- `javascript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces`: Default: `false`
+- `javascript.format.insertSpaceAfterTypeAssertion`: Default: `false`
+- `javascript.format.placeOpenBraceOnNewLineForFunctions`: Default: `false`
+- `javascript.format.placeOpenBraceOnNewLineForControlBlocks`: Default: `false`
+- `javascript.suggest.includeAutomaticOptionalChainCompletions`: Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled. Default: `true`
+- `typescript.inlayHints.parameterNames.enabled`: Enable/disable inlay hints of parameter names. Default: `"none"`
   Valid options: ["none","literals","all"]
-- `typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName`: Suppress parameter name hints on arguments whose text is identical to the parameter name. default: `true`
-- `typescript.inlayHints.parameterTypes.enabled`: Enable/disable inlay hints of parameter types. default: `false`
-- `typescript.inlayHints.variableTypes.enabled`: Enable/disable inlay hints of variable types. default: `false`
-- `typescript.inlayHints.propertyDeclarationTypes.enabled`: Enable/disable inlay hints of property declarations. default: `false`
-- `typescript.inlayHints.functionLikeReturnTypes.enabled`: Enable/disable inlay hints of return type for function signatures. default: `false`
-- `typescript.inlayHints.enumMemberValues.enabled`: Enable/disable inlay hints of enum member values. default: `false`
-- `typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName`: default: `true`
-- `javascript.inlayHints.parameterNames.enabled`: Enable/disable inlay hints of parameter names. default: `"none"`
+- `typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName`: Suppress parameter name hints on arguments whose text is identical to the parameter name. Default: `true`
+- `typescript.inlayHints.parameterTypes.enabled`: Enable/disable inlay hints of parameter types. Default: `false`
+- `typescript.inlayHints.variableTypes.enabled`: Enable/disable inlay hints of variable types. Default: `false`
+- `typescript.inlayHints.propertyDeclarationTypes.enabled`: Enable/disable inlay hints of property declarations. Default: `false`
+- `typescript.inlayHints.functionLikeReturnTypes.enabled`: Enable/disable inlay hints of return type for function signatures. Default: `false`
+- `typescript.inlayHints.enumMemberValues.enabled`: Enable/disable inlay hints of enum member values. Default: `false`
+- `typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName`: Suppress type hints on variables whose name is identical to the type name. Requires using TypeScript 4.8+ in the workspace. Default: `true`
+- `javascript.inlayHints.parameterNames.enabled`: Enable/disable inlay hints of parameter names. Default: `"none"`
   Valid options: ["none","literals","all"]
-- `javascript.inlayHints.parameterNames.suppressWhenArgumentMatchesName`: Suppress parameter name hints on arguments whose text is identical to the parameter name. default: `true`
-- `javascript.inlayHints.parameterTypes.enabled`: Enable/disable inlay hints of parameter types. default: `false`
-- `javascript.inlayHints.variableTypes.enabled`: Enable/disable inlay hints of variable types. default: `false`
-- `javascript.inlayHints.propertyDeclarationTypes.enabled`: Enable/disable inlay hints of property declarations. default: `false`
-- `javascript.inlayHints.functionLikeReturnTypes.enabled`: Enable/disable inlay hints of return type for function signatures. default: `false`
-- `javascript.inlayHints.enumMemberValues.enabled`: Enable/disable inlay hints of enum member values. default: `false`
-- `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`: default: `true`
-- `javascript.autoClosingTags`: Enable/disable automatic closing of JSX tags. default: `true`
-- `javascript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. default: `"ignore"`
+- `javascript.inlayHints.parameterNames.suppressWhenArgumentMatchesName`: Suppress parameter name hints on arguments whose text is identical to the parameter name. Default: `true`
+- `javascript.inlayHints.parameterTypes.enabled`: Enable/disable inlay hints of parameter types. Default: `false`
+- `javascript.inlayHints.variableTypes.enabled`: Enable/disable inlay hints of variable types. Default: `false`
+- `javascript.inlayHints.propertyDeclarationTypes.enabled`: Enable/disable inlay hints of property declarations. Default: `false`
+- `javascript.inlayHints.functionLikeReturnTypes.enabled`: Enable/disable inlay hints of return type for function signatures. Default: `false`
+- `javascript.inlayHints.enumMemberValues.enabled`: Enable/disable inlay hints of enum member values. Default: `false`
+- `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`: Suppress type hints on variables whose name is identical to the type name. Requires using TypeScript 4.8+ in the workspace. Default: `true`
+- `javascript.autoClosingTags`: Enable/disable automatic closing of JSX tags. Default: `true`
+- `javascript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. Default: `"ignore"`
   Valid options: ["ignore","insert","remove"]
-- `javascript.suggest.completeJSDocs`: Enable/disable suggestion to complete JSDoc comments. default: `true`
-- `typescript.suggest.completeJSDocs`: Enable/disable suggestion to complete JSDoc comments. default: `true`
-- `javascript.suggest.objectLiteralMethodSnippets.enabled`: Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace default: `true`
-- `typescript.suggest.objectLiteralMethodSnippets.enabled`: Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace default: `true`
+- `javascript.suggest.completeJSDocs`: Enable/disable suggestion to complete JSDoc comments. Default: `true`
+- `typescript.suggest.completeJSDocs`: Enable/disable suggestion to complete JSDoc comments. Default: `true`
+- `javascript.suggest.objectLiteralMethodSnippets.enabled`: Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace Default: `true`
+- `typescript.suggest.objectLiteralMethodSnippets.enabled`: Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace Default: `true`
 
 Most Configurations are the same as with VSCode. Install
 [coc-json](https://github.com/neoclide/coc-json) and try completion with
@@ -345,6 +316,44 @@ Renamed configurations to use `tsserver` as prefix:
 
 If you find any issues, please [create an
 issue](https://github.com/neoclide/coc-tsserver/issues/new).
+
+## Q & A
+
+Q: Automatic type acquisition not work.
+
+A: configure `tsserver.npm` to your global npm path or configure
+`"tsserver.disableAutomaticTypeAcquisition": false` to disable automatic typings
+installation.
+
+Q: The extension needs some time to work.
+
+A: The initialize of tsserver requires some time, you can add `g:coc_status` to
+your status line, see `:h coc-status`. If your tsserver get slow, try exclude
+unnecessary files in your jsconfig.json/tsconfig.json, make sure typescript
+version > 4.9 and disable logging (disabled by default).
+
+Q: Update import on file rename not work.
+
+A: Make sure install [watchman](https://facebook.github.io/watchman/) in your
+\$PATH. Use command `:CocCommand workspace.showOutput watchman` to check
+watchman output.
+
+Q: Not work with buffer just created.
+
+A: Tsserver treat buffer without a disk file belongs to implicit project, VSCode
+could work because VSCode create empty file first for buffer, save the buffer to
+disk to make tsserver work.
+
+Q: Not work with my javascript project.
+
+A: Configure [jsconfig.json](https://code.visualstudio.com/docs/languages/jsconfig) to make
+tsserver understand your code. Some features may still not work well, it's
+recommended to use typescript.
+
+Q: Not work on WSL.
+
+A: Copy you project files from mounted dirs to linux home otherwise tsserver
+may not work properly.
 
 ## Sponsoring
 

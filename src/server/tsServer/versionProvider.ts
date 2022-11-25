@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Uri, window, workspace } from 'coc.nvim'
+import { window, workspace } from 'coc.nvim'
 import fs from 'fs'
 import path from 'path'
 import API from '../utils/api'
@@ -128,14 +128,14 @@ export class TypeScriptVersionProvider {
       if (!path.isAbsolute(folder)) {
         folder = path.join(workspace.root, folder)
       }
-      return new TypeScriptVersion(folder)
+      let version = new TypeScriptVersion(folder)
+      if (version.isValid) {
+        return version
+      }
+      void window.showWarningMessage(`Invalid tsserver version from folder configuration "tsserver.tsdk"`)
     }
-
-    let folders = workspace.workspaceFolders.map(f => Uri.parse(f.uri).fsPath)
-    for (let p of folders) {
-      let version = this.getLocalVersionFromFolder(p)
-      if (version) return version
-    }
+    let version = this.getLocalVersionFromFolder(workspace.root)
+    if (version) return version
     return null
   }
 
