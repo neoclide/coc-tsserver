@@ -174,11 +174,11 @@ export default class LanguageProvider {
     if (this.client.apiVersion.gte(API.v280)) {
       this._register(languages.registerFoldingRangeProvider(documentSelector.syntax, new Folding(this.client)))
       if (hasSemantic) {
+        let provider = new OrganizeImportsCodeActionProvider(this.id, this.client, this.fileConfigurationManager)
         this._register(
-          languages.registerCodeActionProvider(documentSelector.semantic,
-            new OrganizeImportsCodeActionProvider(this.client, this.fileConfigurationManager),
-            'tsserver', [CodeActionKind.SourceOrganizeImports])
+          languages.registerCodeActionProvider(documentSelector.semantic, provider, 'tsserver', provider.metadata.providedCodeActionKinds)
         )
+        this.disposables.push(provider)
       }
     }
     if (this.client.apiVersion.gte(API.v240) && hasSemantic) {
@@ -191,10 +191,12 @@ export default class LanguageProvider {
     }
 
     if (this.client.apiVersion.gte(API.v300) && hasSemantic) {
+      let provider = new TypeScriptAutoFixProvider(client, this.fileConfigurationManager, client.diagnosticsManager)
       this._register(
         languages.registerCodeActionProvider(
-          documentSelector.semantic, new TypeScriptAutoFixProvider(client, this.fileConfigurationManager, client.diagnosticsManager),
-          'tsserver', [CodeActionKind.Source, CodeActionKind.SourceFixAll]))
+          documentSelector.semantic, provider, 'tsserver', provider.metadata.providedCodeActionKinds
+        )
+      )
     }
     if (hasSemantic) {
       this._register(

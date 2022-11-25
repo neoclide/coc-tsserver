@@ -128,8 +128,8 @@ abstract class SourceAction implements CodeAction {
 
 class SourceFixAll extends SourceAction {
 
-  static readonly kind = CodeActionKind.SourceFixAll
-  public readonly kind = CodeActionKind.SourceFixAll
+  static readonly kind = CodeActionKind.SourceFixAll + '.ts'
+  public readonly kind = SourceFixAll.kind
   public readonly title = 'Fix all fixable JS/TS issues'
   public edit: WorkspaceEdit
 
@@ -152,8 +152,8 @@ class SourceFixAll extends SourceAction {
 }
 
 class SourceRemoveUnused extends SourceAction {
-  static readonly kind = CodeActionKind.Source
-  public readonly kind = CodeActionKind.Source
+  static readonly kind = CodeActionKind.Source + '.removeUnused.ts'
+  public readonly kind = SourceRemoveUnused.kind
   public readonly title = 'Remove all unused code'
   public edit: WorkspaceEdit
 
@@ -171,8 +171,8 @@ class SourceRemoveUnused extends SourceAction {
 
 class SourceAddMissingImports extends SourceAction {
 
-  static readonly kind = CodeActionKind.Source
-  public readonly kind = CodeActionKind.Source
+  static readonly kind = CodeActionKind.Source + '.addMissingImports.ts'
+  public readonly kind = SourceAddMissingImports.kind
   public readonly title = 'Add all missing imports'
   public edit: WorkspaceEdit
 
@@ -197,7 +197,7 @@ export class TypeScriptAutoFixProvider implements CodeActionProvider {
     SourceFixAll,
     SourceRemoveUnused,
     SourceAddMissingImports,
-  ];
+  ]
 
   constructor(
     private readonly client: ITypeScriptServiceClient,
@@ -205,38 +205,37 @@ export class TypeScriptAutoFixProvider implements CodeActionProvider {
     private readonly diagnosticsManager: DiagnosticsManager,
   ) {}
 
+  public get metadata() {
+    return {
+      providedCodeActionKinds: TypeScriptAutoFixProvider.kindProviders.map(x => x.kind),
+    }
+  }
   public async provideCodeActions(
     document: TextDocument,
     _range: Range,
     context: CodeActionContext,
     token: CancellationToken
   ): Promise<CodeAction[] | undefined> {
-    if (!context.only || !context.only.some(s => s === CodeActionKind.Source)) {
+    if (!context.only || !context.only.some(s => s.startsWith(CodeActionKind.Source))) {
       return undefined
     }
-
     const file = this.client.toOpenedFilePath(document.uri)
     if (!file) {
       return undefined
     }
-
     const actions = this.getFixAllActions(context.only)
     if (this.client.bufferSyncSupport.hasPendingDiagnostics(document.uri)) {
       return actions
     }
-
     const diagnostics = this.diagnosticsManager.getDiagnostics(document.uri)
     if (!diagnostics.length) {
       // Actions are a no-op in this case but we still want to return them
       return actions
     }
-
     await this.fileConfigurationManager.ensureConfigurationForDocument(document, token)
-
     if (token.isCancellationRequested) {
       return undefined
     }
-
     await Promise.allSettled(actions.map(action => action.build(this.client, file, diagnostics, token)))
 
     return actions.filter(o => o.edit != null)

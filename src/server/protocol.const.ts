@@ -88,3 +88,9 @@ export enum EventName {
   projectLoadingStart = 'projectLoadingStart',
   projectLoadingFinish = 'projectLoadingFinish',
 }
+
+export enum OrganizeImportsMode {
+  All = 'All',
+  SortAndCombine = 'SortAndCombine',
+  RemoveUnused = 'RemoveUnused',
+}

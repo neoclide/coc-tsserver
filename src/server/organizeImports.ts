@@ -2,85 +2,121 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CodeActionProvider, CodeActionProviderMetadata, TextDocument, workspace, CancellationToken, CodeActionContext, CodeActionKind, Range, TextEdit, WorkspaceEdit } from 'coc.nvim'
+import { CancellationToken, CodeActionContext, CodeActionKind, CodeActionProvider, commands, Disposable, disposeAll, Range, TextDocument, window, workspace } from 'coc.nvim'
 import { CodeAction } from 'vscode-languageserver-protocol'
-import TsserverService from '../server'
 import { Command } from './commands'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import Proto from './protocol'
+import { OrganizeImportsMode } from './protocol.const'
+import { ITypeScriptServiceClient } from './typescriptService'
 import TypeScriptServiceClient from './typescriptServiceClient'
-import * as typeconverts from './utils/typeConverters'
+import API from './utils/api'
+import * as typeConverters from './utils/typeConverters'
 
-export class OrganizeImportsCommand implements Command {
-  public readonly id: string = 'tsserver.organizeImports'
+interface OrganizeImportsCommandMetadata {
+  readonly ids: readonly string[]
+  readonly title: string
+  readonly minVersion: API
+  readonly kind: CodeActionKind
+  readonly mode: OrganizeImportsMode
+}
 
+const organizeImportsCommand: OrganizeImportsCommandMetadata = {
+  ids: ['typescript.organizeImports', 'javascript.organizeImports'],
+  minVersion: API.v280,
+  title: "Organize Imports",
+  kind: CodeActionKind.SourceOrganizeImports,
+  mode: OrganizeImportsMode.All,
+}
+
+const sortImportsCommand: OrganizeImportsCommandMetadata = {
+  ids: ['typescript.sortImports', 'javascript.sortImports'],
+  minVersion: API.v430,
+  title: "Sort Imports",
+  kind: CodeActionKind.Source + '.sortImports',
+  mode: OrganizeImportsMode.SortAndCombine,
+}
+
+const removeUnusedImportsCommand: OrganizeImportsCommandMetadata = {
+  ids: ['typescript.removeUnusedImports', 'javascript.removeUnusedImports'],
+  minVersion: API.v490,
+  title: "Remove Unused Imports",
+  kind: CodeActionKind.Source + '.removeUnusedImports',
+  mode: OrganizeImportsMode.RemoveUnused,
+}
+
+const allCommands = [organizeImportsCommand, sortImportsCommand, removeUnusedImportsCommand]
+
+export function codeActionContains(kinds: CodeActionKind[], kind: CodeActionKind): boolean {
+  return kinds.some(k => kind === k || kind.startsWith(k + '.'))
+}
+
+class OrganizeImportsCommand implements Command {
   constructor(
-    private readonly service: TsserverService
-  ) {
-  }
+    public readonly id: string,
+    private readonly commandMetadata: OrganizeImportsCommandMetadata,
+    private readonly client: ITypeScriptServiceClient,
+  ) {}
 
-  private async _execute(client: TypeScriptServiceClient, document: TextDocument, sortOnly = false): Promise<WorkspaceEdit | TextEdit[] | null> {
-    let file = client.toPath(document.uri)
+  public async execute(file?: string): Promise<any> {
+    if (!file) {
+      const activeEditor = window.activeTextEditor
+      if (!activeEditor) {
+        window.showErrorMessage('Organize Imports failed. No resource provided.')
+        return
+      }
+      const resource = activeEditor.document.uri
+      const openedFiledPath = this.client.toOpenedFilePath(resource)
+      if (!openedFiledPath) {
+        window.showErrorMessage('Organize Imports failed. Unknown file type.')
+        return
+      }
+
+      file = openedFiledPath
+    }
+
     const args: Proto.OrganizeImportsRequestArgs = {
-      skipDestructiveCodeActions: sortOnly,
       scope: {
         type: 'file',
         args: {
           file
         }
-      }
+      },
+      // Deprecated in 4.9; `mode` takes priority
+      skipDestructiveCodeActions: this.commandMetadata.mode === OrganizeImportsMode.SortAndCombine,
+      mode: typeConverters.OrganizeImportsMode.toProtocolOrganizeImportsMode(this.commandMetadata.mode),
     }
-    const response = await client.interruptGetErr(() => client.execute('organizeImports', args, CancellationToken.None))
-    if (!response || response.type != 'response' || !response.success) {
+    const response = await this.client.interruptGetErr(() => this.client.execute('organizeImports', args, CancellationToken.None))
+    if (response.type !== 'response' || !response.body) {
       return
     }
 
-    const edit = typeconverts.WorkspaceEdit.fromFileCodeEdits(
-      client,
-      response.body
-    )
-    let keys = Object.keys(edit.changes || {})
-    if (keys.length == 1) {
-      let doc = workspace.getDocument(keys[0])
-      if (doc) {
-        await doc.applyEdits(edit.changes[keys[0]])
-        return
-      }
+    if (response.body.length) {
+      const edits = typeConverters.WorkspaceEdit.fromFileCodeEdits(this.client, response.body)
+      return workspace.applyEdit(edits)
     }
-    if (edit) await workspace.applyEdit(edit)
   }
-
-  public async execute(document?: TextDocument, sortOnly = false): Promise<void> {
-    let client = await this.service.getClientHost()
-    if (!document) {
-      let doc = await workspace.document
-      if (!doc.attached) {
-        throw new Error(`Document not attached.`)
-      }
-      if (client.serviceClient.modeIds.indexOf(doc.filetype) == -1) {
-        throw new Error(`filetype "${doc.filetype}" not supported by tsserver.`)
-      }
-      document = doc.textDocument
-    }
-    await this._execute(client.serviceClient, document, sortOnly)
-  }
-}
-
-export class SourceImportsCommand extends OrganizeImportsCommand {
-  public readonly id = 'tsserver.sortImports'
 }
 
 export class OrganizeImportsCodeActionProvider implements CodeActionProvider {
-  // public static readonly minVersion = API.v280
+  private disposables: Disposable[] = []
 
   public constructor(
+    private id: string,
     private readonly client: TypeScriptServiceClient,
     private readonly fileConfigManager: FileConfigurationManager,
   ) {
+    for (let cmd of allCommands) {
+      for (let commandId of cmd.ids) {
+        if (!commandId.startsWith(this.id)) continue
+        let command = new OrganizeImportsCommand(commandId, cmd, client)
+        this.disposables.push(commands.registerCommand(command.id, command.execute, command, true))
+      }
+    }
   }
 
-  public readonly metadata: CodeActionProviderMetadata = {
-    providedCodeActionKinds: [CodeActionKind.SourceOrganizeImports]
+  public readonly metadata = {
+    providedCodeActionKinds: allCommands.map(o => o.kind)
   }
 
   public async provideCodeActions(
@@ -89,23 +125,29 @@ export class OrganizeImportsCodeActionProvider implements CodeActionProvider {
     context: CodeActionContext,
     token: CancellationToken
   ): Promise<CodeAction[]> {
-    if (this.client.modeIds.indexOf(document.languageId) == -1) return
+    if (!context.only) return []
+    const file = this.client.toOpenedFilePath(document.uri)
+    if (!file) return []
 
-    if (!context.only || !context.only.includes(CodeActionKind.SourceOrganizeImports)) {
-      return []
-    }
     await this.fileConfigManager.ensureConfigurationForDocument(document, token)
+    let actions: CodeAction[] = []
+    for (let cmd of allCommands) {
+      if (!this.client.apiVersion.gte(cmd.minVersion)) continue
+      if (!codeActionContains(context.only, cmd.kind)) continue
+      for (let commandId of cmd.ids) {
+        if (!commandId.startsWith(this.id)) continue
+        let action = CodeAction.create(cmd.title, {
+          title: '',
+          command: commandId,
+          arguments: [file]
+        }, cmd.kind)
+        actions.push(action)
+      }
+    }
+    return actions
+  }
 
-    const organizeImportsAction = CodeAction.create('Organize Imports', {
-      title: '',
-      command: 'tsserver.organizeImports',
-      arguments: [document]
-    }, CodeActionKind.SourceOrganizeImports)
-    const sortImportsAction = CodeAction.create('Sort Imports', {
-      title: '',
-      command: 'tsserver.sortImports',
-      arguments: [document, true]
-    }, 'source.sortImports')
-    return [organizeImportsAction, sortImportsAction]
+  public dispose(): void {
+    disposeAll(this.disposables)
   }
 }

@@ -1,7 +1,6 @@
 import { Disposable, Emitter, Event, commands, disposeAll, DocumentSelector, ExtensionContext, IServiceProvider, ServiceStat, wait, workspace, WorkspaceConfiguration } from 'coc.nvim'
 import { PluginManager } from '../utils/plugins'
 import { AutoFixCommand, Command, ConfigurePluginCommand, FileReferencesCommand, OpenTsServerLogCommand, ChooseVersionCommand, ReloadProjectsCommand, SourceDefinitionCommand, TypeScriptGoToProjectConfigCommand } from './commands'
-import { OrganizeImportsCommand, SourceImportsCommand } from './organizeImports'
 import WatchProject from './watchBuild'
 import TypeScriptServiceClientHost from './typescriptServiceClientHost'
 import { LanguageDescription, standardLanguageDescriptions } from './utils/languageDescription'
@@ -80,8 +79,6 @@ export default class TsserverService implements IServiceProvider {
     registCommand(new FileReferencesCommand(this))
     registCommand(new OpenTsServerLogCommand(this))
     registCommand(new TypeScriptGoToProjectConfigCommand(this))
-    registCommand(new OrganizeImportsCommand(this))
-    registCommand(new SourceImportsCommand(this))
     registCommand(new SourceDefinitionCommand(this))
     registCommand({
       id: 'tsserver.restart',
