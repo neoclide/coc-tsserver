@@ -358,12 +358,11 @@ export class SourceDefinitionCommand implements Command {
           typeConverters.Location.fromTextSpan(client.serviceClient.toResource(reference.file), reference))
 
         if (locations.length) {
-          commands.executeCommand('editor.action.showReferences', document.uri, position, locations)
-          // if (locations.length === 1) {
-          //   commands.executeCommand('vscode.open', locations[0].uri)
-          // } else {
-          //   commands.executeCommand('editor.action.showReferences', document.uri, position, locations)
-          // }
+          if (locations.length === 1) {
+            commands.executeCommand('vscode.open', locations[0].uri)
+          } else {
+            commands.executeCommand('editor.action.showReferences', document.uri, position, locations)
+          }
           return
         }
       }
