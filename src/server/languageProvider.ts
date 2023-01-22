@@ -84,7 +84,7 @@ export default class LanguageProvider {
   }
 
   private configurationChanged(): void {
-    const config = workspace.getConfiguration(this.id, null)
+    const config = workspace.getConfiguration(this.id)
     // this.client.diagnosticsManager.setEnableSuggestions(this.id, config.get(suggestionSetting, true))
     this.updateValidate(config.get(validateSetting, true))
     this.updateSuggestionDiagnostics(config.get(suggestionSetting, true))
