@@ -107,10 +107,13 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
   constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly formattingOptionsManager: FormattingOptionsManager,
+    id: string
   ) {
-    const doRefactoringCommand = new ApplyRefactoringCommand(this.client)
-    registCommand(doRefactoringCommand)
-    registCommand(new SelectRefactorCommand(doRefactoringCommand))
+    if (id === 'typescript') {
+      const doRefactoringCommand = new ApplyRefactoringCommand(this.client)
+      registCommand(doRefactoringCommand)
+      registCommand(new SelectRefactorCommand(doRefactoringCommand))
+    }
   }
 
   public static readonly metadata: CodeActionProviderMetadata = {

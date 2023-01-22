@@ -89,11 +89,12 @@ export default class TypeScriptCompletionItemProvider implements CompletionItemP
     private readonly fileConfigurationManager: FileConfigurationManager,
     private lang: string
   ) {
-
-    commands.registerCommand(ApplyCompletionCodeActionCommand.ID, async (codeActions) => {
-      let cmd = new ApplyCompletionCodeActionCommand(this.client)
-      await cmd.execute(codeActions)
-    })
+    if (lang === 'typescript') {
+      commands.registerCommand(ApplyCompletionCodeActionCommand.ID, async (codeActions) => {
+        let cmd = new ApplyCompletionCodeActionCommand(this.client)
+        await cmd.execute(codeActions)
+      })
+    }
   }
 
   /**

@@ -145,10 +145,13 @@ export default class TypeScriptQuickFixProvider implements CodeActionProvider {
   constructor(
     private readonly client: ITypeScriptServiceClient,
     private readonly formattingConfigurationManager: FileConfigurationManager,
-    private readonly diagnosticsManager: DiagnosticsManager
+    private readonly diagnosticsManager: DiagnosticsManager,
+    id: string
   ) {
-    registCommand(new ApplyCodeActionCommand(client))
-    registCommand(new ApplyFixAllCodeAction(client, formattingConfigurationManager))
+    if (id === 'typescript') {
+      registCommand(new ApplyCodeActionCommand(client))
+      registCommand(new ApplyFixAllCodeAction(client, formattingConfigurationManager))
+    }
     this.supportedCodeActionProvider = new SupportedCodeActionProvider(client)
   }
 

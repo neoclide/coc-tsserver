@@ -110,29 +110,26 @@ export default class LanguageProvider {
     this.disposables.push(disposable)
   }
 
-  private registerProviders(
-    client: TypeScriptServiceClient,
-    typingsStatus: TypingsStatus
-  ): void {
+  private registerProviders(client: TypeScriptServiceClient, typingsStatus: TypingsStatus): void {
+    let id = this.description.id
     // let languageIds = this.description.languageIds
-    let clientId = `tsc-${this.description.id}`
     const hasSemantic = this.client.capabilities.has(ClientCapability.Semantic)
     const { documentSelector } = this
     this._register(
-      languages.registerCompletionItemProvider(clientId, 'TSC', documentSelector.syntax,
-        new CompletionItemProvider(client, typingsStatus, this.fileConfigurationManager, this.description.id),
+      languages.registerCompletionItemProvider(`tsc-${id}`, 'TSC', documentSelector.syntax,
+        new CompletionItemProvider(client, typingsStatus, this.fileConfigurationManager, id),
         CompletionItemProvider.triggerCharacters
       )
     )
     this._register(
-      languages.registerCompletionItemProvider(`tsc-${this.description.id}-jsdoc`, 'TSC', documentSelector.syntax,
+      languages.registerCompletionItemProvider(`tsc-${id}-jsdoc`, 'TSC', documentSelector.syntax,
         new JsDocCompletionProvider(client, this.description, this.fileConfigurationManager),
         ['*', ' ']
       )
     )
     if (this.client.apiVersion.gte(API.v230)) {
       this._register(languages.registerCompletionItemProvider(
-        `${this.description.id}-directive`,
+        `${id}-directive`,
         'TSC', documentSelector.syntax, new DirectiveCommentCompletionProvider(client), ['@']
       ))
     }
@@ -155,7 +152,7 @@ export default class LanguageProvider {
     this._register(languages.registerDocumentFormatProvider(documentSelector.syntax, formatProvider))
     this._register(languages.registerDocumentRangeFormatProvider(documentSelector.syntax, formatProvider))
     this._register(languages.registerOnTypeFormattingEditProvider(documentSelector.syntax, formatProvider, [';', '}', '\n', String.fromCharCode(27)]))
-    this._register(languages.registerCodeActionProvider(documentSelector.syntax, new InstallModuleProvider(client), 'tsserver'))
+    this._register(languages.registerCodeActionProvider(documentSelector.syntax, new InstallModuleProvider(id), 'tsserver'))
     if (this.client.apiVersion.gte(API.v380) && typeof languages['registerCallHierarchyProvider'] === 'function' && hasSemantic) {
       this._register(languages.registerCallHierarchyProvider(documentSelector.semantic, new CallHierarchyProvider(client)))
     }
@@ -170,11 +167,11 @@ export default class LanguageProvider {
     }
 
     let { fileConfigurationManager } = this
-    let conf = fileConfigurationManager.getLanguageConfiguration(this.id)
+    let conf = fileConfigurationManager.getLanguageConfiguration(id)
     if (this.client.apiVersion.gte(API.v280)) {
       this._register(languages.registerFoldingRangeProvider(documentSelector.syntax, new Folding(this.client)))
       if (hasSemantic) {
-        let provider = new OrganizeImportsCodeActionProvider(this.id, this.client, this.fileConfigurationManager)
+        let provider = new OrganizeImportsCodeActionProvider(id, this.client, this.fileConfigurationManager)
         this._register(
           languages.registerCodeActionProvider(documentSelector.semantic, provider, 'tsserver', provider.metadata.providedCodeActionKinds)
         )
@@ -185,7 +182,7 @@ export default class LanguageProvider {
       this._register(
         languages.registerCodeActionProvider(
           documentSelector.semantic,
-          new RefactorProvider(client, this.fileConfigurationManager),
+          new RefactorProvider(client, this.fileConfigurationManager, id),
           'tsserver',
           [CodeActionKind.Refactor]))
     }
@@ -201,7 +198,7 @@ export default class LanguageProvider {
     if (hasSemantic) {
       this._register(
         languages.registerCodeActionProvider(
-          documentSelector.semantic, new QuickfixProvider(client, this.fileConfigurationManager, client.diagnosticsManager),
+          documentSelector.semantic, new QuickfixProvider(client, this.fileConfigurationManager, client.diagnosticsManager, id),
           'tsserver', [CodeActionKind.QuickFix]))
     }
     this._register(
@@ -212,17 +209,17 @@ export default class LanguageProvider {
     if (hasSemantic) {
       let cachedResponse = new CachedResponse()
       if (this.client.apiVersion.gte(API.v206) && conf.get<boolean>('referencesCodeLens.enabled')) {
-        this._register(languages.registerCodeLensProvider(documentSelector.semantic, new ReferencesCodeLensProvider(client, cachedResponse, this.description.id)))
+        this._register(languages.registerCodeLensProvider(documentSelector.semantic, new ReferencesCodeLensProvider(client, cachedResponse, id)))
       }
       if (this.client.apiVersion.gte(API.v220) && conf.get<boolean>('implementationsCodeLens.enabled')) {
-        this._register(languages.registerCodeLensProvider(documentSelector.semantic, new ImplementationsCodeLensProvider(client, cachedResponse, this.description.id)))
+        this._register(languages.registerCodeLensProvider(documentSelector.semantic, new ImplementationsCodeLensProvider(client, cachedResponse, id)))
       }
     }
     if (this.client.apiVersion.gte(API.v350)) {
       this._register(languages.registerSelectionRangeProvider(documentSelector.syntax, new SmartSelection(this.client)))
     }
     if (this.client.apiVersion.gte(API.v300)) {
-      this._register(new TagClosing(this.client, this.description.id))
+      this._register(new TagClosing(this.client, id))
     }
     if (this.client.apiVersion.gte(API.v440) && hasSemantic) {
       if (typeof languages.registerInlayHintsProvider === 'function') {
