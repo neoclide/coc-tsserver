@@ -146,7 +146,8 @@ export default class LanguageProvider {
     this._register(languages.registerSignatureHelpProvider(documentSelector.syntax, new SignatureHelpProvider(client), ['(', ',', '<', ')']))
     this._register(languages.registerDocumentSymbolProvider(documentSelector.syntax, new DocumentSymbolProvider(client)))
     if (hasSemantic) {
-      this._register(languages.registerRenameProvider(documentSelector.semantic, new RenameProvider(client, this.fileConfigurationManager)))
+      const provider = new RenameProvider(this.description, client, this.fileConfigurationManager)
+      this._register(languages.registerRenameProvider(documentSelector.semantic, provider))
     }
     let formatProvider = new FormattingProvider(client, this.fileConfigurationManager)
     this._register(languages.registerDocumentFormatProvider(documentSelector.syntax, formatProvider))
