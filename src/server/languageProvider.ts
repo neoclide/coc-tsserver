@@ -22,6 +22,7 @@ import ImportfixProvider from './features/importFix'
 import TypeScriptInlayHintsProvider from './features/inlayHints'
 import { JsDocCompletionProvider } from './features/jsDocCompletion'
 import InstallModuleProvider from './features/moduleInstall'
+import LinkedEditingRangeProvider from './features/linkedEditing'
 import QuickfixProvider from './features/quickfix'
 import RefactorProvider from './features/refactor'
 import ReferenceProvider from './features/references'
@@ -229,6 +230,10 @@ export default class LanguageProvider {
       } else {
         this.client.logger.error(`languages.registerInlayHintsProvider is not a function, inlay hints won't work`)
       }
+    }
+    if (this.client.apiVersion.gte(API.v510)) {
+      const provider = new LinkedEditingRangeProvider(this.client)
+      this._register(languages.registerLinkedEditingRangeProvider(documentSelector.semantic, provider))
     }
   }
 
