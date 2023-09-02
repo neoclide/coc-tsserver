@@ -507,6 +507,12 @@
           "deprecationMessage": "The setting 'typescript.preferences.renameShorthandProperties' has been deprecated in favor of 'typescript.preferences.useAliasesForRenames'",
           "scope": "language-overridable"
         },
+        "typescript.preferences.renameMatchingJsxTags": {
+          "type": "boolean",
+          "default": true,
+          "description": "When on a JSX tag, try to rename the matching tag instead of renaming the symbol. Requires using TypeScript 5.1+ in the workspace.",
+          "scope": "language-overridable"
+        },
         "typescript.suggestionActions.enabled": {
           "type": "boolean",
           "default": true,
@@ -833,6 +839,12 @@
           "default": true,
           "description": "Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace.",
           "deprecationMessage": "The setting 'typescript.preferences.renameShorthandProperties' has been deprecated in favor of 'typescript.preferences.useAliasesForRenames'",
+          "scope": "language-overridable"
+        },
+        "javascript.preferences.renameMatchingJsxTags": {
+          "type": "boolean",
+          "default": true,
+          "description": "When on a JSX tag, try to rename the matching tag instead of renaming the symbol. Requires using TypeScript 5.1+ in the workspace.",
           "scope": "language-overridable"
         },
         "javascript.validate.enable": {
