@@ -41,7 +41,7 @@ interface RenameAction {
 
 export default class UpdateImportsOnFileRenameHandler {
   private disposables: Disposable[] = []
-  private readonly _delayer = new Delayer(50);
+  private readonly _delayer = new Delayer(1000);
   private readonly _pendingRenames = new Set<RenameAction>();
 
   public constructor(
