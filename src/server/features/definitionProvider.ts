@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { LocationLink, TextDocument } from 'coc.nvim'
+import { LocationLink, TextDocument, workspace } from 'coc.nvim'
 import { DefinitionProvider, CancellationToken, Definition, Location, Position, DefinitionLink, ImplementationProvider, TypeDefinitionProvider } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
@@ -68,7 +68,15 @@ export default class TypeScriptDefinitionProvider implements DefinitionProvider,
       }
 
       const span = response.body.textSpan ? typeConverters.Range.fromTextSpan(response.body.textSpan) : undefined
-      return response.body.definitions
+      let definitions = response.body.definitions
+      const preferGoToSourceDefinition = workspace.getConfiguration('tsserver').get('preferGoToSourceDefinition', false)
+      if (preferGoToSourceDefinition && this.client.apiVersion.gte(API.v470)) {
+        const sourceDefinitionsResponse = await this.client.execute('findSourceDefinition', args, token)
+        if (sourceDefinitionsResponse.type === 'response' && sourceDefinitionsResponse.body?.length) {
+          definitions = sourceDefinitionsResponse.body
+        }
+      }
+      return definitions
         .map((location): DefinitionLink => {
           const target = typeConverters.Location.fromTextSpan(this.client.toResource(location.file), location)
           if (location.contextStart && location.contextEnd) {
