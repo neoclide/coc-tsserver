@@ -178,6 +178,7 @@ export default class FileConfigurationManager {
     const preferencesConfig = workspace.getConfiguration(`${language}.preferences`, doc)
 
     const preferences: Proto.UserPreferences = {
+      ...config.get('unstable'),
       quotePreference: this.getQuoteStyle(preferencesConfig),
       importModuleSpecifierPreference: getImportModuleSpecifier(preferencesConfig) as any,
       importModuleSpecifierEnding: getImportModuleSpecifierEndingPreference(preferencesConfig),
