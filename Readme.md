@@ -119,6 +119,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
   Valid options: ["off","messages","verbose"]
 - `tsserver.enableTracing`: Enables tracing TS server performance to a directory. These trace files can be used to diagnose TS Server performance issues. The log may contain file paths, source code, and other potentially sensitive information from your project. Default: `false`
 - `tsserver.pluginPaths`: Additional paths to discover TypeScript Language Service plugins. Default: `[]`
+- `tsserver.preferGoToSourceDefinition`: Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace. Default: `false`
 - `tsserver.reportStyleChecksAsWarnings`: Report style checks as warnings. Default: `true`
 - `tsserver.implicitProjectConfig.checkJs`: Enable checkJs for implicit project Default: `false`
 - `tsserver.implicitProjectConfig.module`: Sets the module system for the program. See more: https://www.typescriptlang.org/tsconfig#module. Default: `"ESNext"`
