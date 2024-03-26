@@ -76,6 +76,7 @@ interface StandardTsServerRequests {
   'provideInlayHints': [Proto.InlayHintsRequestArgs, Proto.InlayHintsResponse]
   'encodedSemanticClassifications-full': [Proto.EncodedSemanticClassificationsRequestArgs, Proto.EncodedSemanticClassificationsResponse]
   'findSourceDefinition': [Proto.FileLocationRequestArgs, Proto.DefinitionResponse]
+  'getMoveToRefactoringFileSuggestions': [Proto.GetMoveToRefactoringFileSuggestionsRequestArgs, Proto.GetMoveToRefactoringFileSuggestions]
 }
 
 interface NoResponseTsServerRequests {
