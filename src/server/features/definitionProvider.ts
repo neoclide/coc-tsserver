@@ -69,11 +69,14 @@ export default class TypeScriptDefinitionProvider implements DefinitionProvider,
 
       const span = response.body.textSpan ? typeConverters.Range.fromTextSpan(response.body.textSpan) : undefined
       let definitions = response.body.definitions
-      const preferGoToSourceDefinition = workspace.getConfiguration('tsserver').get('preferGoToSourceDefinition', false)
-      if (preferGoToSourceDefinition && this.client.apiVersion.gte(API.v470)) {
+      let modeId = document.languageId.startsWith('javascript') ? 'javascript' : 'typescript'
+      if (workspace.getConfiguration(modeId).get('preferGoToSourceDefinition', false)
+        && this.client.apiVersion.gte(API.v470)) {
         const sourceDefinitionsResponse = await this.client.execute('findSourceDefinition', args, token)
-        if (sourceDefinitionsResponse.type === 'response' && sourceDefinitionsResponse.body?.length) {
-          definitions = sourceDefinitionsResponse.body
+        if (sourceDefinitionsResponse.type === 'response' &&
+          sourceDefinitionsResponse.body?.length) {
+          definitions =
+            sourceDefinitionsResponse.body
         }
       }
       return definitions
