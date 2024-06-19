@@ -172,7 +172,7 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
         file,
         range
       ),
-      includeInteractiveActions: true,
+      includeInteractiveActions: this.client.apiVersion.gte(API.v520),
       triggerReason: context.triggerKind === CodeActionTriggerKind.Invoked ? 'invoked' : 'implicit',
       kind: Array.isArray(context.only) ? context.only[0] : undefined
     }
