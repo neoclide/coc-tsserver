@@ -10,7 +10,7 @@ export async function activate(context: ExtensionContext): Promise<API> {
   let { subscriptions } = context
   const pluginManager = new PluginManager()
   const service = new TsserverService(pluginManager, context)
-  subscriptions.push(services.regist(service))
+  subscriptions.push(services.register(service))
 
   return {
     configurePlugin: (pluginId: string, configuration: {}): void => {

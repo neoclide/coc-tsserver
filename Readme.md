@@ -186,6 +186,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `typescript.workspaceSymbols.scope`: Controls which files are searched by [go to symbol in workspace](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name). Default: `"allOpenProjects"`
   Valid options: ["allOpenProjects","currentProject"]
 - `typescript.autoClosingTags`: Enable/disable automatic closing of JSX tags. Default: `true`
+- `typescript.preferGoToSourceDefinition`: Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace. Default: `false`
 - `javascript.showUnused`: Show unused variable hint. Default: `true`
 - `javascript.showDeprecated`: Show deprecated variable hint. Default: `true`
 - `javascript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. Default: `"prompt"`
@@ -251,6 +252,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `javascript.inlayHints.enumMemberValues.enabled`: Enable/disable inlay hints of enum member values. Default: `false`
 - `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`: Suppress type hints on variables whose name is identical to the type name. Requires using TypeScript 4.8+ in the workspace. Default: `true`
 - `javascript.autoClosingTags`: Enable/disable automatic closing of JSX tags. Default: `true`
+- `javascript.preferGoToSourceDefinition`: Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace. Default: `false`
 - `javascript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. Default: `"ignore"`
   Valid options: ["ignore","insert","remove"]
 - `javascript.suggest.completeJSDocs`: Enable/disable suggestion to complete JSDoc comments. Default: `true`
@@ -275,8 +277,8 @@ Removed configurations:
 
 - `typescript.tsserver.useSeparateSyntaxServer` Use `tsserver.useSyntaxServer` instead.
 - `typescript.enablePromptUseWorkspaceTsdk` No propmpts given.
-- `typescript.tsc.autoDetect` Used for task, no such feature.
-- `typescript.surveys.enabled` No such feature.
+- `typescript.tsc.autoDetect` Used for task, not supported.
+- `typescript.surveys.enabled` Not supported.
 
 Renamed configurations to use `tsserver` as prefix:
 

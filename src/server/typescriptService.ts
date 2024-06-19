@@ -57,6 +57,7 @@ interface StandardTsServerRequests {
   'getSupportedCodeFixes': [null, Proto.GetSupportedCodeFixesResponse]
   'implementation': [Proto.FileLocationRequestArgs, Proto.ImplementationResponse]
   'jsxClosingTag': [Proto.JsxClosingTagRequestArgs, Proto.JsxClosingTagResponse]
+  'linkedEditingRange': [Proto.FileLocationRequestArgs, Proto.LinkedEditingRangeResponse];
   'navto': [Proto.NavtoRequestArgs, Proto.NavtoResponse]
   'navtree': [Proto.FileRequestArgs, Proto.NavTreeResponse]
   'organizeImports': [Proto.OrganizeImportsRequestArgs, Proto.OrganizeImportsResponse]
@@ -75,6 +76,7 @@ interface StandardTsServerRequests {
   'provideInlayHints': [Proto.InlayHintsRequestArgs, Proto.InlayHintsResponse]
   'encodedSemanticClassifications-full': [Proto.EncodedSemanticClassificationsRequestArgs, Proto.EncodedSemanticClassificationsResponse]
   'findSourceDefinition': [Proto.FileLocationRequestArgs, Proto.DefinitionResponse]
+  'getMoveToRefactoringFileSuggestions': [Proto.GetMoveToRefactoringFileSuggestionsRequestArgs, Proto.GetMoveToRefactoringFileSuggestions]
 }
 
 interface NoResponseTsServerRequests {

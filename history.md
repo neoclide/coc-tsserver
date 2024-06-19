@@ -1,3 +1,11 @@
+# 2.2.0
+
+- Support `javascript.preferGoToSourceDefinition` and `typescript.preferGoToSourceDefinition` #449.
+- Support refactor action `move to file` #445.
+- Support `javascript.unstable` and `typescript.unstable`, see
+  https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#case-insensitive-import-sorting-in-editors.
+- Fix update import on file rename may not work by increase delay #447.
+
 # 2.1.0
 
 - Support "Remove Unused Imports" source action.

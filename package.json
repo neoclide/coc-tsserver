@@ -1,7 +1,7 @@
 {
   "name": "coc-tsserver",
-  "version": "2.1.3",
-  "description": "tsserver extension for coc.nvim",
+  "version": "2.2.0",
+  "description": "javascript and typescript language features extension of coc.nvim",
   "main": "lib/index.js",
   "publisher": "chemzqm",
   "engines": {
@@ -712,6 +712,12 @@
           "scope": "language-overridable",
           "description": "Enable/disable automatic closing of JSX tags."
         },
+        "typescript.preferGoToSourceDefinition": {
+          "type": "boolean",
+          "default": false,
+          "description": "Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace.",
+          "scope": "window"
+        },
         "javascript.showUnused": {
           "type": "boolean",
           "default": true,
@@ -1132,6 +1138,12 @@
             "remove"
           ]
         },
+        "javascript.preferGoToSourceDefinition": {
+          "type": "boolean",
+          "default": false,
+          "description": "Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace.",
+          "scope": "window"
+        },
         "javascript.suggest.completeJSDocs": {
           "type": "boolean",
           "default": true,
@@ -1184,11 +1196,11 @@
     "coc.nvim": "^0.0.83-next.11",
     "esbuild": "^0.15.13",
     "semver": "^7.3.7",
-    "vscode-languageserver-protocol": "^3.17.2",
     "strip-ansi": "^7.0.1",
+    "vscode-languageserver-protocol": "^3.17.2",
     "which": "^2.0.2"
   },
   "dependencies": {
-    "typescript": "^4.9.3"
+    "typescript": "^5.3.2"
   }
 }

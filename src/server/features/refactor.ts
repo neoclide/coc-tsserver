@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CodeActionProvider, Uri, CodeActionProviderMetadata, commands, TextDocument, window, workspace, CodeActionTriggerKind } from 'coc.nvim'
+import { CodeActionProvider, CodeActionProviderMetadata, CodeActionTriggerKind, TextDocument, Uri, commands, window, workspace } from 'coc.nvim'
 import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import { Command, registCommand } from '../commands'
 import Proto from '../protocol'
@@ -29,17 +29,24 @@ class ApplyRefactoringCommand implements Command {
       refactor,
       action
     }
-    const response = await this.client.execute('getEditsForRefactor', args, CancellationToken.None) as any
-    const body = response && response.body
-    if (!body || !body.edits.length) {
+    if (action === 'Move to file') {
+      const targetFile = await this.getTargetFile(document, file, range)
+      if (!targetFile || targetFile.toString() === file.toString()) {
+        return false
+      }
+      args.interactiveRefactorArguments = { targetFile }
+    }
+
+    const response = await this.client.execute('getEditsForRefactor', args, CancellationToken.None)
+    if (response.type !== 'response' || !response.body || !response.body.edits.length) {
       return false
     }
 
-    const workspaceEdit = await this.toWorkspaceEdit(body)
+    const workspaceEdit = await this.toWorkspaceEdit(response.body)
     if (!(await workspace.applyEdit(workspaceEdit))) {
       return false
     }
-    const renameLocation = body.renameLocation
+    const renameLocation = response.body.renameLocation
     if (renameLocation) {
       commands.executeCommand('editor.action.rename',
         document.uri,
@@ -67,6 +74,33 @@ class ApplyRefactoringCommand implements Command {
       }
     }
     return workspaceEdit
+  }
+
+  private async getTargetFile(document: TextDocument, file: string, range: Range): Promise<string | undefined> {
+    const args = typeConverters.Range.toFileRangeRequestArgs(file, range)
+    const response = await this.client.execute('getMoveToRefactoringFileSuggestions', args, CancellationToken.None)
+    if (response.type !== 'response' || !response.body) {
+      return
+    }
+
+    const newOrExisting = ['Enter new file path...', 'Select existing file...']
+    const idx = await window.showQuickpick(newOrExisting)
+    if (idx === -1) {
+      return
+    }
+
+    if (idx === 0) {
+      const newFilePath = await window.requestInput('New file path...', response.body.newFileName)
+      const root = Uri.parse(workspace.getWorkspaceFolder(document.uri).uri).fsPath
+      if (newFilePath && !newFilePath.startsWith(root)) {
+        window.showWarningMessage(`${newFilePath} is outside project ${root}`)
+        return
+      }
+
+      return newFilePath
+    }
+
+    return await window.showQuickPick(response.body.files, { title: 'Move to file...' })
   }
 }
 
@@ -138,6 +172,7 @@ export default class TypeScriptRefactorProvider implements CodeActionProvider {
         file,
         range
       ),
+      includeInteractiveActions: true,
       triggerReason: context.triggerKind === CodeActionTriggerKind.Invoked ? 'invoked' : 'implicit',
       kind: Array.isArray(context.only) ? context.only[0] : undefined
     }
