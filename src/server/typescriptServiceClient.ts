@@ -489,7 +489,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
     configuration: TypeScriptServiceConfiguration
   ): Proto.ExternalProjectCompilerOptions {
     return {
-      ...inferredProjectCompilerOptions(ProjectType.TypeScript, configuration),
+      ...inferredProjectCompilerOptions(this.apiVersion, ProjectType.TypeScript, configuration),
       allowJs: true,
       allowSyntheticDefaultImports: true,
       allowNonTsExtensions: true
