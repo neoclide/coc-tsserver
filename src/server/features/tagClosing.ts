@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationTokenSource, window, Disposable, disposeAll, Position, Range, snippetManager, events, workspace, InsertChange, TextEditor } from 'coc.nvim'
+import { CancellationTokenSource, Disposable, disposeAll, events, InsertChange, Position, Range, snippetManager, TextEditor, window, workspace } from 'coc.nvim'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import SnippetString from '../utils/SnippetString'
@@ -29,6 +29,11 @@ export default class TagClosing implements Disposable {
     window.onDidChangeActiveTextEditor(e => {
       this.checkConfig(e)
     }, null, this._disposables)
+    workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration('javascript') || e.affectsConfiguration('typescript')) {
+        this.checkConfig(window.activeTextEditor)
+      }
+    })
   }
 
   private checkConfig(editor: TextEditor | undefined): void {
@@ -87,6 +92,23 @@ export default class TagClosing implements Disposable {
           false,
           Range.create(position, position)
         )
+        let filetype = doc.filetype.startsWith('javascript') ? 'javascript' : 'typescript'
+        let key = `${filetype}.autoClosingTags.nowarning`
+        let nowarning = this.client.getGlobalState(key)
+        if (!nowarning) {
+          let items = [{ title: `Don't show again`, id: 2, isCloseAffordance: true }, { title: `Disable autoClosingTags for ${filetype}`, id: 1 }]
+          let res = await window.showWarningMessage(
+            `Automatic inserted tag by coc-tsserver, use configuration "${filetype}.autoClosingTags": false to disable this behavior`,
+            ...items
+          )
+          if (res == null) return
+          if (res.id == 1) {
+            let config = workspace.getConfiguration(filetype, null)
+            await config.update('autoClosingTags', false, 1)
+          } else if (res.id == 2) {
+            this.client.updateGlobalState(key, true)
+          }
+        }
       }
     }, 30)
   }

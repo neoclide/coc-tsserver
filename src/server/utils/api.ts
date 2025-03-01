@@ -48,8 +48,10 @@ export default class API {
   public static readonly v460 = API.fromSimpleString('4.6.0');
   public static readonly v480 = API.fromSimpleString('4.8.0');
   public static readonly v490 = API.fromSimpleString('4.9.0');
+  public static readonly v500 = API.fromSimpleString('5.0.0');
   public static readonly v510 = API.fromSimpleString('5.1.0');
   public static readonly v520 = API.fromSimpleString('5.2.0');
+  public static readonly v540 = API.fromSimpleString('5.4.0');
 
   public static fromVersionString(versionString: string): API {
     let version = semver.valid(versionString)

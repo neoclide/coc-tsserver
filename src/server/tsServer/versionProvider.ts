@@ -148,6 +148,7 @@ export class TypeScriptVersionProvider {
       return bundledVersion
     } catch (e) {
       window.showErrorMessage('Bundled typescript module not found')
+      console.error(`Bundled typescript module not found`)
       return null
     }
   }

@@ -145,6 +145,8 @@ export interface ITypeScriptServiceClient {
    */
   toPath(resource: string): string | undefined
 
+  updateGlobalState(key: string, value: any): Promise<void>
+  getGlobalState<T>(key: string): T | undefined
   /**
    * Convert a path to a resource.
    */

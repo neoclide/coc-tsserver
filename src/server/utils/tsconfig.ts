@@ -8,6 +8,7 @@ import type * as Proto from '../protocol'
 import { CancellationToken, snippetManager, window, workspace, Uri, MessageItem } from 'coc.nvim'
 import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService'
 import { TypeScriptServiceConfiguration } from './configuration'
+import API from './api'
 
 export const enum ProjectType {
   TypeScript,
@@ -18,18 +19,21 @@ export function isImplicitProjectConfigFile(configFileName: string) {
   return configFileName.startsWith('/dev/null/')
 }
 
-const defaultProjectConfig = Object.freeze<Proto.ExternalProjectCompilerOptions>({
-  module: 'ESNext' as Proto.ModuleKind,
-  moduleResolution: 'Node' as Proto.ModuleResolutionKind,
-  target: 'ES2020' as Proto.ScriptTarget,
-  jsx: 'react' as Proto.JsxEmit,
-})
-
 export function inferredProjectCompilerOptions(
+  version: API,
   projectType: ProjectType,
   serviceConfig: TypeScriptServiceConfiguration,
 ): Proto.ExternalProjectCompilerOptions {
-  const projectConfig = { ...defaultProjectConfig }
+  const projectConfig: Proto.ExternalProjectCompilerOptions = {
+    module: (version.gte(API.v540) ? 'Preserve' : 'ESNext') as Proto.ModuleKind,
+    moduleResolution: (version.gte(API.v540) ? 'Bundler' : 'Node') as Proto.ModuleResolutionKind,
+    target: 'ES2022' as Proto.ScriptTarget,
+    jsx: 'react' as Proto.JsxEmit,
+  };
+
+  if (version.gte(API.v500)) {
+    projectConfig.allowImportingTsExtensions = true;
+  }
 
   if (serviceConfig.implicitProjectConfiguration.checkJs) {
     projectConfig.checkJs = true
@@ -67,10 +71,11 @@ export function inferredProjectCompilerOptions(
 }
 
 function inferredProjectConfigSnippet(
+  version: API,
   projectType: ProjectType,
   config: TypeScriptServiceConfiguration
 ): string {
-  const baseConfig = inferredProjectCompilerOptions(projectType, config)
+  const baseConfig = inferredProjectCompilerOptions(version, projectType, config)
   const compilerOptions = Object.keys(baseConfig).map(key => `"${key}": ${JSON.stringify(baseConfig[key])}`)
   return `{
 	"compilerOptions": {
@@ -84,6 +89,7 @@ function inferredProjectConfigSnippet(
 }
 
 export async function openOrCreateConfig(
+  version: API,
   projectType: ProjectType,
   rootPath: string,
   configuration: TypeScriptServiceConfiguration,
@@ -95,7 +101,7 @@ export async function openOrCreateConfig(
     let text = doc.textDocument.getText()
     if (text.length === 0) {
       await workspace.nvim.command('startinsert')
-      await snippetManager.insertSnippet(inferredProjectConfigSnippet(projectType, configuration))
+      await snippetManager.insertSnippet(inferredProjectConfigSnippet(version, projectType, configuration))
     }
   } catch {
   }
@@ -127,7 +133,7 @@ export async function openProjectConfigOrPromptToCreate(
 
   switch (selected) {
     case CreateConfigItem:
-      openOrCreateConfig(projectType, rootPath, client.configuration)
+      openOrCreateConfig(client.apiVersion, projectType, rootPath, client.configuration)
       return
   }
 }
@@ -145,7 +151,7 @@ export async function openProjectConfigForFile(
 
   const file = client.toPath(resource.toString())
   // TSServer errors when 'projectInfo' is invoked on a non js/ts file
-  if (!file || !await client.toPath(resource.toString())) {
+  if (!file || !client.toPath(resource.toString())) {
     window.showWarningMessage('Could not determine TypeScript or JavaScript project. Unsupported file type')
     return
   }
