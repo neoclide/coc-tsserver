@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, CancellationTokenSource, Document, Emitter, ExtensionContext, ServiceStat, Uri, window, workspace } from 'coc.nvim'
+import { CancellationToken, CancellationTokenSource, Document, Emitter, ExtensionContext, Memento, ServiceStat, Uri, window, workspace } from 'coc.nvim'
 import path from 'path'
 import * as fileSchemes from '../utils/fileSchemes'
 import { PluginManager } from '../utils/plugins'
@@ -102,6 +102,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
   public readonly diagnosticsManager: DiagnosticsManager
   // private readonly loadingIndicator = new ServerInitializingIndicator()
   private hasServerFatallyCrashedTooManyTimes = false
+  private readonly globalState: Memento
 
   private readonly _onTsServerStarted = this._register(new Emitter<API>())
   public readonly onTsServerStarted = this._onTsServerStarted.event
@@ -151,6 +152,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
     tscPathVim: string | undefined
   ) {
     super()
+    this.globalState = context.globalState
     this.pluginManager = services.pluginManager
     this.logDirectoryProvider = services.logDirectoryProvider
     this.processFactory = services.processFactory
@@ -271,6 +273,15 @@ export default class TypeScriptServiceClient extends Disposable implements IType
       this.serverState.server.kill()
     }
   }
+
+  public async updateGlobalState(key: string, value: any): Promise<void> {
+    await this.globalState.update(key, value)
+  }
+
+  public getGlobalState<T>(key: string): T | undefined {
+    return this.globalState.get(key)
+  }
+
 
   public get apiVersion(): API {
     if (this.serverState.type === ServerState.Type.Running) {
