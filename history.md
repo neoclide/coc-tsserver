@@ -1,3 +1,11 @@
+# 2.2.2
+
+- Support module target of tsconfig.json.
+
+# 2.2.1
+
+- Show warning message when insert closing tag which can be disabled.
+
 # 2.2.0
 
 - Support `javascript.preferGoToSourceDefinition` and `typescript.preferGoToSourceDefinition` #449.
