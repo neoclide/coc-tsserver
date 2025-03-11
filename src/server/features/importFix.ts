@@ -40,7 +40,7 @@ export default class ImportFixProvider implements CodeActionProvider {
           range: Range.create(0, 0, 0, 0),
           newText: `import ${name} from '${name}'\n`
         })
-        command = 'tsserver.organizeImports'
+        command = 'editor.action.organizeImport'
       }
     }
     let edit: WorkspaceEdit = {
@@ -51,7 +51,7 @@ export default class ImportFixProvider implements CodeActionProvider {
     let cmd: Command = null
     if (command) cmd = {
       title: `fix import`,
-      command: 'tsserver.organizeImports'
+      command: 'editor.action.organizeImport'
     }
     return [{
       title: `Add import ${names.join(', ')}`,

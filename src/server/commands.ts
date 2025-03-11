@@ -256,7 +256,7 @@ export class AutoFixCommand implements Command {
               range: Range.create(0, 0, 0, 0),
               newText: `import ${name} from '${name}'\n`
             })
-            command = 'tsserver.organizeImports'
+            command = 'editor.action.organizeImport'
           }
         }
         continue
