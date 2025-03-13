@@ -5,6 +5,8 @@
 import { CodeActionProvider, CodeActionProviderMetadata, CodeActionTriggerKind, TextDocument, Uri, commands, window, workspace } from 'coc.nvim'
 import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range, WorkspaceEdit } from 'vscode-languageserver-protocol'
 import { Command, registCommand } from '../commands'
+import path from 'path'
+import os from 'os'
 import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
@@ -83,24 +85,29 @@ class ApplyRefactoringCommand implements Command {
       return
     }
 
-    const newOrExisting = ['Enter new file path...', 'Select existing file...']
-    const idx = await window.showQuickpick(newOrExisting)
-    if (idx === -1) {
-      return
-    }
+    const root = Uri.parse(workspace.getWorkspaceFolder(document.uri).uri).fsPath
+    // const newOrExisting = ['Enter new file path...', 'Select existing file...']
+    // const idx = await window.showQuickpick(newOrExisting)
+    // if (idx === -1) {
+    //   return
+    // }
+    //
+    // if (idx === 0) {
+    //   const newFilePath = await window.requestInput('New file path...', response.body.newFileName)
+    //   const root = Uri.parse(workspace.getWorkspaceFolder(document.uri).uri).fsPath
+    //   if (newFilePath && !newFilePath.startsWith(root)) {
+    //     window.showWarningMessage(`${newFilePath} is outside project ${root}`)
+    //     return
+    //   }
+    //
+    //   return newFilePath
+    // }
+    const files = response.body.files.map(filepath => {
+      let relative = path.relative(root, filepath)
+      return relative.startsWith('.') ? filepath.replace(os.homedir(), '') : relative
+    })
 
-    if (idx === 0) {
-      const newFilePath = await window.requestInput('New file path...', response.body.newFileName)
-      const root = Uri.parse(workspace.getWorkspaceFolder(document.uri).uri).fsPath
-      if (newFilePath && !newFilePath.startsWith(root)) {
-        window.showWarningMessage(`${newFilePath} is outside project ${root}`)
-        return
-      }
-
-      return newFilePath
-    }
-
-    return await window.showQuickPick(response.body.files, { title: 'Move to file...' })
+    return await window.showQuickPick(files, { title: 'Move to file...' })
   }
 }
 
