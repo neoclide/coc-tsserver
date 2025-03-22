@@ -1,3 +1,7 @@
+# 2.2.3
+
+- Remove unnecessary selection on refactor.
+
 # 2.2.2
 
 - Support module target of tsconfig.json.
