@@ -1,3 +1,11 @@
+# 2.2.5
+
+- Add configuration `typescript.preferences.preferTypeOnlyAutoImports`.
+
+# 2.2.4
+
+- Improve file select on refactor
+
 # 2.2.3
 
 - Remove unnecessary selection on refactor.
