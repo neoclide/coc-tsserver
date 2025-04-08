@@ -152,6 +152,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
   Valid options: ["auto","single","double"]
 - `typescript.preferences.useAliasesForRenames`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
 - `typescript.preferences.autoImportFileExcludePatterns`: Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.
+- `typescript.preferences.preferTypeOnlyAutoImports`: Include the `type` keyword in auto-imports whenever possible. Requires using TypeScript 5.3+ in the workspace.
 - `typescript.preferences.renameShorthandProperties`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
 - `typescript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace. Default: `true`
 - `typescript.validate.enable`: Enable/disable TypeScript validation. Default: `true`
