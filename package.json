@@ -500,6 +500,12 @@
           "markdownDescription": "Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.",
           "scope": "resource"
         },
+        "typescript.preferences.preferTypeOnlyAutoImports": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Include the `type` keyword in auto-imports whenever possible. Requires using TypeScript 5.3+ in the workspace.",
+          "scope": "resource"
+        },
         "typescript.preferences.renameShorthandProperties": {
           "type": "boolean",
           "default": true,
