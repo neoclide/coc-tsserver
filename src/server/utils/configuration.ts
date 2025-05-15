@@ -1,8 +1,8 @@
 import { workspace, WorkspaceConfiguration } from 'coc.nvim'
-import path from 'path'
-import * as objects from '../utils/objects'
 import os from 'os'
+import path from 'path'
 import * as Proto from '../protocol'
+import * as objects from '../utils/objects'
 
 export enum TsServerLogLevel {
   Off,
@@ -35,6 +35,7 @@ export interface TypeScriptServiceConfiguration {
   readonly watchOptions: Proto.WatchOptions | undefined
   readonly includePackageJsonAutoImports: 'auto' | 'on' | 'off' | undefined
   readonly enableTsServerTracing: boolean
+  readonly disabledSchemes: readonly string[]
 }
 
 export function areServiceConfigurationsEqual(a: TypeScriptServiceConfiguration, b: TypeScriptServiceConfiguration): boolean {
@@ -132,6 +133,7 @@ export class ServiceConfigurationProvider implements ServiceConfigurationProvide
     return {
       enable: this.readEnable(configuration),
       locale: this.readLocale(configuration),
+      disabledSchemes: this.readDisabledSchemes(configuration),
       useWorkspaceTsdk: this.readUseWorkspace(configuration),
       globalTsdk: this.readGlobalTsdk(configuration),
       localTsdk: this.readLocalTsdk(configuration),
@@ -209,6 +211,10 @@ export class ServiceConfigurationProvider implements ServiceConfigurationProvide
 
   protected readEnable(configuration: WorkspaceConfiguration): boolean {
     return configuration.get<boolean>('tsserver.enable', true)
+  }
+
+  protected readDisabledSchemes(configuration: WorkspaceConfiguration): string[] {
+    return configuration.get<string[]>('tsserver.disabledSchemes', [])
   }
 
   protected readLocale(configuration: WorkspaceConfiguration): string | null {

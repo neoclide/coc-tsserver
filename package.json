@@ -347,6 +347,22 @@
             "Spawn both a full server and a lighter weight server dedicated to syntax operations. The syntax server is used to speed up syntax operations and provide IntelliSense while projects are loading."
           ]
         },
+        "tsserver.disabledSchemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "git",
+            "fugitive",
+            "vsls",
+            "diffview",
+            "github",
+            "azurerepos"
+          ],
+          "markdownDescription": "Document schemes that should be disabled for tsserver to avoid tsserver error.",
+          "scope": "application"
+        },
         "tsserver.experimental.enableProjectDiagnostics": {
           "type": "boolean",
           "default": false,

@@ -570,7 +570,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
   }
 
   public normalizedPath(resource: Uri): string | undefined {
-    if (fileSchemes.disabledSchemes.has(resource.scheme)) {
+    if (this.configuration.disabledSchemes.includes(resource.scheme)) {
       return undefined
     }
     switch (resource.scheme) {

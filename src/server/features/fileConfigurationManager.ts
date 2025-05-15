@@ -2,11 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { workspace, window, WorkspaceConfiguration, disposeAll, FormattingOptions, Uri } from 'coc.nvim'
-import { CancellationToken, Disposable } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'coc.nvim'
-import Proto from '../protocol'
+import { disposeAll, FormattingOptions, TextDocument, Uri, window, workspace, WorkspaceConfiguration } from 'coc.nvim'
 import path from 'path'
+import { CancellationToken, Disposable } from 'vscode-languageserver-protocol'
+import Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'
 import API from '../utils/api'
 import { equals } from '../utils/objects'
@@ -199,7 +198,7 @@ export default class FileConfigurationManager {
       allowIncompleteCompletions: true,
       displayPartsForJSDoc: true,
       ...getInlayHintsPreferences(config),
-    }
+    } as any
     return preferences
   }
 

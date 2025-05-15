@@ -133,6 +133,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
   Valid options: ["always","never","auto"]
 - `tsserver.experimental.enableProjectDiagnostics`: (Experimental) Enables project wide error reporting. Default: `false`
 - `typescript.check.npmIsInstalled`: Check if npm is installed for [Automatic Type Acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition). Default: `true`
+- `tsserver.disabledSchemes`: Document schemes that should be disabled for tsserver to avoid tsserver error. Default: `["git", "fugitive", "vsls", "diffview", "github", "azurerepos"]`
 - `typescript.showUnused`: Show unused variable hint. Default: `true`
 - `typescript.showDeprecated`: Show deprecated variable hint. Default: `true`
 - `typescript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. Default: `"prompt"`
