@@ -2,7 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DidChangeTextDocumentParams, TextDocument, Uri, disposeAll, workspace } from 'coc.nvim'
+import { DidChangeTextDocumentParams, TextDocument, Uri, disposeAll, window, workspace } from 'coc.nvim'
+import path from 'path'
 import { CancellationToken, CancellationTokenSource, Disposable, Emitter, Event, TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol'
 import Proto from '../protocol'
 import { ClientCapability, ITypeScriptServiceClient } from '../typescriptService'
@@ -48,6 +49,24 @@ class ChangeOperation {
 
 type BufferOperation = CloseOperation | OpenOperation | ChangeOperation
 
+let warningShown = false
+
+function checkDocument(doc: { uri: string, languageId: string }): void {
+  if (warningShown) return
+  const { uri, languageId } = doc
+  if ((uri.endsWith('.jsx') && languageId !== 'javascriptreact')
+    || (uri.endsWith('.tsx') && languageId !== 'typescriptreact')) {
+    let u = Uri.parse(doc.uri)
+    let basename = path.basename(u.fsPath)
+    if (doc.uri.endsWith('.jsx')) {
+      window.showWarningMessage(`Possible wrong filetype "${doc.languageId}" with ${basename}, use javascriptreact as filetype to make tsserver work with react syntax.`)
+    } else {
+      window.showWarningMessage(`Possible wrong filetype "${doc.languageId}" with ${basename}, use typescriptreact as filetype to make tsserver work with react syntax.`)
+    }
+    warningShown = true
+  }
+}
+
 
 class SyncedBuffer {
 
@@ -62,6 +81,7 @@ class SyncedBuffer {
 
   public open(): void {
     let folder = workspace.getWorkspaceFolder(this.document.uri)
+    checkDocument(this.document)
     const args: Proto.OpenRequestArgs = {
       file: this.filepath,
       fileContent: this.document.getText(),
