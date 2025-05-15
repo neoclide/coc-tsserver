@@ -1,3 +1,8 @@
+# 2.3.1
+
+- Added configuration `tsserver.socketPath` for standalone tsserver (not recommended).
+- Fix `tsserver.watchBuild` not work on windows.
+
 # 2.3.0
 
 - Added configuration `tsserver.disabledSchemes`.
