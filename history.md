@@ -1,10 +1,15 @@
+# 2.3.0
+
+- Added configuration `tsserver.disabledSchemes`.
+- Use in memory prefix for none file buffer, avoid server error.
+
 # 2.2.5
 
 - Add configuration `typescript.preferences.preferTypeOnlyAutoImports`.
 
 # 2.2.4
 
-- Improve file select on refactor
+- Improve file select on refactor.
 
 # 2.2.3
 
