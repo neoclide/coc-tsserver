@@ -38,7 +38,7 @@ For yarn2 ( >= v2.0.0-rc.36) user want to use local typescript module:
 
 Almost the same as VSCode.
 
-- Supports javascript & typescript and jsx/tsx.
+- Supports javascript & typescript and jsx/tsx (make sure the buffer filetype is typescriptreact or javascriptreact).
 - Installs typings automatically.
 - Commands to work with tsserver, including:
   - `tsserver.reloadProjects`
@@ -328,6 +328,15 @@ If you find any issues, please [create an
 issue](https://github.com/neoclide/coc-tsserver/issues/new).
 
 ## Q & A
+
+Q: React syntax not recognized by tsserver.
+
+A: Make sure to use `javascriptreact` and `typescriptreact` for buffer filetype.
+  ``` vim
+  autocmd BufNewFile,BufRead *.tsx setlocal filetype=typescriptreact
+  autocmd BufNewFile,BufRead *.jsx setlocal filetype=javascriptreact
+  ```
+  Add those autocmds to your vimrc.
 
 Q: Automatic type acquisition not work.
 
