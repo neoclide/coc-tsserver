@@ -1,9 +1,9 @@
 import { CancellationToken, Disposable, disposeAll, Logger, StatusBarItem, TaskOptions, Uri, window, workspace } from 'coc.nvim'
-import path from 'path'
-import type * as Proto from './protocol'
-import type TsserverService from '../server'
-import { TypeScriptVersion } from './tsServer/versionProvider'
 import fs from 'fs'
+import path from 'path'
+import type TsserverService from '../server'
+import type * as Proto from './protocol'
+import { TypeScriptVersion } from './tsServer/versionProvider'
 import { ServerResponse } from './typescriptService'
 import TypeScriptServiceClient from './typescriptServiceClient'
 
