@@ -26,6 +26,8 @@ import { TypeScriptPluginPathsProvider } from './utils/pluginPathsProvider'
 import Tracer from './utils/tracer'
 import { inferredProjectCompilerOptions, ProjectType } from './utils/tsconfig'
 import { VersionStatus } from './utils/versionStatus'
+export const inMemoryResourcePrefix = '^';
+export const emptyAuthority = 'ts-nul-authority';
 
 export interface IClientServices {
   logDirectoryProvider: ILogDirectoryProvider
@@ -93,6 +95,8 @@ namespace ServerState {
 
   export type State = typeof None | Running | Errored
 }
+
+const noPrefixSchemes = new Set<string>()
 
 export default class TypeScriptServiceClient extends Disposable implements ITypeScriptServiceClient {
   private token: number = 0
@@ -536,7 +540,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
   }
 
   public toPath(uri: string): string {
-    return this.normalizedPath(Uri.parse(uri))
+    return this.toTsFilePath(Uri.parse(uri))
   }
 
   public toOpenedFilePath(uri: string, options: { suppressAlertOnFailure?: boolean } = {}): string | undefined {
@@ -553,23 +557,20 @@ export default class TypeScriptServiceClient extends Disposable implements IType
     if (filepath.includes('zipfile:')) {
       return filepath.replace(/.*zipfile:/, 'zipfile://')
     }
-    if (this._apiVersion.gte(API.v213)) {
-      if (filepath.startsWith(this.inMemoryResourcePrefix + 'untitled:')) {
-        let resource = Uri.parse(filepath)
-        if (this.inMemoryResourcePrefix) {
-          const dirName = path.dirname(resource.path)
-          const fileName = path.basename(resource.path)
-          if (fileName.startsWith(this.inMemoryResourcePrefix)) {
-            resource = resource.with({ path: path.posix.join(dirName, fileName.slice(this.inMemoryResourcePrefix.length)) })
-          }
-        }
-        return resource.toString()
+
+    if (filepath.startsWith(inMemoryResourcePrefix)) {
+      const parts = filepath.match(/^\^\/([^\/]+)\/([^\/]*)\/(.+)$/)
+      if (parts) {
+        const noPrefix = noPrefixSchemes.has(parts[1])
+        let resource = Uri.parse(parts[1] + '://' + (parts[2] === emptyAuthority ? '' : parts[2]) + '/' + parts[3])
+        if (noPrefix) resource = resource.with({ path: resource.path.replace(/^\//, '') })
+        return this.bufferSyncSupport.toResourceUri(resource)
       }
     }
-    return Uri.file(filepath).toString()
+    return this.bufferSyncSupport.toResource(filepath)
   }
 
-  public normalizedPath(resource: Uri): string | undefined {
+  public toTsFilePath(resource: Uri): string | undefined {
     if (this.configuration.disabledSchemes.includes(resource.scheme)) {
       return undefined
     }
@@ -582,43 +583,20 @@ export default class TypeScriptServiceClient extends Disposable implements IType
         return result.replace(new RegExp('\\' + this.pathSeparator, 'g'), '/')
       }
       default: {
-        return this.inMemoryResourcePrefix + resource.toString(true)
+        if (!resource.path.startsWith('/')) {
+          noPrefixSchemes.add(resource.scheme)
+        }
+        return inMemoryResourcePrefix
+          + '/' + resource.scheme
+          + '/' + (resource.authority || emptyAuthority)
+          + (resource.path.startsWith('/') ? resource.path : '/' + resource.path)
+          + (resource.fragment ? '#' + resource.fragment : '')
       }
     }
   }
 
   public getDocument(resource: string): Document | undefined {
-    if (resource.startsWith('untitled:')) {
-      let bufnr = parseInt(resource.split(':', 2)[1], 10)
-      return workspace.getDocument(bufnr)
-    }
     return workspace.getDocument(resource)
-  }
-
-  private get inMemoryResourcePrefix(): string {
-    return this._apiVersion.gte(API.v270) ? '^' : ''
-  }
-
-  public asUrl(filepath: string): Uri {
-    if (this._apiVersion.gte(API.v213)) {
-      if (filepath.startsWith(this.inMemoryResourcePrefix + 'untitled:')) {
-        let resource = Uri.parse(filepath.slice(this.inMemoryResourcePrefix.length))
-        if (this.inMemoryResourcePrefix) {
-          const dirName = path.dirname(resource.path)
-          const fileName = path.basename(resource.path)
-          if (fileName.startsWith(this.inMemoryResourcePrefix)) {
-            resource = resource.with({
-              path: path.posix.join(
-                dirName,
-                fileName.slice(this.inMemoryResourcePrefix.length)
-              )
-            })
-          }
-        }
-        return resource
-      }
-    }
-    return Uri.file(filepath)
   }
 
   public execute(command: keyof TypeScriptRequests, args: any, token: CancellationToken, config?: ExecConfig): Promise<ServerResponse.Response<Proto.Response>> {

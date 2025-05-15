@@ -2,12 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Uri, CancellationToken, Event } from 'coc.nvim'
+import { CancellationToken, Event, Uri } from 'coc.nvim'
+import { PluginManager } from '../utils/plugins'
+import BufferSyncSupport from './features/bufferSyncSupport'
 import * as Proto from './protocol'
 import API from './utils/api'
 import { TypeScriptServiceConfiguration } from './utils/configuration'
-import BufferSyncSupport from './features/bufferSyncSupport'
-import { PluginManager } from '../utils/plugins'
+import Logger from './utils/logger'
 
 export enum ServerType {
   Syntax = 'syntax',
@@ -137,7 +138,7 @@ export interface ITypeScriptServiceClient {
    *
    * Does not try handling case insensitivity.
    */
-  normalizedPath(resource: Uri): string | undefined
+  toTsFilePath(resource: Uri): string | undefined
   /**
    * Map a resource to a normalized path
    *
@@ -168,6 +169,7 @@ export interface ITypeScriptServiceClient {
 
   getWorkspaceRootForResource(resource: Uri): string | undefined
 
+  readonly logger: Logger
   readonly onTsServerStarted: Event<API>
   readonly onProjectLanguageServiceStateChanged: Event<Proto.ProjectLanguageServiceStateEventBody>
   readonly onDidBeginInstallTypings: Event<Proto.BeginInstallTypesEventBody>

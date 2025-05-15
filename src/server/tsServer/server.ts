@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, Event, Emitter, CancellationTokenSource } from 'coc.nvim'
+import { CancellationToken, CancellationTokenSource, Emitter, Event } from 'coc.nvim'
 import type * as Proto from '../protocol'
 import { EventName } from '../protocol.const'
 import { CallbackMap } from '../tsServer/callbackMap'

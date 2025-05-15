@@ -69,7 +69,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
     this.disposables.push(this.client)
     this.client.onDiagnosticsReceived(({ kind, resource, diagnostics }) => {
       this.diagnosticsReceived(kind, resource, diagnostics).catch(e => {
-        console.error(e)
+        this.client.logger.error(`Unexpected error on diagnostic received:`, e)
       })
     }, null, this.disposables)
     this.client.onResendModelsRequested(() => this.populateService(), null, this.disposables)
