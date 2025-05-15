@@ -5,6 +5,7 @@
 
 import * as child_process from 'child_process'
 import { Emitter } from 'coc.nvim'
+import { Socket } from 'net'
 import * as path from 'path'
 import type { Readable } from 'stream'
 import type * as Proto from '../protocol'
@@ -182,6 +183,39 @@ function getTssDebugBrk(): string | undefined {
   return process.env[process.env.remoteName ? 'TSS_REMOTE_DEBUG_BRK' : 'TSS_DEBUG_BRK']
 }
 
+class SocketChildServerProcess extends Disposable implements TsServerProcess {
+  private readonly _reader: Reader<Proto.Response>
+  constructor(
+    private readonly socket: Socket
+  ) {
+    super()
+    this._reader = this._register(new Reader<Proto.Response>(socket))
+  }
+
+  write(serverRequest: Proto.Request): void {
+    this.socket.write(JSON.stringify(serverRequest) + '\r\n', 'utf8')
+  }
+
+  onData(handler: (data: Proto.Response) => void): void {
+    this._reader.onData(handler)
+  }
+
+  onExit(handler: (code: number | null, signal: string | null) => void): void {
+    this.socket.on('close', hadError => {
+      if (hadError) handler(null, null)
+    })
+  }
+
+  onError(handler: (err: Error) => void): void {
+    this.socket.on('error', handler)
+    this._reader.onError(handler)
+  }
+
+  kill(): void {
+    // can't kill
+  }
+}
+
 class IpcChildServerProcess extends Disposable implements TsServerProcess {
   constructor(
     private readonly _process: child_process.ChildProcess,
@@ -250,6 +284,20 @@ export class ServiceProcessFactory implements TsServerProcessFactory {
     kind: TsServerProcessKind,
     configuration: TypeScriptServiceConfiguration,
   ): TsServerProcess {
+    if (configuration.socketPath) {
+      let client = new Socket()
+      let parts = configuration.socketPath.split(':')
+      if (parts.length > 1) {
+        let port = parseInt(parts[1])
+        if (Number.isNaN(port)) throw new Error(`Invalid socketPath ${configuration.socketPath}`)
+        client.connect(port, parts[0])
+      } else {
+        let port = parseInt(parts[0])
+        if (Number.isNaN(port)) throw new Error(`Invalid socketPath ${configuration.socketPath}`)
+        client.connect(port, '127.0.0.1')
+      }
+      return new SocketChildServerProcess(client)
+    }
     let tsServerPath = version.tsServerPath
     const useIpc = version.version?.gte(API.v460)
     const runtimeArgs = [...args]

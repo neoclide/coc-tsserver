@@ -19,6 +19,7 @@ export const enum SyntaxServerConfiguration {
 }
 
 export interface TypeScriptServiceConfiguration {
+  readonly socketPath: string | undefined
   readonly enable: boolean
   readonly useWorkspaceTsdk: boolean
   readonly locale: string | null
@@ -133,6 +134,7 @@ export class ServiceConfigurationProvider implements ServiceConfigurationProvide
     return {
       enable: this.readEnable(configuration),
       locale: this.readLocale(configuration),
+      socketPath: configuration.get('tsserver.socketPath', undefined),
       disabledSchemes: this.readDisabledSchemes(configuration),
       useWorkspaceTsdk: this.readUseWorkspace(configuration),
       globalTsdk: this.readGlobalTsdk(configuration),

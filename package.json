@@ -210,6 +210,15 @@
           "markdownDescription": "Specifies the folder path to the tsserver and `lib*.d.ts` files under a TypeScript install to use for IntelliSense, for example: `./node_modules/typescript/lib`.\n\n- When specified as a user setting, the TypeScript version from `tsserver.tsdk` automatically replaces the built-in TypeScript version.\n- When specified as a workspace setting, the tsserver is used when `tsserver.useLocalTsdk` is true.\nUse command `:CocCommand tsserver.chooseVersion` to choose different typescript version.",
           "scope": "resource"
         },
+        "tsserver.socketPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "markdownDescription": "Socket path used to connect to tsserver, the socket should be opened already (use tools like socat to start server and pipe messages to sdtio of tsserver), when exists, command line arguments related configurations wont' works. Configure the path like \"127.0.0.1:7070\"",
+          "scope": "resource"
+        },
         "tsserver.npm": {
           "type": "string",
           "default": "",

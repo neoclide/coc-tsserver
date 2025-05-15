@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from 'path'
+import { PluginManager } from '../../utils/plugins'
 import { OngoingRequestCancellerFactory } from '../tsServer/cancellation'
 import { ClientCapabilities, ClientCapability, ServerType } from '../typescriptService'
 import API from '../utils/api'
 import { SyntaxServerConfiguration, TsServerLogLevel, TypeScriptServiceConfiguration } from '../utils/configuration'
 import Logger from '../utils/logger'
 import { TypeScriptPluginPathsProvider } from '../utils/pluginPathsProvider'
-import { PluginManager } from '../../utils/plugins'
 import Tracer from '../utils/tracer'
 import { ILogDirectoryProvider } from './logDirectoryProvider'
 import { GetErrRoutingTsServer, ITypeScriptServer, ProcessBasedTsServer, SyntaxRoutingTsServer, TsServerDelegate, TsServerProcessFactory, TsServerProcessKind } from './server'
-import { TypeScriptVersionProvider, TypeScriptVersion } from './versionProvider'
+import { TypeScriptVersion, TypeScriptVersionProvider } from './versionProvider'
 
 const enum CompositeServerType {
   /** Run a single server that handles all commands  */
@@ -93,6 +93,9 @@ export class TypeScriptServerSpawner {
     if (!capabilities.has(ClientCapability.Semantic)) {
       return CompositeServerType.SyntaxOnly
     }
+    if (configuration.socketPath) {
+      return CompositeServerType.Single
+    }
 
     switch (configuration.useSyntaxServer) {
       case SyntaxServerConfiguration.Always:
@@ -114,7 +117,7 @@ export class TypeScriptServerSpawner {
   private shouldUseSeparateDiagnosticsServer(
     configuration: TypeScriptServiceConfiguration,
   ): boolean {
-    return configuration.enableProjectDiagnostics
+    return configuration.enableProjectDiagnostics && configuration.socketPath == null
   }
 
   private spawnTsServer(

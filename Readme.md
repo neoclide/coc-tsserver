@@ -106,6 +106,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 
 - `tsserver.enable`: Enable running of tsserver. Default: `true`
 - `tsserver.tsconfigPath`: Path to tsconfig file for the `tsserver.watchBuild` command. Default: `"tsconfig.json"`
+- `tsserver.socketPath`: Socket path used to connect to tsserver, the socket should be opened already (use tools like socat to start server and pipe messages to sdtio of tsserver), when exists, command line arguments related configurations wont' works. Configure the path like \"127.0.0.1:7070\", Default: `null`.
 - `tsserver.locale`: Sets the locale used to report JavaScript and TypeScript errors. Defaults to use VS Code's locale. Default: `"auto"`
   Valid options: ["auto","de","es","en","fr","it","ja","ko","ru","zh-CN","zh-TW"]
 - `tsserver.useLocalTsdk`: Use tsserver from typescript module in workspace folder, ignore tsserver.tsdk configuration. Default: `false`
