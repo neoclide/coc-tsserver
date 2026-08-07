@@ -12,10 +12,13 @@ jobs:
       matrix:
         editor: [nvim, vim]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
       - name: Install dependencies
         run: npm install
       - name: Install Vim and Neovim
