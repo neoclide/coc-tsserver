@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, ConfigurationChangeEvent, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, disposeAll, ExtensionContext, languages, Range, Uri, workspace } from 'coc.nvim'
+import { ConfigurationChangeEvent, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, DiagnosticTag, Disposable, disposeAll, ExtensionContext, languages, Range, Uri, workspace } from 'coc.nvim'
 import { flatten } from '../utils/arrays'
 import { PluginManager } from '../utils/plugins'
 import { DiagnosticKind } from './features/diagnostics'
@@ -19,6 +19,7 @@ import * as errorCodes from './utils/errorCodes'
 import { DiagnosticLanguage, LanguageDescription } from './utils/languageDescription'
 import * as typeConverters from './utils/typeConverters'
 import TypingsStatus, { AtaProgressReporter } from './utils/typingsStatus'
+import { requestReloadProjects } from './utils/reloadProjects'
 
 // Style check diagnostics that can be reported as warnings
 const styleCheckDiagnostics = new Set([
@@ -178,7 +179,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
 
   public reloadProjects(): void {
     this.client.diagnosticsManager.reInitialize()
-    this.client.execute('reloadProjects', null, CancellationToken.None)
+    requestReloadProjects(this.client)
     this.triggerAllDiagnostics()
   }
 
