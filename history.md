@@ -1,3 +1,12 @@
+# 2.5.0
+
+- Fix unhandled promise rejections when updating imports after a file move and
+  when a diagnostic (`geterr`) request fails.
+- Fix `getClientHost` listener leak on server start timeout and dispose the
+  configuration change listener on deactivate.
+- Fix TypeScript type errors (signature help trigger kind, organize imports
+  preferences, WorkspaceEdit types, timer types) and run `tsc` in CI.
+
 # 2.4.1
 
 - Fix `tsserver.reloadProjects` blocking all subsequent requests: tsserver

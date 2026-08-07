@@ -24,5 +24,7 @@ jobs:
           sudo apt-get install -y vim neovim
       - name: Build extension
         run: npm run build
+      - name: Type check
+        run: npm run lint
       - name: Run integration tests
         run: npx --no-install coc-test --${{ matrix.editor }} 'test/**/*.test.ts'

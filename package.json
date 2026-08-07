@@ -20,6 +20,7 @@
   "scripts": {
     "build": "node esbuild.js",
     "prepare": "npm run build",
+    "lint": "tsc -p tsconfig.json",
     "test": "coc-test 'test/**/*.test.ts'"
   },
   "activationEvents": [
