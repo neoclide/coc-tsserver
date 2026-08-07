@@ -429,6 +429,18 @@
           "default": false,
           "description": "Enable codeLens for implementations"
         },
+        "typescript.implementationsCodeLens.showOnInterfaceMethods": {
+          "type": "boolean",
+          "scope": "window",
+          "default": false,
+          "description": "Show implementations CodeLens on interface methods."
+        },
+        "typescript.implementationsCodeLens.showOnAllClassMethods": {
+          "type": "boolean",
+          "scope": "window",
+          "default": false,
+          "description": "Show implementations CodeLens on all class methods, including those not declared abstract."
+        },
         "typescript.referencesCodeLens.enabled": {
           "type": "boolean",
           "scope": "window",
@@ -532,6 +544,88 @@
           },
           "markdownDescription": "Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.",
           "scope": "resource"
+        },
+        "typescript.preferences.autoImportSpecifierExcludeRegexes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Specify regular expressions for restricting auto imports. Auto imports will be excluded when the import specifier matches the regular expressions. Requires using TypeScript 5.9 or newer in the workspace.",
+          "scope": "resource"
+        },
+        "typescript.preferences.organizeImports": {
+          "type": "object",
+          "markdownDescription": "Controls how `Organize Imports` sorts imports.",
+          "properties": {
+            "caseSensitivity": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "caseInsensitive",
+                "caseSensitive"
+              ],
+              "default": "auto",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Treats all imports as case insensitive.",
+                "Treats all imports as case sensitive."
+              ]
+            },
+            "typeOrder": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "last",
+                "inline",
+                "first"
+              ],
+              "default": "auto",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Sort type-only imports last.",
+                "Sort type-only imports inline.",
+                "Sort type-only imports first."
+              ]
+            },
+            "unicodeCollation": {
+              "type": "string",
+              "enum": [
+                "ordinal",
+                "unicode"
+              ],
+              "default": "ordinal",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Uses Unicode collation."
+              ]
+            },
+            "locale": {
+              "type": "string",
+              "markdownDescription": "Locale used for organizing imports when using unicode collation."
+            },
+            "numericCollation": {
+              "type": "boolean",
+              "markdownDescription": "Compare number sequences numerically when using unicode collation."
+            },
+            "accentCollation": {
+              "type": "boolean",
+              "markdownDescription": "Accent-insensitive compare when using unicode collation."
+            },
+            "caseFirst": {
+              "type": "string",
+              "enum": [
+                "default",
+                "upper",
+                "lower"
+              ],
+              "default": "default",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Uppercase imports first.",
+                "Lowercase imports first."
+              ]
+            }
+          }
         },
         "typescript.preferences.preferTypeOnlyAutoImports": {
           "type": "boolean",
@@ -725,6 +819,12 @@
             "remove"
           ]
         },
+        "typescript.format.indentSwitchCase": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines whether an indent is inserted when a `case` or `default` clause is inside a `switch` statement.",
+          "scope": "resource"
+        },
         "typescript.suggest.includeAutomaticOptionalChainCompletions": {
           "type": "boolean",
           "default": true,
@@ -743,6 +843,12 @@
             "Only search for symbols in the current JavaScript or TypeScript project."
           ],
           "default": "allOpenProjects",
+          "scope": "window"
+        },
+        "typescript.workspaceSymbols.excludeLibrarySymbols": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Exclude symbols from library files (e.g. `node_modules`) when searching for symbols in the workspace.",
           "scope": "window"
         },
         "typescript.autoClosingTags": {
@@ -790,6 +896,18 @@
           "scope": "window",
           "description": "Enable/disable implementations CodeLens. This CodeLens shows the implementers of an interface.",
           "default": false
+        },
+        "javascript.implementationsCodeLens.showOnInterfaceMethods": {
+          "type": "boolean",
+          "scope": "window",
+          "default": false,
+          "description": "Show implementations CodeLens on interface methods."
+        },
+        "javascript.implementationsCodeLens.showOnAllClassMethods": {
+          "type": "boolean",
+          "scope": "window",
+          "default": false,
+          "description": "Show implementations CodeLens on all class methods, including those not declared abstract."
         },
         "javascript.referencesCodeLens.enabled": {
           "type": "boolean",
@@ -878,6 +996,88 @@
           },
           "markdownDescription": "Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.",
           "scope": "resource"
+        },
+        "javascript.preferences.autoImportSpecifierExcludeRegexes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Specify regular expressions for restricting auto imports. Auto imports will be excluded when the import specifier matches the regular expressions. Requires using TypeScript 5.9 or newer in the workspace.",
+          "scope": "resource"
+        },
+        "javascript.preferences.organizeImports": {
+          "type": "object",
+          "markdownDescription": "Controls how `Organize Imports` sorts imports.",
+          "properties": {
+            "caseSensitivity": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "caseInsensitive",
+                "caseSensitive"
+              ],
+              "default": "auto",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Treats all imports as case insensitive.",
+                "Treats all imports as case sensitive."
+              ]
+            },
+            "typeOrder": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "last",
+                "inline",
+                "first"
+              ],
+              "default": "auto",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Sort type-only imports last.",
+                "Sort type-only imports inline.",
+                "Sort type-only imports first."
+              ]
+            },
+            "unicodeCollation": {
+              "type": "string",
+              "enum": [
+                "ordinal",
+                "unicode"
+              ],
+              "default": "ordinal",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Uses Unicode collation."
+              ]
+            },
+            "locale": {
+              "type": "string",
+              "markdownDescription": "Locale used for organizing imports when using unicode collation."
+            },
+            "numericCollation": {
+              "type": "boolean",
+              "markdownDescription": "Compare number sequences numerically when using unicode collation."
+            },
+            "accentCollation": {
+              "type": "boolean",
+              "markdownDescription": "Accent-insensitive compare when using unicode collation."
+            },
+            "caseFirst": {
+              "type": "string",
+              "enum": [
+                "default",
+                "upper",
+                "lower"
+              ],
+              "default": "default",
+              "markdownEnumDescriptions": [
+                "Uses TypeScript defaults.",
+                "Uppercase imports first.",
+                "Lowercase imports first."
+              ]
+            }
+          }
         },
         "javascript.preferences.renameShorthandProperties": {
           "type": "boolean",
@@ -1176,6 +1376,12 @@
             "insert",
             "remove"
           ]
+        },
+        "javascript.format.indentSwitchCase": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines whether an indent is inserted when a `case` or `default` clause is inside a `switch` statement.",
+          "scope": "resource"
         },
         "javascript.preferGoToSourceDefinition": {
           "type": "boolean",

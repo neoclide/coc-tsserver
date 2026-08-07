@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { CancellationToken, CodeLens, Command, Location, Range } from 'vscode-languageserver-protocol'
-import { TextDocument } from 'coc.nvim'
+import { TextDocument, workspace } from 'coc.nvim'
 import * as Proto from '../protocol'
 import * as PConst from '../protocol.const'
 import * as typeConverters from '../utils/typeConverters'
@@ -76,22 +76,51 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
   protected extractSymbol(
     document: TextDocument,
     item: Proto.NavigationTree,
-    _parent: Proto.NavigationTree | null
+    parent: Proto.NavigationTree | null
   ): Range | null {
-    switch (item.kind) {
-      case PConst.Kind.interface:
-        return getSymbolRange(document, item)
+    const lang = document.languageId.startsWith('typescript') ? 'typescript' : 'javascript'
+    const config = workspace.getConfiguration(`${lang}.implementationsCodeLens`, document)
+    const kindModifiers = item.kindModifiers ?? ''
 
-      case PConst.Kind.class:
-      case PConst.Kind.method:
-      case PConst.Kind.memberVariable:
-      case PConst.Kind.memberGetAccessor:
-      case PConst.Kind.memberSetAccessor:
-        if (item.kindModifiers.match(/\babstract\b/g)) {
-          return getSymbolRange(document, item)
-        }
-        break
+    // Always show on interfaces
+    if (item.kind === PConst.Kind.interface) {
+      return getSymbolRange(document, item)
     }
+
+    // Always show on abstract classes/properties
+    if (
+      (item.kind === PConst.Kind.class ||
+        item.kind === PConst.Kind.method ||
+        item.kind === PConst.Kind.memberVariable ||
+        item.kind === PConst.Kind.memberGetAccessor ||
+        item.kind === PConst.Kind.memberSetAccessor) &&
+      /\babstract\b/.test(kindModifiers)
+    ) {
+      return getSymbolRange(document, item)
+    }
+
+    // If configured, show on interface methods
+    if (
+      item.kind === PConst.Kind.method &&
+      parent?.kind === PConst.Kind.interface &&
+      config.get<boolean>('showOnInterfaceMethods', false)
+    ) {
+      return getSymbolRange(document, item)
+    }
+
+    // If configured, show on all class methods
+    if (
+      item.kind === PConst.Kind.method &&
+      parent?.kind === PConst.Kind.class &&
+      config.get<boolean>('showOnAllClassMethods', false)
+    ) {
+      // But not private ones as these can never be overridden
+      if (/\bprivate\b/.test(kindModifiers)) {
+        return null
+      }
+      return getSymbolRange(document, item)
+    }
+
     return null
   }
 }

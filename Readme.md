@@ -147,6 +147,8 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `typescript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. Default: `"prompt"`
   Valid options: ["prompt","always","never"]
 - `typescript.implementationsCodeLens.enabled`: Enable codeLens for implementations Default: `false`
+- `typescript.implementationsCodeLens.showOnInterfaceMethods`: Show implementations CodeLens on interface methods. Default: `false`
+- `typescript.implementationsCodeLens.showOnAllClassMethods`: Show implementations CodeLens on all class methods. Default: `false`
 - `typescript.referencesCodeLens.enabled`: Enable codeLens for references Default: `false`
 - `typescript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in typescript files. Default: `false`
 - `typescript.preferences.importModuleSpecifier`: Preferred path style for auto imports. Default: `"shortest"`
@@ -161,6 +163,8 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
   Valid options: ["auto","single","double"]
 - `typescript.preferences.useAliasesForRenames`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
 - `typescript.preferences.autoImportFileExcludePatterns`: Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.
+- `typescript.preferences.autoImportSpecifierExcludeRegexes`: Specify regular expressions for restricting auto imports. Requires using TypeScript 5.9+ in the workspace.
+- `typescript.preferences.organizeImports`: Controls how Organize Imports sorts imports (`unicodeCollation`, `caseSensitivity`, `typeOrder`, `caseFirst`, `accentCollation`, `locale`, `numericCollation`).
 - `typescript.preferences.preferTypeOnlyAutoImports`: Include the `type` keyword in auto-imports whenever possible. Requires using TypeScript 5.3+ in the workspace.
 - `typescript.preferences.renameShorthandProperties`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
 - `typescript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for TypeScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace. Default: `true`
@@ -192,9 +196,11 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `typescript.format.placeOpenBraceOnNewLineForControlBlocks`: Defines whether an open brace is put onto a new line for control blocks or not. Default: `false`
 - `typescript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. Default: `"ignore"`
   Valid options: ["ignore","insert","remove"]
+- `typescript.format.indentSwitchCase`: Defines whether an indent is inserted when a `case` or `default` clause is inside a `switch` statement. Default: `true`
 - `typescript.suggest.includeAutomaticOptionalChainCompletions`: Enable/disable showing completions on potentially undefined values that insert an optional chain call. Requires TS 3.7+ and strict null checks to be enabled. Default: `true`
 - `typescript.workspaceSymbols.scope`: Controls which files are searched by [go to symbol in workspace](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name). Default: `"allOpenProjects"`
   Valid options: ["allOpenProjects","currentProject"]
+- `typescript.workspaceSymbols.excludeLibrarySymbols`: Exclude symbols from library files (e.g. `node_modules`) when searching for symbols in the workspace. Default: `true`
 - `typescript.autoClosingTags`: Enable/disable automatic closing of JSX tags. Default: `true`
 - `typescript.preferGoToSourceDefinition`: Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace. Default: `false`
 - `javascript.showUnused`: Show unused variable hint. Default: `true`
@@ -202,6 +208,8 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `javascript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. Default: `"prompt"`
   Valid options: ["prompt","always","never"]
 - `javascript.implementationsCodeLens.enabled`: Enable/disable implementations CodeLens. This CodeLens shows the implementers of an interface. Default: `false`
+- `javascript.implementationsCodeLens.showOnInterfaceMethods`: Show implementations CodeLens on interface methods. Default: `false`
+- `javascript.implementationsCodeLens.showOnAllClassMethods`: Show implementations CodeLens on all class methods. Default: `false`
 - `javascript.referencesCodeLens.enabled`: Enable/disable references CodeLens in JavaScript files. Default: `false`
 - `javascript.referencesCodeLens.showOnAllFunctions`: Enable/disable references CodeLens on all functions in JavaScript files. Default: `false`
 - `javascript.preferences.importModuleSpecifier`: Preferred path style for auto imports. Default: `"shortest"`
@@ -214,6 +222,8 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
   Valid options: ["auto","single","double"]
 - `javascript.preferences.useAliasesForRenames`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
 - `javascript.preferences.autoImportFileExcludePatterns`: Specify glob patterns of files to exclude from auto imports. Requires using TypeScript 4.8 or newer in the workspace.
+- `javascript.preferences.autoImportSpecifierExcludeRegexes`: Specify regular expressions for restricting auto imports. Requires using TypeScript 5.9+ in the workspace.
+- `javascript.preferences.organizeImports`: Controls how Organize Imports sorts imports (`unicodeCollation`, `caseSensitivity`, `typeOrder`, `caseFirst`, `accentCollation`, `locale`, `numericCollation`).
 - `javascript.preferences.renameShorthandProperties`: Enable/disable introducing aliases for object shorthand properties during renames. Requires using TypeScript 3.4 or newer in the workspace. Default: `true`
 - `javascript.validate.enable`: Enable/disable JavaScript validation. Default: `true`
 - `javascript.suggestionActions.enabled`: Enable/disable suggestion diagnostics for JavaScript files in the editor. Requires using TypeScript 2.8 or newer in the workspace. Default: `true`
@@ -265,6 +275,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `javascript.preferGoToSourceDefinition`: Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace. Default: `false`
 - `javascript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. Default: `"ignore"`
   Valid options: ["ignore","insert","remove"]
+- `javascript.format.indentSwitchCase`: Defines whether an indent is inserted when a `case` or `default` clause is inside a `switch` statement. Default: `true`
 - `javascript.suggest.completeJSDocs`: Enable/disable suggestion to complete JSDoc comments. Default: `true`
 - `typescript.suggest.completeJSDocs`: Enable/disable suggestion to complete JSDoc comments. Default: `true`
 - `javascript.suggest.objectLiteralMethodSnippets.enabled`: Enable/disable snippet completions for methods in object literals. Requires using TypeScript 4.7+ in the workspace Default: `true`

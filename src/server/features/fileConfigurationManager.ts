@@ -164,7 +164,8 @@ export default class FileConfigurationManager {
       insertSpaceAfterTypeAssertion: config.get<boolean>('insertSpaceAfterTypeAssertion'),
       placeOpenBraceOnNewLineForFunctions: config.get<boolean>('placeOpenBraceOnNewLineForFunctions'),
       placeOpenBraceOnNewLineForControlBlocks: config.get<boolean>('placeOpenBraceOnNewLineForControlBlocks'),
-      semicolons: config.get<Proto.SemicolonPreference>('semicolons', undefined)
+      semicolons: config.get<Proto.SemicolonPreference>('semicolons', undefined),
+      indentSwitchCase: config.get<boolean>('indentSwitchCase', true)
     }
   }
 
@@ -193,13 +194,42 @@ export default class FileConfigurationManager {
       includeCompletionsWithClassMemberSnippets: config.get<boolean>('suggest.classMemberSnippets.enabled', true),
       includeCompletionsWithObjectLiteralMethodSnippets: config.get<boolean>('suggest.objectLiteralMethodSnippets.enabled', true),
       autoImportFileExcludePatterns: this.getAutoImportFileExcludePatternsPreference(preferencesConfig, workspace.getWorkspaceFolder(uri)?.uri),
+      autoImportSpecifierExcludeRegexes: this.getAutoImportSpecifierExcludeRegexesPreference(preferencesConfig),
       preferTypeOnlyAutoImports: preferencesConfig.get<boolean>('preferTypeOnlyAutoImports', false),
       useLabelDetailsInCompletionEntries: true,
       allowIncompleteCompletions: true,
       displayPartsForJSDoc: true,
       ...getInlayHintsPreferences(config),
+      ...this.getOrganizeImportsPreferences(preferencesConfig),
     } as any
     return preferences
+  }
+
+  private getOrganizeImportsPreferences(config: WorkspaceConfiguration): Proto.UserPreferences {
+    const collation = config.get<'ordinal' | 'unicode'>('organizeImports.unicodeCollation', 'ordinal')
+    const caseSensitivity = config.get<'auto' | 'caseInsensitive' | 'caseSensitive'>('organizeImports.caseSensitivity', 'auto')
+    const typeOrder = config.get<'auto' | 'last' | 'inline' | 'first'>('organizeImports.typeOrder', 'auto')
+    const prefs: Proto.UserPreferences = {
+      organizeImportsTypeOrder: typeOrder === 'auto' ? undefined : typeOrder,
+      organizeImportsIgnoreCase: caseSensitivity === 'caseInsensitive'
+        ? true
+        : caseSensitivity === 'caseSensitive'
+          ? false
+          : 'auto',
+      organizeImportsCollation: collation,
+    }
+    if (collation === 'unicode') {
+      const caseFirst = config.get<'default' | 'upper' | 'lower'>('organizeImports.caseFirst', 'default')
+      prefs.organizeImportsCaseFirst = caseSensitivity === 'caseInsensitive'
+        ? undefined
+        : caseFirst === 'default'
+          ? undefined
+          : caseFirst
+      prefs.organizeImportsAccentCollation = config.get<boolean>('organizeImports.accentCollation', undefined)
+      prefs.organizeImportsLocale = config.get<string>('organizeImports.locale', undefined)
+      prefs.organizeImportsNumericCollation = config.get<boolean>('organizeImports.numericCollation', undefined)
+    }
+    return prefs
   }
 
   private getQuoteStyle(config: WorkspaceConfiguration): 'auto' | 'double' | 'single' {
@@ -219,6 +249,11 @@ export default class FileConfigurationManager {
           isRelative ? path.join(folder, p) :
             '/**/' + slashNormalized
     })
+  }
+
+  private getAutoImportSpecifierExcludeRegexesPreference(config: WorkspaceConfiguration): string[] | undefined {
+    const regexes = config.get<string[]>('autoImportSpecifierExcludeRegexes')
+    return Array.isArray(regexes) && regexes.length ? regexes : undefined
   }
 
   public dispose(): void {

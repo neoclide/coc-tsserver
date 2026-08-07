@@ -35,6 +35,7 @@ export interface TypeScriptServiceConfiguration {
   readonly maxTsServerMemory: number
   readonly watchOptions: Proto.WatchOptions | undefined
   readonly includePackageJsonAutoImports: 'auto' | 'on' | 'off' | undefined
+  readonly workspaceSymbolsExcludeLibrarySymbols: boolean
   readonly enableTsServerTracing: boolean
   readonly disabledSchemes: readonly string[]
 }
@@ -149,8 +150,13 @@ export class ServiceConfigurationProvider implements ServiceConfigurationProvide
       maxTsServerMemory: this.readMaxTsServerMemory(configuration),
       watchOptions: this.readWatchOptions(configuration),
       includePackageJsonAutoImports: this.readIncludePackageJsonAutoImports(configuration),
+      workspaceSymbolsExcludeLibrarySymbols: this.readWorkspaceSymbolsExcludeLibrarySymbols(configuration),
       enableTsServerTracing: this.readEnableTsServerTracing(configuration),
     }
+  }
+
+  protected readWorkspaceSymbolsExcludeLibrarySymbols(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get('typescript.workspaceSymbols.excludeLibrarySymbols', true)
   }
 
   protected readGlobalTsdk(configuration: WorkspaceConfiguration): string | null {

@@ -1,0 +1,104 @@
+import assert from 'node:assert/strict'
+import { afterEach, beforeEach, describe, it } from 'node:test'
+import { workspace } from 'coc.nvim'
+import FileConfigurationManager from '../src/server/features/fileConfigurationManager.ts'
+
+function createManager(): FileConfigurationManager {
+  const client = {
+    apiVersion: { gte: () => true, lt: () => false },
+    toPath: (uri: string) => uri,
+    execute: async () => ({ type: 'response' }),
+  } as any
+  return new FileConfigurationManager(client)
+}
+
+function getPreferences(manager: FileConfigurationManager, language: string) {
+  const doc = {
+    languageId: language,
+    uri: 'file:///test.' + (language === 'typescript' ? 'ts' : 'js'),
+  } as any
+  return manager.getPreferences(language, doc)
+}
+
+describe('tsserver preferences', () => {
+  beforeEach(async () => {
+    await workspace.nvim.command('enew!')
+  })
+
+  afterEach(async () => {
+    await workspace.getConfiguration('typescript.preferences').update('autoImportSpecifierExcludeRegexes', undefined, true)
+    await workspace.getConfiguration('javascript.preferences').update('autoImportSpecifierExcludeRegexes', undefined, true)
+    await workspace.getConfiguration('typescript.preferences').update('organizeImports', undefined, true)
+    await workspace.getConfiguration('javascript.preferences').update('organizeImports', undefined, true)
+  })
+
+  it('leaves autoImportSpecifierExcludeRegexes undefined by default', async () => {
+    const manager = createManager()
+    assert.equal(getPreferences(manager, 'typescript').autoImportSpecifierExcludeRegexes, undefined)
+    assert.equal(getPreferences(manager, 'javascript').autoImportSpecifierExcludeRegexes, undefined)
+  })
+
+  it('passes typescript.preferences.autoImportSpecifierExcludeRegexes to tsserver', async () => {
+    await workspace.getConfiguration('typescript.preferences').update('autoImportSpecifierExcludeRegexes', ['^lodash', '/foo/'], true)
+    const manager = createManager()
+    assert.deepEqual(getPreferences(manager, 'typescript').autoImportSpecifierExcludeRegexes, ['^lodash', '/foo/'])
+  })
+
+  it('passes javascript.preferences.autoImportSpecifierExcludeRegexes to tsserver', async () => {
+    await workspace.getConfiguration('javascript.preferences').update('autoImportSpecifierExcludeRegexes', ['^moment'], true)
+    const manager = createManager()
+    assert.deepEqual(getPreferences(manager, 'javascript').autoImportSpecifierExcludeRegexes, ['^moment'])
+  })
+
+  it('uses default organize imports preferences', async () => {
+    const manager = createManager()
+    const prefs = getPreferences(manager, 'typescript')
+    assert.equal(prefs.organizeImportsCollation, 'ordinal')
+    assert.equal(prefs.organizeImportsIgnoreCase, 'auto')
+    assert.equal(prefs.organizeImportsTypeOrder, undefined)
+    assert.equal(prefs.organizeImportsCaseFirst, undefined)
+    assert.equal(prefs.organizeImportsLocale, undefined)
+  })
+
+  it('passes unicode organize imports preferences when unicodeCollation is enabled', async () => {
+    await workspace.getConfiguration('typescript.preferences').update('organizeImports', {
+      unicodeCollation: 'unicode',
+      caseFirst: 'upper',
+      locale: 'en-US',
+      numericCollation: true,
+      accentCollation: false,
+      typeOrder: 'first',
+    }, true)
+    const manager = createManager()
+    const prefs = getPreferences(manager, 'typescript')
+    assert.equal(prefs.organizeImportsCollation, 'unicode')
+    assert.equal(prefs.organizeImportsCaseFirst, 'upper')
+    assert.equal(prefs.organizeImportsLocale, 'en-US')
+    assert.equal(prefs.organizeImportsNumericCollation, true)
+    assert.equal(prefs.organizeImportsAccentCollation, false)
+    assert.equal(prefs.organizeImportsTypeOrder, 'first')
+  })
+
+  it('omits caseFirst when caseSensitivity is caseInsensitive', async () => {
+    await workspace.getConfiguration('typescript.preferences').update('organizeImports', {
+      unicodeCollation: 'unicode',
+      caseSensitivity: 'caseInsensitive',
+      caseFirst: 'lower',
+    }, true)
+    const manager = createManager()
+    const prefs = getPreferences(manager, 'typescript')
+    assert.equal(prefs.organizeImportsIgnoreCase, true)
+    assert.equal(prefs.organizeImportsCaseFirst, undefined)
+  })
+
+  it('applies organize imports preferences to javascript documents', async () => {
+    await workspace.getConfiguration('javascript.preferences').update('organizeImports', {
+      caseSensitivity: 'caseSensitive',
+      typeOrder: 'last',
+    }, true)
+    const manager = createManager()
+    const prefs = getPreferences(manager, 'javascript')
+    assert.equal(prefs.organizeImportsIgnoreCase, false)
+    assert.equal(prefs.organizeImportsTypeOrder, 'last')
+  })
+})
