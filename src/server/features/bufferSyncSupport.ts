@@ -328,13 +328,14 @@ class GetErrRequest {
         ? client.executeAsync('geterrForProject', { delay: 0, file: allFiles[0] }, this._token.token)
         : client.executeAsync('geterr', { delay: 0, files: allFiles }, this._token.token)
 
-      request.finally(() => {
+      const done = (): void => {
         if (this._done) {
           return
         }
         this._done = true
         onDone()
-      })
+      }
+      request.then(done, done)
     }
   }
 

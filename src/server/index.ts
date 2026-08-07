@@ -24,7 +24,7 @@ export default class TsserverService implements IServiceProvider {
     this.descriptions = standardLanguageDescriptions.filter(o => {
       return true
     })
-    workspace.onDidChangeConfiguration(e => {
+    this.disposables.push(workspace.onDidChangeConfiguration(e => {
       if (e.affectsConfiguration('tsserver')) {
         const config = workspace.getConfiguration('tsserver')
         let enable = this.enable
@@ -37,7 +37,7 @@ export default class TsserverService implements IServiceProvider {
           }
         }
       }
-    })
+    }))
     this.selector = this.descriptions.reduce((arr, c) => {
       return arr.concat(c.languageIds)
     }, [])
@@ -123,14 +123,17 @@ export default class TsserverService implements IServiceProvider {
     if (this.state == ServiceStat.Running) return Promise.resolve(this.clientHost)
     this.start()
     return new Promise((resolve, reject) => {
-      let timer = setTimeout(() => {
-        reject(new Error(`Server not started after 5s`))
-      }, 5000)
-      let disposable = this.onServiceReady(() => {
-        clearTimeout(timer)
-        disposable.dispose()
+      let disposable: Disposable | undefined
+      let timer: ReturnType<typeof setTimeout> | undefined
+      disposable = this.onServiceReady(() => {
+        if (timer) clearTimeout(timer)
+        disposable?.dispose()
         resolve(this.clientHost)
       })
+      timer = setTimeout(() => {
+        disposable?.dispose()
+        reject(new Error(`Server not started after 5s`))
+      }, 5000)
     })
   }
 

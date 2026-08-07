@@ -79,9 +79,11 @@ export default class UpdateImportsOnFileRenameHandler {
       this._pendingRenames.add({ oldUri, newUri, newFilePath, oldFilePath, jsTsFileThatIsBeingMoved })
 
       this._delayer.trigger(() => {
-        window.withProgress({
+        return window.withProgress({
           title: 'Checking for update of JS/TS imports'
         }, () => this.flushRenames())
+      }).catch(err => {
+        this.client.logger.error('Error when updating imports after file move:', err)
       })
     })
   }

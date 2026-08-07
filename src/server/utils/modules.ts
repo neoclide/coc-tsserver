@@ -1,17 +1,19 @@
-import { exec } from 'child_process'
+import { exec, ChildProcess } from 'child_process'
 import { Uri, window, workspace } from 'coc.nvim'
 import fs from 'fs'
 import path from 'path'
 
 export function runCommand(cmd: string, cwd: string, timeout?: number): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    let timer: NodeJS.Timer
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let cp: ChildProcess
     if (timeout) {
       timer = setTimeout(() => {
+        cp.kill('SIGKILL')
         reject(new Error(`timeout after ${timeout}s`))
       }, timeout * 1000)
     }
-    exec(cmd, { cwd }, (err, stdout) => {
+    cp = exec(cmd, { cwd }, (err, stdout) => {
       if (timer) clearTimeout(timer)
       if (err) {
         reject(new Error(`exited with ${err.code}`))
