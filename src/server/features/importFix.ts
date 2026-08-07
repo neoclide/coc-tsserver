@@ -1,6 +1,6 @@
 import { CodeActionProvider, workspace } from 'coc.nvim'
 import BufferSyncSupport from './bufferSyncSupport'
-import { Range, CodeActionContext, CancellationToken, CodeAction } from 'vscode-languageserver-protocol'
+import { Range, CodeActionContext, CancellationToken, CodeAction } from 'coc.nvim'
 import { TextDocument } from 'coc.nvim'
 import { nodeModules } from '../utils/helper'
 import { WorkspaceEdit, Command, TextEdit } from 'vscode-languageserver-types'

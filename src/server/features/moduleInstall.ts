@@ -1,5 +1,4 @@
-import { CodeActionProvider, commands, TextDocument, Uri } from 'coc.nvim'
-import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Range } from 'vscode-languageserver-protocol'
+import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, CodeActionProvider, commands, Range, TextDocument, Uri } from 'coc.nvim'
 import { installModules } from '../utils/modules'
 
 export default class InstallModuleProvider implements CodeActionProvider {

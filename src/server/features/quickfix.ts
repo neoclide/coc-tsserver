@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CodeActionProvider, TextDocument, workspace } from 'coc.nvim'
-import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, Diagnostic, Range } from 'vscode-languageserver-protocol'
+import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, CodeActionProvider, Diagnostic, Range, TextDocument, workspace } from 'coc.nvim'
 import { Command, registCommand } from '../commands'
 import * as Proto from '../protocol'
 import { ITypeScriptServiceClient } from '../typescriptService'

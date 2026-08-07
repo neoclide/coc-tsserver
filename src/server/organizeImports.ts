@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, CodeActionContext, CodeActionKind, CodeActionProvider, commands, Disposable, disposeAll, Range, TextDocument, window, workspace } from 'coc.nvim'
-import { CodeAction } from 'vscode-languageserver-protocol'
+import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, CodeActionProvider, commands, Disposable, disposeAll, Range, TextDocument, window, workspace } from 'coc.nvim'
 import { Command } from './commands'
 import FileConfigurationManager from './features/fileConfigurationManager'
 import Proto from './protocol'
