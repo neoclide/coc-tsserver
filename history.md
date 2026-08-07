@@ -1,3 +1,12 @@
+# 2.4.1
+
+- Fix `tsserver.reloadProjects` blocking all subsequent requests: tsserver
+  never sends a response for `reloadProjects`, so coc-tsserver no longer waits
+  for one.
+- Added configuration `typescript.preferences.importModuleSpecifier` and
+  `javascript.preferences.importModuleSpecifier` to the schema, allowing
+  `non-relative`/`project-relative` auto imports that follow `paths` mappings.
+
 # 2.4.0
 
 - Sync upstream commits from vscode typescript-language-features, see `migrate.md`.
