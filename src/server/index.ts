@@ -86,6 +86,30 @@ export default class TsserverService implements IServiceProvider {
         this.restart()
       }
     })
+    // Bridge command for plugins that need to communicate with tsserver (e.g. Volar)
+    registCommand({
+      id: 'typescript.tsserverRequest',
+      execute: async (command: string, args: any, options?: any): Promise<{ body: any } | undefined> => {
+        const host = await this.getClientHost()
+        const client = (host as any).serviceClient as any
+        const serverState = client.serverState
+        if (!serverState || serverState.type !== 1) {
+          return undefined
+        }
+        const results = serverState.server.executeImpl(command, args, {
+          isAsync: options?.isAsync ?? false,
+          token: undefined,
+          expectsResult: true,
+          lowPriority: options?.lowPriority ?? false,
+        })
+        if (!results || !results[0]) return undefined
+        const response = await results[0]
+        if (!response || response.type === 'noContent' || response.type === 'cancelled') {
+          return undefined
+        }
+        return { body: (response as any).body }
+      }
+    })
   }
 
   public get config(): WorkspaceConfiguration {

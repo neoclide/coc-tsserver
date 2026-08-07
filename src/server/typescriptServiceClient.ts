@@ -457,12 +457,30 @@ export default class TypeScriptServiceClient extends Disposable implements IType
     const watchOptions = this.apiVersion.gte(API.v380)
       ? this.configuration.watchOptions
       : undefined
+    // Resolve node_modules path for each contributed plugin
+    const pluginPaths: string[] = []
+    const globalPlugins: string[] = []
+    for (const plugin of this.pluginManager.plugins) {
+      globalPlugins.push(plugin.name)
+      try {
+        const pkgPath = require.resolve(plugin.name + '/package.json')
+        const nmIdx = pkgPath.lastIndexOf(path.sep + 'node_modules' + path.sep)
+        if (nmIdx !== -1) {
+          const dir = pkgPath.slice(0, nmIdx)
+          if (!pluginPaths.includes(dir)) {
+            pluginPaths.push(dir)
+          }
+        }
+      } catch {}
+    }
     const configureOptions: Proto.ConfigureRequestArguments = {
       hostInfo: 'coc-nvim',
       preferences: {
         providePrefixAndSuffixTextForRename: true,
         allowRenameOfImportPath: true,
-        includePackageJsonAutoImports: this._configuration.includePackageJsonAutoImports
+        includePackageJsonAutoImports: this._configuration.includePackageJsonAutoImports,
+        pluginPaths,
+        globalPlugins,
       },
       watchOptions
     }
