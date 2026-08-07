@@ -1,3 +1,19 @@
+# Unreleased
+
+- Sync upstream commits from vscode typescript-language-features, see `migrate.md`.
+- Added configuration `tsserver.implicitProjectConfig.strict` for implicit project.
+- Default of `tsserver.implicitProjectConfig.target` changed to `ES2024`, support
+  `ES2023` and `ES2024`.
+- `tsserver.log` supports `requestTime` log level.
+- Added configuration `typescript.hover.maximumLength` and
+  `javascript.hover.maximumLength`.
+- Fix signature help active overload not updating when arguments narrow the
+  overload set.
+- Fix user preferences not sent to tsserver when no visible editor.
+- Fix stale tsserver events from old server process being dispatched.
+- Implicit project uses `react-jsx` jsx transform and explicit compiler option
+  defaults.
+
 # 2.3.1
 
 - Added configuration `tsserver.socketPath` for standalone tsserver (not recommended).
