@@ -1,3 +1,10 @@
+<p align="center">
+  <img src="images/icon.png" width="120" alt="coc-tsserver" />
+</p>
+<p align="center">
+  <a href="https://github.com/neoclide/coc-tsserver/actions"><img alt="Actions" src="https://img.shields.io/github/actions/workflow/status/neoclide/coc-tsserver/test.yml?style=flat-square&branch=master"></a>
+</p>
+
 # coc-tsserver
 
 Tsserver language server extension for [coc.nvim](https://github.com/neoclide/coc.nvim).

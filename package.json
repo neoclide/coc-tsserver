@@ -18,7 +18,9 @@
     "javascript"
   ],
   "scripts": {
-    "prepare": "node esbuild.js"
+    "build": "node esbuild.js",
+    "prepare": "npm run build",
+    "test": "coc-test 'test/**/*.test.ts'"
   },
   "activationEvents": [
     "onLanguage:javascript",
@@ -1226,10 +1228,14 @@
       }
     ]
   },
+  "coc-test": {
+    "user-settings": {}
+  },
   "author": "chemzqm@gmail.com",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.19.39",
+    "coc-test": "^0.1.2",
     "coc.nvim": "^0.0.83-next.25",
     "esbuild": "^0.25.0",
     "semver": "^7.3.7",

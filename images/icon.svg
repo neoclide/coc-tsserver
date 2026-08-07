@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="coc-tsserver">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4a94dd"/>
+      <stop offset="1" stop-color="#2b62a5"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#background)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="25" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+  <text x="64" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="700" fill="#ffffff">TS</text>
+  <rect x="43" y="96" width="42" height="5" rx="2.5" fill="#7ce08a"/>
+</svg>
