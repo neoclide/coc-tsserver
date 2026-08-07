@@ -21,7 +21,7 @@ export function runCommand(cmd: string, opts: ExecOptions = {}, timeout?: number
   }
   opts.maxBuffer = 500 * 1024
   return new Promise<string>((resolve, reject) => {
-    let timer: NodeJS.Timer
+    let timer: ReturnType<typeof setTimeout> | undefined
     let cp: ChildProcess
     if (timeout) {
       timer = setTimeout(() => {

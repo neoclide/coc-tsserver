@@ -42,7 +42,7 @@ export default class TypeScriptServiceClientHost implements Disposable {
   private reportStyleCheckAsWarnings = true
 
   constructor(descriptions: LanguageDescription[], pluginManager: PluginManager, tscPath: string | null, context: ExtensionContext) {
-    let timer: NodeJS.Timer
+    let timer: ReturnType<typeof setTimeout> | undefined
     const handleProjectChange = () => {
       if (timer) clearTimeout(timer)
       timer = setTimeout(() => {

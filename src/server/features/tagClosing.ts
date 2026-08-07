@@ -16,7 +16,7 @@ export default class TagClosing implements Disposable {
 
   private _disposables: Disposable[] = []
   private _disposed = false
-  private _timeout: NodeJS.Timer | undefined = undefined
+  private _timeout: ReturnType<typeof setTimeout> | undefined = undefined
   private _cancel: CancellationTokenSource | undefined = undefined
   private _enable = true
 

@@ -9,7 +9,7 @@ import { ITypeScriptServiceClient } from '../typescriptService'
 const typingsInstallTimeout = 30 * 1000
 
 export default class TypingsStatus implements Disposable {
-  private _acquiringTypings: { [eventId: string]: NodeJS.Timer } = Object.create(
+  private _acquiringTypings: { [eventId: string]: ReturnType<typeof setTimeout> } = Object.create(
     {}
   )
   private _client: ITypeScriptServiceClient

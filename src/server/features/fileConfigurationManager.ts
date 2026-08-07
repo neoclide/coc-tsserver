@@ -230,14 +230,17 @@ export default class FileConfigurationManager {
     }
     if (collation === 'unicode') {
       const caseFirst = config.get<'default' | 'upper' | 'lower'>('organizeImports.caseFirst', 'default')
-      prefs.organizeImportsCaseFirst = caseSensitivity === 'caseInsensitive'
-        ? undefined
-        : caseFirst === 'default'
+      return {
+        ...prefs,
+        organizeImportsCaseFirst: caseSensitivity === 'caseInsensitive'
           ? undefined
-          : caseFirst
-      prefs.organizeImportsAccentCollation = config.get<boolean>('organizeImports.accentCollation', undefined)
-      prefs.organizeImportsLocale = config.get<string>('organizeImports.locale', undefined)
-      prefs.organizeImportsNumericCollation = config.get<boolean>('organizeImports.numericCollation', undefined)
+          : caseFirst === 'default'
+            ? undefined
+            : caseFirst,
+        organizeImportsAccentCollation: config.get<boolean>('organizeImports.accentCollation', undefined),
+        organizeImportsLocale: config.get<string>('organizeImports.locale', undefined),
+        organizeImportsNumericCollation: config.get<boolean>('organizeImports.numericCollation', undefined),
+      }
     }
     return prefs
   }

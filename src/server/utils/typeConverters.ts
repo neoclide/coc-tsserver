@@ -95,6 +95,8 @@ export namespace TextEdit {
 }
 
 export namespace WorkspaceEdit {
+  type WorkspaceEditChanges = { changes?: { [uri: string]: language.TextEdit[] } }
+
   export function fromFileCodeEdits(
     client: ITypeScriptServiceClient,
     edits: Iterable<Proto.FileCodeEdits>
@@ -116,10 +118,10 @@ export namespace WorkspaceEdit {
   }
 
   export function withFileCodeEdits(
-    workspaceEdit: language.WorkspaceEdit,
+    workspaceEdit: WorkspaceEditChanges,
     client: ITypeScriptServiceClient,
     edits: Iterable<Proto.FileCodeEdits>
-  ): language.WorkspaceEdit {
+  ): WorkspaceEditChanges {
     let changes: { [uri: string]: language.TextEdit[] } = workspaceEdit.changes ?? {}
     for (const edit of edits) {
       const resource = client.toResource(edit.fileName)

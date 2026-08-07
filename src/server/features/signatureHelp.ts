@@ -86,7 +86,7 @@ export default class TypeScriptSignatureHelpProvider implements SignatureHelpPro
   }
 }
 
-function toTsTriggerReason(context: SignatureHelpContext): Proto.SignatureHelpTriggerReason {
+export function toTsTriggerReason(context: SignatureHelpContext): Proto.SignatureHelpTriggerReason {
   switch (context.triggerKind) {
     case SignatureHelpTriggerKind.TriggerCharacter:
       if (context.triggerCharacter) {
@@ -102,7 +102,7 @@ function toTsTriggerReason(context: SignatureHelpContext): Proto.SignatureHelpTr
     case SignatureHelpTriggerKind.ContentChange:
       return context.isRetrigger ? { kind: 'retrigger' } : { kind: 'invoked' }
 
-    case SignatureHelpTriggerKind.Invoke:
+    case SignatureHelpTriggerKind.Invoked:
     default:
       return { kind: 'invoked' }
   }
