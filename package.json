@@ -399,6 +399,12 @@
           "scope": "resource",
           "description": "Show deprecated variable hint."
         },
+        "typescript.showConvertToAsync": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Enable/Disable TS80006 suggestion (convert to async) in diagnostics"
+        },
         "typescript.updateImportsOnFileMove.enabled": {
           "type": "string",
           "enum": [

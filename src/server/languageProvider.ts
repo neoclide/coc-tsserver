@@ -279,6 +279,7 @@ export default class LanguageProvider {
     const config = workspace.getConfiguration(this.id, resource)
     const reportUnnecessary = config.get<boolean>('showUnused', true)
     const reportDeprecated = config.get<boolean>('showDeprecated', true)
+    const reportConvertToAsyncFunction = config.get<boolean>('showConvertToAsync', true)
     this.client.diagnosticsManager.updateDiagnostics(resource, this._diagnosticLanguage, diagnosticsKind, diagnostics.filter(diag => {
       if (!reportUnnecessary) {
         if (diag.reportUnnecessary && diag.severity === DiagnosticSeverity.Information) {
@@ -288,6 +289,11 @@ export default class LanguageProvider {
       if (!reportDeprecated) {
         if (diag.reportDeprecated && diag.severity === DiagnosticSeverity.Hint) {
           return false
+        }
+      }
+      if (!reportConvertToAsyncFunction) {
+        if (diag.code === 80006) {
+          return false;
         }
       }
       return true
