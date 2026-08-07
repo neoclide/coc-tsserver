@@ -1,4 +1,4 @@
-# Unreleased
+# 2.4.0
 
 - Sync upstream commits from vscode typescript-language-features, see `migrate.md`.
 - Added configuration `tsserver.implicitProjectConfig.strict` for implicit project.
