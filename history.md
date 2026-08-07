@@ -1,6 +1,12 @@
 # 2.4.0
 
 - Sync upstream commits from vscode typescript-language-features, see `migrate.md`.
+- Added configuration `typescript.showConvertToAsync` to skip TS80006 "convert
+  to async" suggestion in diagnostics.
+- Added command `typescript.tsserverRequest` for plugins that need to forward
+  commands to tsserver (e.g. Volar).
+- Load `typescriptServerPlugins` contributed plugins automatically by sending
+  `globalPlugins` and `pluginPaths` in the configure request.
 - Added configuration `typescript.format.indentSwitchCase` and
   `javascript.format.indentSwitchCase`.
 - Added configuration `typescript.preferences.autoImportSpecifierExcludeRegexes`
