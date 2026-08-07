@@ -5,6 +5,7 @@
     "esModuleInterop": true,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
+    "useUnknownInCatchVariables": false,
     "allowUnreachableCode": true,
     "allowUnusedLabels": true,
     "forceConsistentCasingInFileNames": true,
@@ -17,8 +18,8 @@
     "declaration": false,
     "outDir": "lib",
     "target": "es2017",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "es2022",
+    "moduleResolution": "bundler",
     "noImplicitThis": true,
     "lib": ["ES2018", "ES2019", "ES2020.Promise"],
     "plugins": []
