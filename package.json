@@ -492,6 +492,18 @@
           "description": "Preferred path ending for auto imports.",
           "scope": "resource"
         },
+        "typescript.preferences.importModuleSpecifier": {
+          "type": "string",
+          "enum": [
+            "shortest",
+            "relative",
+            "non-relative",
+            "project-relative"
+          ],
+          "default": "shortest",
+          "description": "Preferred path style for auto imports.",
+          "scope": "resource"
+        },
         "typescript.preferences.jsxAttributeCompletionStyle": {
           "type": "string",
           "enum": [
@@ -965,6 +977,18 @@
           "scope": "language-overridable",
           "default": "auto",
           "description": "Preferred path ending for auto imports."
+        },
+        "javascript.preferences.importModuleSpecifier": {
+          "type": "string",
+          "enum": [
+            "shortest",
+            "relative",
+            "non-relative",
+            "project-relative"
+          ],
+          "scope": "language-overridable",
+          "default": "shortest",
+          "description": "Preferred path style for auto imports."
         },
         "javascript.preferences.jsxAttributeCompletionStyle": {
           "type": "string",

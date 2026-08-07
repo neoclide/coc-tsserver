@@ -32,6 +32,8 @@ describe('tsserver preferences', () => {
     await workspace.getConfiguration('javascript.preferences').update('organizeImports', undefined, true)
     await workspace.getConfiguration('typescript.hover').update('maximumLength', undefined, true)
     await workspace.getConfiguration('javascript.hover').update('maximumLength', undefined, true)
+    await workspace.getConfiguration('typescript.preferences').update('importModuleSpecifier', undefined, true)
+    await workspace.getConfiguration('javascript.preferences').update('importModuleSpecifier', undefined, true)
   })
 
   it('leaves autoImportSpecifierExcludeRegexes undefined by default', async () => {
@@ -50,6 +52,28 @@ describe('tsserver preferences', () => {
     await workspace.getConfiguration('javascript.preferences').update('autoImportSpecifierExcludeRegexes', ['^moment'], true)
     const manager = createManager()
     assert.deepEqual(getPreferences(manager, 'javascript').autoImportSpecifierExcludeRegexes, ['^moment'])
+  })
+
+  it('leaves importModuleSpecifierPreference undefined by default', async () => {
+    const manager = createManager()
+    assert.equal(getPreferences(manager, 'typescript').importModuleSpecifierPreference, undefined)
+    assert.equal(getPreferences(manager, 'javascript').importModuleSpecifierPreference, undefined)
+  })
+
+  it('passes typescript.preferences.importModuleSpecifier to tsserver', async () => {
+    const manager = createManager()
+    await workspace.getConfiguration('typescript.preferences').update('importModuleSpecifier', 'non-relative', true)
+    assert.equal(getPreferences(manager, 'typescript').importModuleSpecifierPreference, 'non-relative')
+    await workspace.getConfiguration('typescript.preferences').update('importModuleSpecifier', 'relative', true)
+    assert.equal(getPreferences(manager, 'typescript').importModuleSpecifierPreference, 'relative')
+    await workspace.getConfiguration('typescript.preferences').update('importModuleSpecifier', 'project-relative', true)
+    assert.equal(getPreferences(manager, 'typescript').importModuleSpecifierPreference, 'project-relative')
+  })
+
+  it('passes javascript.preferences.importModuleSpecifier to tsserver', async () => {
+    const manager = createManager()
+    await workspace.getConfiguration('javascript.preferences').update('importModuleSpecifier', 'non-relative', true)
+    assert.equal(getPreferences(manager, 'javascript').importModuleSpecifierPreference, 'non-relative')
   })
 
   it('uses default organize imports preferences', async () => {
