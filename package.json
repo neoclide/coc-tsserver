@@ -234,6 +234,7 @@
             "normal",
             "terse",
             "verbose",
+            "requestTime",
             "off"
           ],
           "scope": "application",
@@ -300,7 +301,7 @@
         },
         "tsserver.implicitProjectConfig.target": {
           "type": "string",
-          "default": "ES2020",
+          "default": "ES2024",
           "markdownDescription": "Set target JavaScript language version for emitted JavaScript and include library declarations. See more: https://www.typescriptlang.org/tsconfig#target.",
           "enum": [
             "ES3",
@@ -314,6 +315,8 @@
             "ES2020",
             "ES2021",
             "ES2022",
+            "ES2023",
+            "ES2024",
             "ESNext"
           ],
           "scope": "window"
@@ -328,6 +331,12 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable/disable [strict function types](https://www.typescriptlang.org/tsconfig#strictFunctionTypes) in JavaScript and TypeScript files that are not part of a project. Existing `jsconfig.json` or `tsconfig.json` files override this setting.",
+          "scope": "window"
+        },
+        "tsserver.implicitProjectConfig.strict": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable/disable [strict mode](https://www.typescriptlang.org/tsconfig#strict) in JavaScript and TypeScript files that are not part of a project. Existing `jsconfig.json` or `tsconfig.json` files override this setting.",
           "scope": "window"
         },
         "tsserver.implicitProjectConfig.experimentalDecorators": {
@@ -711,6 +720,12 @@
           "default": true,
           "scope": "window",
           "description": "Enable format for typescript."
+        },
+        "typescript.hover.maximumLength": {
+          "type": "number",
+          "default": 500,
+          "scope": "window",
+          "description": "The maximum number of characters in a hover. If the hover is longer than this, it will be truncated. Requires TypeScript 5.9+ in the workspace."
         },
         "typescript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
@@ -1157,6 +1172,12 @@
           "default": true,
           "scope": "window",
           "description": "Enable format for javascript."
+        },
+        "javascript.hover.maximumLength": {
+          "type": "number",
+          "default": 500,
+          "scope": "window",
+          "description": "The maximum number of characters in a hover. If the hover is longer than this, it will be truncated. Requires TypeScript 5.9+ in the workspace."
         },
         "javascript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",

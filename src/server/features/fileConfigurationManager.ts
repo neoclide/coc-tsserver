@@ -93,7 +93,7 @@ export default class FileConfigurationManager {
     token: CancellationToken,
   ): Promise<void> {
     const formattingOptions = this.getFormattingOptions(document)
-    if (!formattingOptions) return
+      ?? await workspace.getFormatOptions(document.uri)
     const args: Proto.ConfigureRequestArguments = {
       file: undefined /*global*/,
       ...this.getFileOptions(formattingOptions, document),
@@ -199,10 +199,20 @@ export default class FileConfigurationManager {
       useLabelDetailsInCompletionEntries: true,
       allowIncompleteCompletions: true,
       displayPartsForJSDoc: true,
+      maximumHoverLength: this.getMaximumHoverLength(config),
       ...getInlayHintsPreferences(config),
       ...this.getOrganizeImportsPreferences(preferencesConfig),
     } as any
     return preferences
+  }
+
+  private getMaximumHoverLength(config: WorkspaceConfiguration): number {
+    const defaultMaxLength = 500
+    const maximumHoverLength = config.get<number>('hover.maximumLength', defaultMaxLength)
+    if (!Number.isSafeInteger(maximumHoverLength) || maximumHoverLength <= 0) {
+      return defaultMaxLength
+    }
+    return maximumHoverLength
   }
 
   private getOrganizeImportsPreferences(config: WorkspaceConfiguration): Proto.UserPreferences {

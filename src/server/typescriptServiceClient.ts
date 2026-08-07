@@ -22,6 +22,7 @@ import API from './utils/api'
 import { areServiceConfigurationsEqual, ServiceConfigurationProvider, SyntaxServerConfiguration, TsServerLogLevel, TypeScriptServiceConfiguration } from './utils/configuration'
 import { Disposable } from './utils/dispose'
 import Logger from './utils/logger'
+import { createGenerationGuardedHandler } from './utils/generation'
 import { TypeScriptPluginPathsProvider } from './utils/pluginPathsProvider'
 import Tracer from './utils/tracer'
 import { inferredProjectCompilerOptions, ProjectType } from './utils/tsconfig'
@@ -403,7 +404,12 @@ export default class TypeScriptServiceClient extends Disposable implements IType
       this.isRestarting = false
     })
 
-    handle.onEvent(event => this.dispatchEvent(event))
+    handle.onEvent(createGenerationGuardedHandler(
+      mytoken,
+      () => this.token,
+      () => !this.isDisposed && this.serverState.type === ServerState.Type.Running && this.serverState.server === handle,
+      event => this.dispatchEvent(event),
+    ))
 
     if (apiVersion.gte(API.v300) && this.capabilities.has(ClientCapability.Semantic)) {
       // this.loadingIndicator.startedLoadingProject(undefined /* projectName */)

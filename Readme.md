@@ -122,7 +122,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `tsserver.tsdk`: Specifies the folder path to the tsserver and `lib*.d.ts` files under a TypeScript install to use for IntelliSense, for example: `./node_modules/typescript/lib`. - When specified as a user setting, the TypeScript version from `tsserver.tsdk` automatically replaces the built-in TypeScript version. - When specified as a workspace setting, the tsserver is used when `tsserver.useLocalTsdk` is true. Use command `:CocCommand tsserver.chooseVersion` to choose different typescript version. Default: `""`
 - `tsserver.npm`: Specifies the path to the npm executable used for [Automatic Type Acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition). Default: `""`
 - `tsserver.log`: Log level of tsserver Default: `"off"`
-  Valid options: ["normal","terse","verbose","off"]
+  Valid options: ["normal","terse","verbose","requestTime","off"]
 - `tsserver.trace.server`: Trace level of tsserver Default: `"off"`
   Valid options: ["off","messages","verbose"]
 - `tsserver.enableTracing`: Enables tracing TS server performance to a directory. These trace files can be used to diagnose TS Server performance issues. The log may contain file paths, source code, and other potentially sensitive information from your project. Default: `false`
@@ -131,10 +131,11 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `tsserver.implicitProjectConfig.checkJs`: Enable checkJs for implicit project Default: `false`
 - `tsserver.implicitProjectConfig.module`: Sets the module system for the program. See more: https://www.typescriptlang.org/tsconfig#module. Default: `"ESNext"`
   Valid options: ["CommonJS","AMD","System","UMD","ES6","ES2015","ES2020","ESNext","None","ES2022","Node12","NodeNext"]
-- `tsserver.implicitProjectConfig.target`: Set target JavaScript language version for emitted JavaScript and include library declarations. See more: https://www.typescriptlang.org/tsconfig#target. Default: `"ES2020"`
-  Valid options: ["ES3","ES5","ES6","ES2015","ES2016","ES2017","ES2018","ES2019","ES2020","ES2021","ES2022","ESNext"]
+- `tsserver.implicitProjectConfig.target`: Set target JavaScript language version for emitted JavaScript and include library declarations. See more: https://www.typescriptlang.org/tsconfig#target. Default: `"ES2024"`
+  Valid options: ["ES3","ES5","ES6","ES2015","ES2016","ES2017","ES2018","ES2019","ES2020","ES2021","ES2022","ES2023","ES2024","ESNext"]
 - `tsserver.implicitProjectConfig.strictNullChecks`: Enable/disable [strict null checks](https://www.typescriptlang.org/tsconfig#strictNullChecks) in JavaScript and TypeScript files that are not part of a project. Existing `jsconfig.json` or `tsconfig.json` files override this setting. Default: `true`
 - `tsserver.implicitProjectConfig.strictFunctionTypes`: Enable/disable [strict function types](https://www.typescriptlang.org/tsconfig#strictFunctionTypes) in JavaScript and TypeScript files that are not part of a project. Existing `jsconfig.json` or `tsconfig.json` files override this setting. Default: `true`
+- `tsserver.implicitProjectConfig.strict`: Enable/disable [strict mode](https://www.typescriptlang.org/tsconfig#strict) in JavaScript and TypeScript files that are not part of a project. Existing `jsconfig.json` or `tsconfig.json` files override this setting. Default: `true`
 - `tsserver.implicitProjectConfig.experimentalDecorators`: Enable experimentalDecorators for implicit project Default: `false`
 - `tsserver.disableAutomaticTypeAcquisition`: Disables [automatic type acquisition](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_typings-and-automatic-type-acquisition). Automatic type acquisition fetches `@types` packages from npm to improve IntelliSense for external libraries. Default: `false`
 - `tsserver.useSyntaxServer`: Controls if TypeScript launches a dedicated server to more quickly handle syntax related operations, such as computing code folding. Default: `"auto"`
@@ -203,6 +204,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `typescript.workspaceSymbols.excludeLibrarySymbols`: Exclude symbols from library files (e.g. `node_modules`) when searching for symbols in the workspace. Default: `true`
 - `typescript.autoClosingTags`: Enable/disable automatic closing of JSX tags. Default: `true`
 - `typescript.preferGoToSourceDefinition`: Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace. Default: `false`
+- `typescript.hover.maximumLength`: The maximum number of characters in a hover. If the hover is longer than this, it will be truncated. Requires using TypeScript 5.9+ in the workspace. Default: `500`
 - `javascript.showUnused`: Show unused variable hint. Default: `true`
 - `javascript.showDeprecated`: Show deprecated variable hint. Default: `true`
 - `javascript.updateImportsOnFileMove.enabled`: Enable/disable automatic updating of import paths when you rename or move a file in VS Code. Default: `"prompt"`
@@ -273,6 +275,7 @@ Checkout `:h coc-configuration` for guide of coc.nvim's configuration.
 - `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`: Suppress type hints on variables whose name is identical to the type name. Requires using TypeScript 4.8+ in the workspace. Default: `true`
 - `javascript.autoClosingTags`: Enable/disable automatic closing of JSX tags. Default: `true`
 - `javascript.preferGoToSourceDefinition`: Makes Go to Definition avoid type declaration files when possible by triggering Go to Source Definition instead. Requires using TypeScript 4.7+ in the workspace. Default: `false`
+- `javascript.hover.maximumLength`: The maximum number of characters in a hover. If the hover is longer than this, it will be truncated. Requires using TypeScript 5.9+ in the workspace. Default: `500`
 - `javascript.format.semicolons`: Defines handling of optional semicolons. Requires using TypeScript 3.7 or newer in the workspace. Default: `"ignore"`
   Valid options: ["ignore","insert","remove"]
 - `javascript.format.indentSwitchCase`: Defines whether an indent is inserted when a `case` or `default` clause is inside a `switch` statement. Default: `true`

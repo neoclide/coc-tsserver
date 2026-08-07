@@ -8,7 +8,8 @@ export enum TsServerLogLevel {
   Off,
   Normal,
   Terse,
-  Verbose
+  Verbose,
+  RequestTime
 }
 
 export const enum SyntaxServerConfiguration {
@@ -58,6 +59,8 @@ export namespace TsServerLogLevel {
         return TsServerLogLevel.Terse
       case 'verbose':
         return TsServerLogLevel.Verbose
+      case 'requesttime':
+        return TsServerLogLevel.RequestTime
       case 'off':
       default:
         return TsServerLogLevel.Off
@@ -72,6 +75,8 @@ export namespace TsServerLogLevel {
         return 'terse'
       case TsServerLogLevel.Verbose:
         return 'verbose'
+      case TsServerLogLevel.RequestTime:
+        return 'requestTime'
       case TsServerLogLevel.Off:
       default:
         return 'off'
@@ -87,6 +92,7 @@ export class ImplicitProjectConfiguration {
   public readonly experimentalDecorators: boolean
   public readonly strictNullChecks: boolean
   public readonly strictFunctionTypes: boolean
+  public readonly strict: boolean
 
   constructor(configuration: WorkspaceConfiguration) {
     this.target = ImplicitProjectConfiguration.readTarget(configuration)
@@ -95,6 +101,7 @@ export class ImplicitProjectConfiguration {
     this.experimentalDecorators = ImplicitProjectConfiguration.readExperimentalDecorators(configuration)
     this.strictNullChecks = ImplicitProjectConfiguration.readImplicitStrictNullChecks(configuration)
     this.strictFunctionTypes = ImplicitProjectConfiguration.readImplicitStrictFunctionTypes(configuration)
+    this.strict = ImplicitProjectConfiguration.readImplicitStrict(configuration)
   }
 
   public isEqualTo(other: ImplicitProjectConfiguration): boolean {
@@ -125,6 +132,10 @@ export class ImplicitProjectConfiguration {
 
   private static readImplicitStrictFunctionTypes(configuration: WorkspaceConfiguration): boolean {
     return configuration.get<boolean>('tsserver.implicitProjectConfig.strictFunctionTypes', true)
+  }
+
+  private static readImplicitStrict(configuration: WorkspaceConfiguration): boolean {
+    return configuration.get<boolean>('tsserver.implicitProjectConfig.strict', true)
   }
 }
 

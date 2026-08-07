@@ -30,6 +30,8 @@ describe('tsserver preferences', () => {
     await workspace.getConfiguration('javascript.preferences').update('autoImportSpecifierExcludeRegexes', undefined, true)
     await workspace.getConfiguration('typescript.preferences').update('organizeImports', undefined, true)
     await workspace.getConfiguration('javascript.preferences').update('organizeImports', undefined, true)
+    await workspace.getConfiguration('typescript.hover').update('maximumLength', undefined, true)
+    await workspace.getConfiguration('javascript.hover').update('maximumLength', undefined, true)
   })
 
   it('leaves autoImportSpecifierExcludeRegexes undefined by default', async () => {
@@ -100,5 +102,38 @@ describe('tsserver preferences', () => {
     const prefs = getPreferences(manager, 'javascript')
     assert.equal(prefs.organizeImportsIgnoreCase, false)
     assert.equal(prefs.organizeImportsTypeOrder, 'last')
+  })
+
+  it('defaults maximumHoverLength to 500', async () => {
+    const manager = createManager()
+    assert.equal(getPreferences(manager, 'typescript').maximumHoverLength, 500)
+    assert.equal(getPreferences(manager, 'javascript').maximumHoverLength, 500)
+  })
+
+  it('respects typescript.hover.maximumLength', async () => {
+    await workspace.getConfiguration('typescript.hover').update('maximumLength', 1200, true)
+    const manager = createManager()
+    assert.equal(getPreferences(manager, 'typescript').maximumHoverLength, 1200)
+  })
+
+  it('falls back to the default when maximumHoverLength is invalid', async () => {
+    await workspace.getConfiguration('typescript.hover').update('maximumLength', -1, true)
+    const manager = createManager()
+    assert.equal(getPreferences(manager, 'typescript').maximumHoverLength, 500)
+  })
+
+  it('sends global configuration even without a visible editor', async () => {
+    const calls: string[] = []
+    const execute = async (command: string) => {
+      calls.push(command)
+      return { type: 'response' }
+    }
+    const manager = new FileConfigurationManager({ apiVersion: { gte: () => true, lt: () => false }, toPath: (uri: string) => uri, execute } as any)
+    const doc = {
+      languageId: 'typescript',
+      uri: 'file:///not-visible.ts',
+    } as any
+    await manager.setGlobalConfigurationFromDocument(doc, undefined as any)
+    assert.deepEqual(calls, ['configure'])
   })
 })
