@@ -1,6 +1,19 @@
 # 2.4.0
 
 - Sync upstream commits from vscode typescript-language-features, see `migrate.md`.
+- Added configuration `typescript.format.indentSwitchCase` and
+  `javascript.format.indentSwitchCase`.
+- Added configuration `typescript.preferences.autoImportSpecifierExcludeRegexes`
+  and `javascript.preferences.autoImportSpecifierExcludeRegexes`.
+- Added configuration `typescript.preferences.organizeImports` and
+  `javascript.preferences.organizeImports` with `unicodeCollation`,
+  `caseSensitivity`, `typeOrder`, `caseFirst`, `accentCollation`, `locale` and
+  `numericCollation` options.
+- Added configuration `typescript.implementationsCodeLens.showOnInterfaceMethods`,
+  `typescript.implementationsCodeLens.showOnAllClassMethods` and the
+  `javascript` equivalents.
+- Added configuration `typescript.workspaceSymbols.excludeLibrarySymbols`, sent
+  to tsserver as `excludeLibrarySymbolsInNavTo` preference.
 - Added configuration `tsserver.implicitProjectConfig.strict` for implicit project.
 - Default of `tsserver.implicitProjectConfig.target` changed to `ES2024`, support
   `ES2023` and `ES2024`.
