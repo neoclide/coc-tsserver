@@ -1229,8 +1229,8 @@
   "author": "chemzqm@gmail.com",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^16.18",
-    "coc.nvim": "^0.0.83-next.19",
+    "@types/node": "^20.19.39",
+    "coc.nvim": "^0.0.83-next.25",
     "esbuild": "^0.25.0",
     "semver": "^7.3.7",
     "strip-ansi": "^7.0.1",
