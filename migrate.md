@@ -29,6 +29,15 @@ typecheck passed; Neovim 55/55 and Vim 55/55 passed; contract inventory reported
 zero risks and diff whitespace checks passed. Vim emits existing asynchronous
 RPC-disconnect messages during test teardown even though all assertions pass.
 
+PR review correction: leave `checkJs` absent from the compiler-options object
+when unset, instead of assigning an own property with value undefined. This
+also keeps generated jsconfig/tsconfig snippets valid JSON. Regression tests
+check own-property presence and parse the actual snippet generator output for
+both project types with unset, false and true settings. Build/typecheck and
+Neovim 56/56 passed. An initial full Vim run showed inconsistent runner counts
+(exit 0 with one failed count); the focused 8/8 and final full 56/56 runs passed,
+with the existing asynchronous teardown RPC messages still present.
+
 记录 coc-tsserver 从 VS Code `typescript-language-features` 同步上游改动的清单。
 
 ## 同步范围

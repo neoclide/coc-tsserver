@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, it } from 'node:test'
 import { workspace } from 'coc.nvim'
 import API from '../src/server/utils/api.ts'
 import { ImplicitProjectConfiguration } from '../src/server/utils/configuration.ts'
-import { inferredProjectCompilerOptions, ProjectType } from '../src/server/utils/tsconfig.ts'
+import { inferredProjectCompilerOptions, inferredProjectConfigSnippet, ProjectType } from '../src/server/utils/tsconfig.ts'
 
 function serviceConfig(implicit: Partial<any>): any {
   return {
@@ -51,7 +51,7 @@ describe('implicit project configuration', () => {
     const config = new ImplicitProjectConfiguration(workspace.getConfiguration())
     const options = inferredProjectCompilerOptions(API.v500, ProjectType.JavaScript,
       serviceConfig({ checkJs: config.checkJs }))
-    assert.equal(Object.hasOwn(JSON.parse(JSON.stringify(options)), 'checkJs'), false)
+    assert.equal(Object.hasOwn(options, 'checkJs'), false)
   })
 
   it('preserves explicit checkJs false and true values', async () => {
@@ -62,6 +62,18 @@ describe('implicit project configuration', () => {
       const options = inferredProjectCompilerOptions(API.v500, ProjectType.JavaScript,
         serviceConfig({ checkJs: config.checkJs }))
       assert.equal(options.checkJs, value)
+    }
+  })
+
+  it('generates parseable jsconfig and tsconfig snippets with unset and explicit checkJs', () => {
+    for (const projectType of [ProjectType.JavaScript, ProjectType.TypeScript]) {
+      for (const checkJs of [undefined, false, true]) {
+        // Remove the final cursor tabstop exactly as snippet insertion does.
+        const snippet = inferredProjectConfigSnippet(API.v500, projectType, serviceConfig({ checkJs }))
+        const generated = JSON.parse(snippet.replace('$0', ''))
+        assert.equal(Object.hasOwn(generated.compilerOptions, 'checkJs'), checkJs !== undefined)
+        assert.equal(generated.compilerOptions.checkJs, checkJs)
+      }
     }
   })
 
