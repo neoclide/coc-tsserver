@@ -1,5 +1,7 @@
 # 2.5.0
 
+- Keep JavaScript unused diagnostics available when `tsserver.implicitProjectConfig.checkJs` is not explicitly configured, while preserving explicit false and true values.
+- Omit an unset `checkJs` property when generating jsconfig.json and tsconfig.json so configuration snippets remain valid JSON.
 - Fix unhandled promise rejections when updating imports after a file move and
   when a diagnostic (`geterr`) request fails.
 - Fix `getClientHost` listener leak on server start timeout and dispose the

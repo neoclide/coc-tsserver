@@ -35,7 +35,9 @@ export function inferredProjectCompilerOptions(
     projectConfig.allowImportingTsExtensions = true;
   }
 
-  projectConfig.checkJs = serviceConfig.implicitProjectConfiguration.checkJs
+  if (serviceConfig.implicitProjectConfiguration.checkJs !== undefined) {
+    projectConfig.checkJs = serviceConfig.implicitProjectConfiguration.checkJs
+  }
   if (serviceConfig.implicitProjectConfiguration.checkJs && projectType === ProjectType.TypeScript) {
     projectConfig.allowJs = true
   }
@@ -61,7 +63,7 @@ export function inferredProjectCompilerOptions(
   return projectConfig
 }
 
-function inferredProjectConfigSnippet(
+export function inferredProjectConfigSnippet(
   version: API,
   projectType: ProjectType,
   config: TypeScriptServiceConfiguration

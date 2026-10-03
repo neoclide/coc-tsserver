@@ -1,5 +1,43 @@
 # Upstream Sync Ledger
 
+## 2026-10-03 incremental sync
+
+Reviewed `microsoft/vscode` `extensions/typescript-language-features` from
+`d43a612ad8121ff1f7fe19a5ee13e237c3c5463c` to
+`67cb2a17e24d903be7d50486a70d9bd835e95ad6`.
+
+- Adopt `6ebcc0a377a`: distinguish an unset implicit `checkJs` setting from an
+  explicitly configured false value. Translate VS Code configuration inspection
+  to the three configuration scopes supported by Coc. Keep the published Coc
+  key and default unchanged; omit the unset value from the tsserver JSON payload.
+- Skip `fab0e01e6b7` notification link filtering: Coc's message/notification
+  implementation displays plain content and explicit action buttons; it does
+  not execute VS Code Markdown `command:` links. Do not suppress useful error
+  text solely to mirror VS Code's notification renderer.
+- Skip `4dbe1643e61` and `d211d0584de`: TypeScript 7 marketplace suggestions,
+  telemetry experiments and VS Code extension detection are host-specific.
+- Skip `3879d0e80fa`, `beab7a2a9d5`, `0edf2a06932`: behavior-neutral upstream
+  lint updates and merge bookkeeping.
+- Skip `efc2c86f03d`, `fc3e038bfa9`: upstream CodeQL/build dependency changes.
+
+Added regression coverage for omitted checkJs and explicit false/true settings.
+Preserved all Coc command/configuration IDs, existing strict/compiler settings,
+server generation guards, signature help state and project reload behavior.
+
+Validation: baseline build/typecheck and 53 Neovim tests passed. Final build and
+typecheck passed; Neovim 55/55 and Vim 55/55 passed; contract inventory reported
+zero risks and diff whitespace checks passed. Vim emits existing asynchronous
+RPC-disconnect messages during test teardown even though all assertions pass.
+
+PR review correction: leave `checkJs` absent from the compiler-options object
+when unset, instead of assigning an own property with value undefined. This
+also keeps generated jsconfig/tsconfig snippets valid JSON. Regression tests
+check own-property presence and parse the actual snippet generator output for
+both project types with unset, false and true settings. Build/typecheck and
+Neovim 56/56 passed. An initial full Vim run showed inconsistent runner counts
+(exit 0 with one failed count); the focused 8/8 and final full 56/56 runs passed,
+with the existing asynchronous teardown RPC messages still present.
+
 记录 coc-tsserver 从 VS Code `typescript-language-features` 同步上游改动的清单。
 
 ## 同步范围
