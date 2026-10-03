@@ -16,8 +16,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Set up npm
+        run: npm install --global npm@11.9.0
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Install Vim and Neovim
         run: |
           sudo apt-get update
