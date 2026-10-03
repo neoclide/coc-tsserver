@@ -88,7 +88,7 @@ export class ImplicitProjectConfiguration {
 
   public readonly target: string | undefined
   public readonly module: string | undefined
-  public readonly checkJs: boolean
+  public readonly checkJs: boolean | undefined
   public readonly experimentalDecorators: boolean
   public readonly strictNullChecks: boolean
   public readonly strictFunctionTypes: boolean
@@ -116,9 +116,12 @@ export class ImplicitProjectConfiguration {
     return configuration.get<string>('tsserver.implicitProjectConfig.module')
   }
 
-  private static readCheckJs(configuration: WorkspaceConfiguration): boolean {
-    return configuration.get<boolean>('tsserver.implicitProjectConfig.checkJs')
-      ?? configuration.get<boolean>('tsserver.implicitProjectConfig.checkJs', false)
+  private static readCheckJs(configuration: WorkspaceConfiguration): boolean | undefined {
+    const value = configuration.inspect<boolean>('tsserver.implicitProjectConfig.checkJs')
+    if (value && (value.globalValue !== undefined || value.workspaceValue !== undefined || value.workspaceFolderValue !== undefined)) {
+      return configuration.get<boolean>('tsserver.implicitProjectConfig.checkJs')
+    }
+    return undefined
   }
 
   private static readExperimentalDecorators(configuration: WorkspaceConfiguration): boolean {

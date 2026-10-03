@@ -28,6 +28,7 @@ describe('implicit project configuration', () => {
   afterEach(async () => {
     await workspace.getConfiguration('tsserver.implicitProjectConfig').update('strict', undefined, true)
     await workspace.getConfiguration('tsserver.implicitProjectConfig').update('target', undefined, true)
+    await workspace.getConfiguration('tsserver.implicitProjectConfig').update('checkJs', undefined, true)
   })
 
   it('defaults strict to true', () => {
@@ -44,6 +45,24 @@ describe('implicit project configuration', () => {
   it('defaults target to ES2024', () => {
     const config = new ImplicitProjectConfiguration(workspace.getConfiguration())
     assert.equal(config.target, 'ES2024')
+  })
+
+  it('omits an unset checkJs option so JavaScript unused diagnostics remain available', () => {
+    const config = new ImplicitProjectConfiguration(workspace.getConfiguration())
+    const options = inferredProjectCompilerOptions(API.v500, ProjectType.JavaScript,
+      serviceConfig({ checkJs: config.checkJs }))
+    assert.equal(Object.hasOwn(JSON.parse(JSON.stringify(options)), 'checkJs'), false)
+  })
+
+  it('preserves explicit checkJs false and true values', async () => {
+    const configuration = workspace.getConfiguration('tsserver.implicitProjectConfig')
+    for (const value of [false, true]) {
+      await configuration.update('checkJs', value, true)
+      const config = new ImplicitProjectConfiguration(workspace.getConfiguration())
+      const options = inferredProjectCompilerOptions(API.v500, ProjectType.JavaScript,
+        serviceConfig({ checkJs: config.checkJs }))
+      assert.equal(options.checkJs, value)
+    }
   })
 
   it('sends strict and explicit default overrides in inferred project compiler options', () => {
